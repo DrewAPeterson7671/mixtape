@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Phases" %>
+
+<h1>Phases</h1>
+
+<div id="phases">
+  <% @phases.each do |phase| %>
+    <%= render phase %>
+    <p>
+      <%= link_to "Show this phase", phase %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New phase", new_phase_path %>

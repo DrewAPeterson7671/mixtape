@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Editions" %>
+
+<h1>Editions</h1>
+
+<div id="editions">
+  <% @editions.each do |edition| %>
+    <%= render edition %>
+    <p>
+      <%= link_to "Show this edition", edition %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New edition", new_edition_path %>

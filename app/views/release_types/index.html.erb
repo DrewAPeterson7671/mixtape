@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Release types" %>
+
+<h1>Release types</h1>
+
+<div id="release_types">
+  <% @release_types.each do |release_type| %>
+    <%= render release_type %>
+    <p>
+      <%= link_to "Show this release type", release_type %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New release type", new_release_type_path %>

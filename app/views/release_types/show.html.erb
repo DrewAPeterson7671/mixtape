@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @release_type %>
+
+<div>
+  <%= link_to "Edit this release type", edit_release_type_path(@release_type) %> |
+  <%= link_to "Back to release types", release_types_path %>
+
+  <%= button_to "Destroy this release type", @release_type, method: :delete %>
+</div>

@@ -1,0 +1,57 @@
+<%= form_with(model: track) do |form| %>
+  <% if track.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(track.errors.count, "error") %> prohibited this track from being saved:</h2>
+
+      <ul>
+        <% track.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :artist, style: "display: block" %>
+    <%= form.number_field :artist %>
+  </div>
+
+  <div>
+    <%= form.label :album, style: "display: block" %>
+    <%= form.number_field :album %>
+  </div>
+
+  <div>
+    <%= form.label :listened, style: "display: block" %>
+    <%= form.check_box :listened %>
+  </div>
+
+  <div>
+    <%= form.label :title, style: "display: block" %>
+    <%= form.text_field :title %>
+  </div>
+
+  <div>
+    <%= form.label :media, style: "display: block" %>
+    <%= form.number_field :media %>
+  </div>
+
+  <div>
+    <%= form.label :number, style: "display: block" %>
+    <%= form.number_field :number %>
+  </div>
+
+  <div>
+    <%= form.label :disc_number, style: "display: block" %>
+    <%= form.number_field :disc_number %>
+  </div>
+
+  <div>
+    <%= form.label :rating, style: "display: block" %>
+    <%= form.number_field :rating %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Genres" %>
+
+<h1>Genres</h1>
+
+<div id="genres">
+  <% @genres.each do |genre| %>
+    <%= render genre %>
+    <p>
+      <%= link_to "Show this genre", genre %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New genre", new_genre_path %>

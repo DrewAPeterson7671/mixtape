@@ -1,0 +1,12 @@
+<% content_for :title, "Editing release type" %>
+
+<h1>Editing release type</h1>
+
+<%= render "form", release_type: @release_type %>
+
+<br>
+
+<div>
+  <%= link_to "Show this release type", @release_type %> |
+  <%= link_to "Back to release types", release_types_path %>
+</div>

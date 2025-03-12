@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Priorities" %>
+
+<h1>Priorities</h1>
+
+<div id="priorities">
+  <% @priorities.each do |priority| %>
+    <%= render priority %>
+    <p>
+      <%= link_to "Show this priority", priority %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New priority", new_priority_path %>

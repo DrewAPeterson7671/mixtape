@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sequence: 1
+  name: MyString
+  platform: MyString
+  comment: MyText
+  genre: 1
+  year: 1
+  source: MyString
+
+two:
+  sequence: 1
+  name: MyString
+  platform: MyString
+  comment: MyText
+  genre: 1
+  year: 1
+  source: MyString

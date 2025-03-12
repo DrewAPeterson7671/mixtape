@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Media" %>
+
+<h1>Media</h1>
+
+<div id="media">
+  <% @media.each do |medium| %>
+    <%= render medium %>
+    <p>
+      <%= link_to "Show this medium", medium %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New medium", new_medium_path %>

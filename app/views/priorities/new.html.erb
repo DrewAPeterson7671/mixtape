@@ -1,0 +1,11 @@
+<% content_for :title, "New priority" %>
+
+<h1>New priority</h1>
+
+<%= render "form", priority: @priority %>
+
+<br>
+
+<div>
+  <%= link_to "Back to priorities", priorities_path %>
+</div>

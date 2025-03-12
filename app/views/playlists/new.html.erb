@@ -1,0 +1,11 @@
+<% content_for :title, "New playlist" %>
+
+<h1>New playlist</h1>
+
+<%= render "form", playlist: @playlist %>
+
+<br>
+
+<div>
+  <%= link_to "Back to playlists", playlists_path %>
+</div>
