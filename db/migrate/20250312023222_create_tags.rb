@@ -7,7 +7,7 @@ class CreateTags < ActiveRecord::Migration[7.2]
       t.integer :track
       t.integer :playlist
       t.text :comment
-
+      
       t.timestamps
     end
   end
