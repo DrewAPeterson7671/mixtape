@@ -9,6 +9,8 @@ class CreateTracks < ActiveRecord::Migration[7.2]
       t.integer :number
       t.integer :disc_number
       t.integer :rating
+      t.references :artist
+      t.references :album
 
       t.timestamps
     end
