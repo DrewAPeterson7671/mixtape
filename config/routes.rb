@@ -7,9 +7,17 @@ Rails.application.routes.draw do
   resources :priorities
   resources :tags
   resources :playlists
-  resources :albums
-  resources :tracks
-  resources :artists
+  
+  resources :artists do
+    resources :albums do
+      resources :tracks
+    end
+  end
+   
+
+
+
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
