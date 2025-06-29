@@ -7,12 +7,9 @@ Rails.application.routes.draw do
   resources :priorities
   resources :tags
   resources :playlists
-  
-  resources :artists do
-    resources :albums do
-      resources :tracks
-    end
-  end
+  resources :artists
+  resources :albums
+  resources :tracks
    
 
 
