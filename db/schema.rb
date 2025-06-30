@@ -11,6 +11,9 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "albums", force: :cascade do |t|
     t.integer "artist"
     t.string "title"
@@ -22,6 +25,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
     t.integer "rating"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "albums_artists", id: false, force: :cascade do |t|
+    t.bigint "artist_id", null: false
+    t.bigint "album_id", null: false
+    t.index ["album_id", "artist_id"], name: "index_albums_artists_on_album_id_and_artist_id", unique: true
+    t.index ["artist_id", "album_id"], name: "index_albums_artists_on_artist_id_and_album_id", unique: true
+  end
+
+  create_table "albums_tags", id: false, force: :cascade do |t|
+    t.bigint "album_id", null: false
+    t.bigint "tag_id", null: false
+    t.index ["album_id", "tag_id"], name: "index_albums_tags_on_album_id_and_tag_id", unique: true
+    t.index ["tag_id", "album_id"], name: "index_albums_tags_on_tag_id_and_album_id", unique: true
   end
 
   create_table "artists", force: :cascade do |t|
@@ -36,29 +53,29 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
   end
 
   create_table "artists_genres", id: false, force: :cascade do |t|
-    t.integer "artist_id", null: false
-    t.integer "genre_id", null: false
+    t.bigint "artist_id", null: false
+    t.bigint "genre_id", null: false
     t.index ["artist_id", "genre_id"], name: "index_artists_genres_on_artist_id_and_genre_id", unique: true
     t.index ["genre_id", "artist_id"], name: "index_artists_genres_on_genre_id_and_artist_id", unique: true
   end
 
   create_table "artists_playlists", id: false, force: :cascade do |t|
-    t.integer "playlist_id", null: false
-    t.integer "artist_id", null: false
+    t.bigint "playlist_id", null: false
+    t.bigint "artist_id", null: false
     t.index ["artist_id", "playlist_id"], name: "index_artists_playlists_on_artist_id_and_playlist_id", unique: true
     t.index ["playlist_id", "artist_id"], name: "index_artists_playlists_on_playlist_id_and_artist_id", unique: true
   end
 
   create_table "artists_tags", id: false, force: :cascade do |t|
-    t.integer "artist_id", null: false
-    t.integer "tag_id", null: false
+    t.bigint "artist_id", null: false
+    t.bigint "tag_id", null: false
     t.index ["artist_id", "tag_id"], name: "index_artists_tags_on_artist_id_and_tag_id", unique: true
     t.index ["tag_id", "artist_id"], name: "index_artists_tags_on_tag_id_and_artist_id", unique: true
   end
 
   create_table "editions", force: :cascade do |t|
     t.string "name"
-    t.integer "album_id"
+    t.bigint "album_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["album_id"], name: "index_editions_on_album_id"
@@ -66,7 +83,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
 
   create_table "genres", force: :cascade do |t|
     t.string "name"
-    t.integer "playlist_id"
+    t.bigint "playlist_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["playlist_id"], name: "index_genres_on_playlist_id"
@@ -74,8 +91,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
 
   create_table "media", force: :cascade do |t|
     t.string "name"
-    t.integer "track_id"
-    t.integer "album_id"
+    t.bigint "track_id"
+    t.bigint "album_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["album_id"], name: "index_media_on_album_id"
@@ -84,7 +101,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
 
   create_table "phases", force: :cascade do |t|
     t.string "name"
-    t.integer "artist_id"
+    t.bigint "artist_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["artist_id"], name: "index_phases_on_artist_id"
@@ -103,22 +120,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
   end
 
   create_table "playlists_tags", id: false, force: :cascade do |t|
-    t.integer "playlist_id", null: false
-    t.integer "tag_id", null: false
+    t.bigint "playlist_id", null: false
+    t.bigint "tag_id", null: false
     t.index ["playlist_id", "tag_id"], name: "index_playlists_tags_on_playlist_id_and_tag_id", unique: true
     t.index ["tag_id", "playlist_id"], name: "index_playlists_tags_on_tag_id_and_playlist_id", unique: true
   end
 
   create_table "playlists_tracks", id: false, force: :cascade do |t|
-    t.integer "playlist_id", null: false
-    t.integer "track_id", null: false
+    t.bigint "playlist_id", null: false
+    t.bigint "track_id", null: false
     t.index ["playlist_id", "track_id"], name: "index_playlists_tracks_on_playlist_id_and_track_id", unique: true
     t.index ["track_id", "playlist_id"], name: "index_playlists_tracks_on_track_id_and_playlist_id", unique: true
   end
 
   create_table "priorities", force: :cascade do |t|
     t.string "name"
-    t.integer "artist_id"
+    t.bigint "artist_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["artist_id"], name: "index_priorities_on_artist_id"
@@ -126,7 +143,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
 
   create_table "release_types", force: :cascade do |t|
     t.string "name"
-    t.integer "album_id"
+    t.bigint "album_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["album_id"], name: "index_release_types_on_album_id"
@@ -144,8 +161,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
   end
 
   create_table "tags_tracks", id: false, force: :cascade do |t|
-    t.integer "track_id", null: false
-    t.integer "tag_id", null: false
+    t.bigint "track_id", null: false
+    t.bigint "tag_id", null: false
     t.index ["tag_id", "track_id"], name: "index_tags_tracks_on_tag_id_and_track_id", unique: true
     t.index ["track_id", "tag_id"], name: "index_tags_tracks_on_track_id_and_tag_id", unique: true
   end
@@ -159,14 +176,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
     t.integer "number"
     t.integer "disc_number"
     t.integer "rating"
-    t.integer "artist_id"
-    t.integer "album_id"
+    t.bigint "artist_id"
+    t.bigint "album_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["album_id"], name: "index_tracks_on_album_id"
     t.index ["artist_id"], name: "index_tracks_on_artist_id"
   end
 
+  add_foreign_key "albums_artists", "albums"
+  add_foreign_key "albums_artists", "artists"
+  add_foreign_key "albums_tags", "albums"
+  add_foreign_key "albums_tags", "tags"
   add_foreign_key "artists_genres", "artists"
   add_foreign_key "artists_genres", "genres"
   add_foreign_key "artists_playlists", "artists"
