@@ -1,6 +1,7 @@
 class EditionsController < ApplicationController
   before_action :set_edition, only: %i[ show edit update destroy ]
-
+  skip_before_action :verify_authenticity_token
+  
   # GET /editions or /editions.json
   def index
     @editions = Edition.all
