@@ -6,7 +6,7 @@ class CreateJoinTableArtistAlbum < ActiveRecord::Migration[7.2]
     end
 
     # Add foreign key constraints if necessary
-    add_foreign_key :artists_albums, :artists
-    add_foreign_key :artists_albums, :albums
+    add_foreign_key :albums_artists, :artists
+    add_foreign_key :albums_artists, :albums
   end
 end
