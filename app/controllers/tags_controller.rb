@@ -1,5 +1,6 @@
 class TagsController < ApplicationController
   before_action :set_tag, only: %i[ show edit update destroy ]
+  skip_before_action :verify_authenticity_token
 
   # GET /tags or /tags.json
   def index

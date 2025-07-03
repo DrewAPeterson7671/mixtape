@@ -1,5 +1,6 @@
 class GenresController < ApplicationController
   before_action :set_genre, only: %i[ show edit update destroy ]
+  skip_before_action :verify_authenticity_token
 
   # GET /genres or /genres.json
   def index

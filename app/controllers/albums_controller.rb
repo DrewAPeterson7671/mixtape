@@ -1,5 +1,6 @@
 class AlbumsController < ApplicationController
   before_action :set_album, only: %i[ show edit update destroy ]
+  skip_before_action :verify_authenticity_token
 
   # GET /albums or /albums.json
   def index
@@ -65,6 +66,6 @@ class AlbumsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def album_params
-      params.require(:album).permit(:artist, :title, :year, :listened, :release_type, :media, :edition, :rating)
+      params.require(:album).permit(:artist_id, :title, :year, :listened, :release_type, :media, :edition, :rating)
     end
 end

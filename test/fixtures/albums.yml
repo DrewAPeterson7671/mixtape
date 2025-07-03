@@ -1,7 +1,7 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  artist: 1
+  artist_id: 1
   title: MyString
   year: 1
   listened: false
@@ -11,7 +11,7 @@ one:
   rating: 1
 
 two:
-  artist: 1
+  artist_id: 1
   title: MyString
   year: 1
   listened: false
