@@ -1,5 +1,6 @@
 class ReleaseTypesController < ApplicationController
   before_action :set_release_type, only: %i[ show edit update destroy ]
+  skip_before_action :verify_authenticity_token
 
   # GET /release_types or /release_types.json
   def index

@@ -1,5 +1,6 @@
 class TracksController < ApplicationController
   before_action :set_track, only: %i[ show edit update destroy ]
+  skip_before_action :verify_authenticity_token
 
   # GET /tracks or /tracks.json
   def index
@@ -65,6 +66,6 @@ class TracksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def track_params
-      params.require(:track).permit(:artist, :album, :listened, :title, :media, :number, :disc_number, :rating)
+      params.require(:track).permit(:artist_id, :album_id, :listened, :title, :media, :number, :disc_number, :rating)
     end
 end

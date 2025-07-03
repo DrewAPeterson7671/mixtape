@@ -10,18 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_03_021627) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "albums", force: :cascade do |t|
-    t.integer "artist"
+    t.bigint "artist_id"
     t.string "title"
     t.integer "year"
     t.boolean "listened"
-    t.integer "release_type"
-    t.integer "media"
-    t.integer "edition"
+    t.bigint "release_type_id"
+    t.bigint "media_id"
+    t.bigint "edition_id"
     t.integer "rating"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -43,8 +43,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
 
   create_table "artists", force: :cascade do |t|
     t.string "name"
-    t.integer "priority"
-    t.integer "phase"
+    t.bigint "priority_id"
+    t.bigint "phase_id"
     t.boolean "complete"
     t.string "wikipedia"
     t.string "discogs"
@@ -75,36 +75,26 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
 
   create_table "editions", force: :cascade do |t|
     t.string "name"
-    t.bigint "album_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["album_id"], name: "index_editions_on_album_id"
   end
 
   create_table "genres", force: :cascade do |t|
     t.string "name"
-    t.bigint "playlist_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["playlist_id"], name: "index_genres_on_playlist_id"
   end
 
   create_table "media", force: :cascade do |t|
     t.string "name"
-    t.bigint "track_id"
-    t.bigint "album_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["album_id"], name: "index_media_on_album_id"
-    t.index ["track_id"], name: "index_media_on_track_id"
   end
 
   create_table "phases", force: :cascade do |t|
     t.string "name"
-    t.bigint "artist_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["artist_id"], name: "index_phases_on_artist_id"
   end
 
   create_table "playlists", force: :cascade do |t|
@@ -112,7 +102,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
     t.string "name"
     t.string "platform"
     t.text "comment"
-    t.integer "genre"
+    t.bigint "genre_id"
     t.integer "year"
     t.string "source"
     t.datetime "created_at", null: false
@@ -135,18 +125,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
 
   create_table "priorities", force: :cascade do |t|
     t.string "name"
-    t.bigint "artist_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["artist_id"], name: "index_priorities_on_artist_id"
   end
 
   create_table "release_types", force: :cascade do |t|
     t.string "name"
-    t.bigint "album_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["album_id"], name: "index_release_types_on_album_id"
   end
 
   create_table "tags", force: :cascade do |t|
@@ -168,11 +154,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_15_170031) do
   end
 
   create_table "tracks", force: :cascade do |t|
-    t.integer "artist"
-    t.integer "album"
     t.boolean "listened"
     t.string "title"
-    t.integer "media"
+    t.bigint "media_id"
     t.integer "number"
     t.integer "disc_number"
     t.integer "rating"
