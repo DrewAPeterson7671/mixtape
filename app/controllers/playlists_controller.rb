@@ -1,5 +1,6 @@
 class PlaylistsController < ApplicationController
   before_action :set_playlist, only: %i[ show edit update destroy ]
+  skip_before_action :verify_authenticity_token
 
   # GET /playlists or /playlists.json
   def index
