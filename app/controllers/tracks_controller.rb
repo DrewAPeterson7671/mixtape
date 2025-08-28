@@ -5,10 +5,13 @@ class TracksController < ApplicationController
   # GET /tracks or /tracks.json
   def index
     @tracks = Track.all
+
+    render json: @tracks
   end
 
   # GET /tracks/1 or /tracks/1.json
   def show
+    render json: @track
   end
 
   # GET /tracks/new
@@ -66,6 +69,6 @@ class TracksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def track_params
-      params.require(:track).permit(:artist_id, :album_id, :listened, :title, :media, :number, :disc_number, :rating)
+      params.require(:track).permit(:artist_id, :album_id, :listened, :title, :media_id, :number, :disc_number, :rating)
     end
 end
