@@ -11,6 +11,7 @@ class AlbumsController < ApplicationController
 
   # GET /albums/1 or /albums/1.json
   def show
+    render json: @album
   end
 
   # GET /albums/new
