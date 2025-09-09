@@ -5,10 +5,13 @@ class PlaylistsController < ApplicationController
   # GET /playlists or /playlists.json
   def index
     @playlists = Playlist.all
+
+    render json: @playlists
   end
 
   # GET /playlists/1 or /playlists/1.json
   def show
+    render json: @playlist
   end
 
   # GET /playlists/new

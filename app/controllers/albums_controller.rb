@@ -5,10 +5,13 @@ class AlbumsController < ApplicationController
   # GET /albums or /albums.json
   def index
     @albums = Album.all
+
+    render json: @albums
   end
 
   # GET /albums/1 or /albums/1.json
   def show
+    render json: @album
   end
 
   # GET /albums/new
