@@ -5,10 +5,13 @@ class ArtistsController < ApplicationController
   # GET /artists or /artists.json
   def index
     @artists = Artist.all
+
+    render json: @artists
   end
 
   # GET /artists/1 or /artists/1.json
   def show
+    render json: @artist
   end
 
   # GET /artists/new
