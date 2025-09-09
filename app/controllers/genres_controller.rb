@@ -5,10 +5,13 @@ class GenresController < ApplicationController
   # GET /genres or /genres.json
   def index
     @genres = Genre.all
+
+    render json: @genres
   end
 
   # GET /genres/1 or /genres/1.json
   def show
+    render json: @genre
   end
 
   # GET /genres/new

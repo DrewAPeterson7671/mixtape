@@ -5,10 +5,13 @@ class ReleaseTypesController < ApplicationController
   # GET /release_types or /release_types.json
   def index
     @release_types = ReleaseType.all
+
+    render json: @release_types
   end
 
   # GET /release_types/1 or /release_types/1.json
   def show
+    render json: @release_type
   end
 
   # GET /release_types/new

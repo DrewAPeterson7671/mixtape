@@ -5,10 +5,13 @@ class PrioritiesController < ApplicationController
   # GET /priorities or /priorities.json
   def index
     @priorities = Priority.all
+
+    render json: @priorities
   end
 
   # GET /priorities/1 or /priorities/1.json
   def show
+    render json: @priority
   end
 
   # GET /priorities/new

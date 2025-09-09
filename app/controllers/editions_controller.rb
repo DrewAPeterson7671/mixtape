@@ -5,10 +5,13 @@ class EditionsController < ApplicationController
   # GET /editions or /editions.json
   def index
     @editions = Edition.all
+
+    render json: @editions
   end
 
   # GET /editions/1 or /editions/1.json
   def show
+    render json: @edition
   end
 
   # GET /editions/new

@@ -5,10 +5,13 @@ class PhasesController < ApplicationController
   # GET /phases or /phases.json
   def index
     @phases = Phase.all
+
+    render json: @phases
   end
 
   # GET /phases/1 or /phases/1.json
   def show
+    render json: @phase
   end
 
   # GET /phases/new
