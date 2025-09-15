@@ -4,9 +4,12 @@ class AlbumsController < ApplicationController
 
   # GET /albums or /albums.json
   def index
-    @albums = Album.all
+    @albums = Album.includes(:artists, :medium, :edition, :release_type).all
 
-    render json: @albums
+    render json: @albums.as_json(
+      only: [:id, :title, :year, :listened, :rating],
+      methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
+    )
   end
 
   # GET /albums/1 or /albums/1.json

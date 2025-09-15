@@ -10,17 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_16_230115) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_14_003000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "albums", force: :cascade do |t|
-    t.bigint "artist_id"
     t.string "title"
     t.integer "year"
-    t.boolean "listened"
+    t.boolean "listened", default: false
     t.bigint "release_type_id"
-    t.bigint "media_id"
+    t.bigint "medium_id"
     t.bigint "edition_id"
     t.integer "rating"
     t.datetime "created_at", null: false
@@ -45,7 +44,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_16_230115) do
     t.string "name"
     t.bigint "priority_id"
     t.bigint "phase_id"
-    t.boolean "complete"
+    t.boolean "complete", default: false
     t.string "wikipedia"
     t.string "discogs"
     t.datetime "created_at", null: false
