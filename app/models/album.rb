@@ -5,6 +5,8 @@ class Album < ApplicationRecord
     belongs_to :edition, optional: true
     belongs_to :release_type, optional: true
 
+    validates :title, presence: true
+
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 5 }, allow_nil: true
 
     validates :year, numericality: { only_integer: true, greater_than_or_equal_to: 1500, less_than_or_equal_to: ->(_album) { Date.current.year } }, allow_nil: true

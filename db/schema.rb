@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_14_003000) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -155,7 +155,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_14_003000) do
   create_table "tracks", force: :cascade do |t|
     t.boolean "listened"
     t.string "title"
-    t.bigint "media_id"
+    t.bigint "medium_id"
     t.integer "number"
     t.integer "disc_number"
     t.integer "rating"
