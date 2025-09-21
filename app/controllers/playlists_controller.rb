@@ -4,9 +4,12 @@ class PlaylistsController < ApplicationController
 
   # GET /playlists or /playlists.json
   def index
-    @playlists = Playlist.all
+    @playlists = Playlist.includes(:genre).all
 
-    render json: @playlists
+    render json: @playlists.as_json(
+      only: [:id, :sequence, :name, :platform, :comment, :year, :source],
+      methods: [:genre_name]
+    )
   end
 
   # GET /playlists/1 or /playlists/1.json

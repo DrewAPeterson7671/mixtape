@@ -4,9 +4,12 @@ class ArtistsController < ApplicationController
 
   # GET /artists or /artists.json
   def index
-    @artists = Artist.all
+    @artists = Artist.includes(:genres, :priority, :phase).all
 
-    render json: @artists
+    render json: @artists.as_json(
+      only: [:id, :name, :complete, :wikipedia, :discogs],
+      methods: [:genre_name, :priority_name, :phase_name]
+    )
   end
 
   # GET /artists/1 or /artists/1.json

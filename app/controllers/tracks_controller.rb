@@ -4,9 +4,13 @@ class TracksController < ApplicationController
 
   # GET /tracks or /tracks.json
   def index
-    @tracks = Track.all
+    @tracks = Track.includes(:artist, :album, :medium).all
 
-    render json: @tracks
+    render json: @tracks.as_json(
+      only: [:id, :title, :number, :disc_number, :listened, :rating],
+      methods: [:artist_name, :album_title, :medium_name]
+    )
+
   end
 
   # GET /tracks/1 or /tracks/1.json
