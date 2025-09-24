@@ -12,6 +12,11 @@ Rails.application.routes.draw do
   resources :tracks
    
 
+  # config/routes.rb
+  get  '/auth/cognito',           to: redirect('/auth/openid_connect')
+  get  '/auth/cognito/callback',  to: 'sessions#oidc_callback'
+  post '/auth/cognito/callback',  to: 'sessions#oidc_callback' # form_post mode safety
+  delete '/logout',               to: 'sessions#destroy'
 
 
 
