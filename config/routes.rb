@@ -12,23 +12,11 @@ Rails.application.routes.draw do
   resources :tracks
   
   
-  # match '/auth/cognito', to: proc { [200, {}, ['OmniAuth should handle this!']] }, via: :get
+  get "/auth/:provider/callback", to: "sessions#create"
+  get "/auth/failure", to: "sessions#failure"
+  match "/auth/:provider", to: "sessions#passthru", via: [:get, :post]
 
-  # config/routes.rb
-  # get  '/auth/cognito/callback',  to: 'sessions#oidc_callback'
-  # post '/auth/cognito/callback',  to: 'sessions#oidc_callback' # form_post mode safety
-  # delete '/logout',               to: 'sessions#destroy'
-
-  # get '/auth/:provider/callback', to: 'sessions#create'
-
-  # Rails.application.routes.draw do
-    # This will be the callback route Cognito redirects to
-    get '/auth/:provider/callback', to: 'sessions#create'
-
-    # Optional failure route
-    get '/auth/failure', to: 'sessions#failure'
-
-    root to: 'home#index'
+  root to: 'home#index'
   # end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
