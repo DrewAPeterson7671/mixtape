@@ -6,7 +6,7 @@ gem "rails", "~> 7.2.2", ">= 7.2.2.1"
 gem "sprockets-rails"
 # Use sqlite3 as the database for Active Record
 # gem "sqlite3", ">= 1.4"
-gem 'pg'
+gem "pg"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -31,7 +31,12 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
-gem 'rack-cors'
+gem "rack-cors"
+
+gem "omniauth", "~> 2.1"
+gem "omniauth_openid_connect", "~> 0.8"
+gem "omniauth-rails_csrf_protection"
+gem "omniauth-oauth2", "~> 1.8"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
@@ -45,6 +50,9 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem "dotenv-rails"
+
 end
 
 group :development do
