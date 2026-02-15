@@ -1,4 +1,6 @@
 class SessionsController < ApplicationController
+  require "uri"
+
   skip_before_action :require_login, only: [:create, :oidc_callback, :destroy, :passthru]
 
   # Callback endpoints are reached via a cross-site redirect; don't require Rails CSRF token.
@@ -15,14 +17,34 @@ class SessionsController < ApplicationController
     handle_omniauth_auth!
   end
 
+  # Changes from ai to deal with logout problem 2-16-26
+  # def destroy
+  #   reset_session
+  #   # Send the browser to Cognito logout endpoint so their hosted-UI session is cleared.
+  #   domain    = ENV.fetch('COGNITO_DOMAIN')       # e.g. your-domain.auth.us-west-2.amazoncognito.com
+  #   client    = ENV.fetch('COGNITO_CLIENT_ID')
+  #   return_to = CGI.escape(ENV.fetch('COGNITO_LOGOUT_REDIRECT')) # must be in "Allowed sign-out URLs"
+  #   redirect_to "https://#{domain}/logout?client_id=#{client}&logout_uri=#{return_to}"
+  # end
+
   def destroy
     reset_session
-    # Send the browser to Cognito logout endpoint so their hosted-UI session is cleared.
-    domain    = ENV.fetch('COGNITO_DOMAIN')       # e.g. your-domain.auth.us-west-2.amazoncognito.com
-    client    = ENV.fetch('COGNITO_CLIENT_ID')
-    return_to = CGI.escape(ENV.fetch('COGNITO_LOGOUT_REDIRECT')) # must be in "Allowed sign-out URLs"
-    redirect_to "https://#{domain}/logout?client_id=#{client}&logout_uri=#{return_to}"
+
+    domain = ENV.fetch("COGNITO_DOMAIN") # e.g. us-west-2xxxx.auth.us-west-2.amazoncognito.com
+    client_id = ENV.fetch("COGNITO_CLIENT_ID")
+    logout_uri = ENV.fetch("COGNITO_LOGOUT_REDIRECT") # e.g. http://localhost:1841/
+
+    logout_path = ENV.fetch("COGNITO_LOGOUT_PATH", "/logout") # try "/logout" or "/oauth2/logout"
+
+    uri = URI::HTTPS.build(host: domain, path: logout_path)
+    uri.query = URI.encode_www_form(
+      client_id: client_id,
+      logout_uri: logout_uri
+    )
+
+    redirect_to uri.to_s, allow_other_host: true
   end
+
 
   def passthru
     # This action is just a placeholder for OmniAuth.

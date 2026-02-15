@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_28_221024) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_15_153243) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -168,6 +168,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_28_221024) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "cognito_sub", null: false
+    t.index ["cognito_sub"], name: "index_users_on_cognito_sub", unique: true
   end
 
   add_foreign_key "albums_artists", "albums"

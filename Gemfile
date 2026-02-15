@@ -36,6 +36,7 @@ gem 'rack-cors'
 gem 'omniauth', '~> 2.1'
 gem 'omniauth_openid_connect', '~> 0.8'
 gem 'omniauth-rails_csrf_protection'
+gem "omniauth-oauth2", "~> 1.8"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"

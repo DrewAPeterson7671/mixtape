@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   get "/auth/:provider/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
   match "/auth/:provider", to: "sessions#passthru", via: [:get, :post]
+  get "/logout", to: "sessions#destroy"
+  delete "/logout", to: "sessions#destroy"
 
   root to: 'home#index'
   # end
