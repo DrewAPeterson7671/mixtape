@@ -10,10 +10,16 @@ Rails.application.routes.draw do
   resources :artists
   resources :albums
   resources :tracks
-   
+  
+  
+  get "/auth/:provider/callback", to: "sessions#create"
+  get "/auth/failure", to: "sessions#failure"
+  match "/auth/:provider", to: "sessions#passthru", via: [:get, :post]
+  get "/logout", to: "sessions#destroy"
+  delete "/logout", to: "sessions#destroy"
 
-
-
+  root to: 'home#index'
+  # end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -27,4 +33,5 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
 end

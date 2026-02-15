@@ -16,6 +16,9 @@ default: &default
 development:
   <<: *default
   database: mixtape_development
+  username: mixtape
+  password: mixtape_dev
+  port: 5433
 
 test:
   <<: *default
