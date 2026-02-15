@@ -12,29 +12,17 @@ class SessionsController < ApplicationController
     handle_omniauth_auth!
   end
 
-  # If you already have routes pointing here, keep it working too.
   def oidc_callback
     handle_omniauth_auth!
   end
 
-  # Changes from ai to deal with logout problem 2-16-26
-  # def destroy
-  #   reset_session
-  #   # Send the browser to Cognito logout endpoint so their hosted-UI session is cleared.
-  #   domain    = ENV.fetch('COGNITO_DOMAIN')       # e.g. your-domain.auth.us-west-2.amazoncognito.com
-  #   client    = ENV.fetch('COGNITO_CLIENT_ID')
-  #   return_to = CGI.escape(ENV.fetch('COGNITO_LOGOUT_REDIRECT')) # must be in "Allowed sign-out URLs"
-  #   redirect_to "https://#{domain}/logout?client_id=#{client}&logout_uri=#{return_to}"
-  # end
-
   def destroy
     reset_session
 
-    domain = ENV.fetch("COGNITO_DOMAIN") # e.g. us-west-2xxxx.auth.us-west-2.amazoncognito.com
+    domain = ENV.fetch("COGNITO_DOMAIN")
     client_id = ENV.fetch("COGNITO_CLIENT_ID")
-    logout_uri = ENV.fetch("COGNITO_LOGOUT_REDIRECT") # e.g. http://localhost:1841/
-
-    logout_path = ENV.fetch("COGNITO_LOGOUT_PATH", "/logout") # try "/logout" or "/oauth2/logout"
+    logout_uri = ENV.fetch("COGNITO_LOGOUT_REDIRECT") 
+    logout_path = ENV.fetch("COGNITO_LOGOUT_PATH", "/logout") 
 
     uri = URI::HTTPS.build(host: domain, path: logout_path)
     uri.query = URI.encode_www_form(
