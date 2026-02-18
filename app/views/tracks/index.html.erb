@@ -6,7 +6,7 @@
 
 <div id="tracks">
   <% @tracks.each do |track| %>
-    <%= render track %>
+    <%= render partial: 'track', locals: { track: track, user_pref: @user_prefs[track.id] } %>
     <p>
       <%= link_to "Show this track", track %>
     </p>

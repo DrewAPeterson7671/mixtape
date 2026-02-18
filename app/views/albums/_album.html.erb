@@ -1,7 +1,8 @@
+<% user_pref = local_assigns[:user_pref] || @user_pref || @user_prefs&.dig(album.id) %>
 <div id="<%= dom_id album %>">
   <p>
     <strong>Artist:</strong>
-    <%= album.artist_id %>
+    <%= album.artist_name.join(', ') %>
   </p>
 
   <p>
@@ -15,28 +16,28 @@
   </p>
 
   <p>
-    <strong>Listened:</strong>
-    <%= album.listened %>
-  </p>
-
-  <p>
     <strong>Release type:</strong>
-    <%= album.release_type_id %>
+    <%= album.release_type_name %>
   </p>
 
   <p>
-    <strong>Media:</strong>
-    <%= album.media_id %>
+    <strong>Medium:</strong>
+    <%= album.medium_name %>
   </p>
 
   <p>
     <strong>Edition:</strong>
-    <%= album.edition_id %>
+    <%= album.edition_name %>
+  </p>
+
+  <p>
+    <strong>Listened:</strong>
+    <%= user_pref&.listened %>
   </p>
 
   <p>
     <strong>Rating:</strong>
-    <%= album.rating %>
+    <%= user_pref&.rating %>
   </p>
 
 </div>
