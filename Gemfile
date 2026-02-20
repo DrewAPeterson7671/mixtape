@@ -53,6 +53,10 @@ group :development, :test do
 
   gem "dotenv-rails"
 
+  gem "rspec-rails", "~> 7.0"
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "shoulda-matchers", "~> 6.0"
 end
 
 group :development do
