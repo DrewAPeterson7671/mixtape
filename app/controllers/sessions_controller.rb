@@ -1,7 +1,7 @@
 class SessionsController < ApplicationController
   require "uri"
 
-  skip_before_action :require_login, only: [:create, :oidc_callback, :destroy, :passthru]
+  skip_before_action :require_login, only: [:create, :oidc_callback, :destroy, :passthru, :status]
 
   # Callback endpoints are reached via a cross-site redirect; don't require Rails CSRF token.
   skip_forgery_protection only: [:create, :oidc_callback]
@@ -33,6 +33,14 @@ class SessionsController < ApplicationController
     redirect_to uri.to_s, allow_other_host: true
   end
 
+
+  def status
+    if current_user
+      render json: { logged_in: true, user: { id: current_user.id, name: current_user.name, email: current_user.email } }
+    else
+      render json: { logged_in: false }
+    end
+  end
 
   def passthru
     # This action is just a placeholder for OmniAuth.
