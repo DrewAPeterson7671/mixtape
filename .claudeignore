@@ -1,0 +1,18 @@
+# Dependencies
+vendor/bundle/
+
+# Logs and temp files
+log/
+tmp/
+
+# Storage
+storage/
+
+# Compiled assets
+public/assets/
+
+# Git internals
+.git/
+
+# Lockfile (large, not useful for context)
+Gemfile.lock
