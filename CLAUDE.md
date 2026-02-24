@@ -2,6 +2,8 @@
 
 Rails JSON API backend for a music catalog app. The frontend is a separate project at `/Users/drewpeterson/code/pers/music-project/mixtapeUI/mixtape`.
 
+For detailed documentation, see the `memory-bank/` directory.
+
 ## Architecture
 
 Catalog records (Artist, Album, Track) are shared across all users. User-specific data (ratings, tags, genres, listened/explored flags) lives in join models: UserArtist, UserAlbum, UserTrack. Never put user-specific fields on the catalog models directly.
