@@ -17,26 +17,6 @@
   </div>
 
   <div>
-    <%= form.label :priority, style: "display: block" %>
-    <%= form.number_field :genre_id %>
-  </div>
-
-  <div>
-    <%= form.label :priority, style: "display: block" %>
-    <%= form.number_field :priority_id %>
-  </div>
-
-  <div>
-    <%= form.label :phase, style: "display: block" %>
-    <%= form.number_field :phase_id %>
-  </div>
-
-  <div>
-    <%= form.label :complete, style: "display: block" %>
-    <%= form.check_box :complete %>
-  </div>
-
-  <div>
     <%= form.label :wikipedia, style: "display: block" %>
     <%= form.text_field :wikipedia %>
   </div>
@@ -44,6 +24,26 @@
   <div>
     <%= form.label :discogs, style: "display: block" %>
     <%= form.text_field :discogs %>
+  </div>
+
+  <div>
+    <%= label_tag 'artist[priority_id]', 'Priority', style: "display: block" %>
+    <%= number_field_tag 'artist[priority_id]', @user_pref&.priority_id %>
+  </div>
+
+  <div>
+    <%= label_tag 'artist[phase_id]', 'Phase', style: "display: block" %>
+    <%= number_field_tag 'artist[phase_id]', @user_pref&.phase_id %>
+  </div>
+
+  <div>
+    <%= label_tag 'artist[complete]', 'Complete', style: "display: block" %>
+    <%= check_box_tag 'artist[complete]', '1', @user_pref&.complete %>
+  </div>
+
+  <div>
+    <%= label_tag 'artist[rating]', 'Rating', style: "display: block" %>
+    <%= number_field_tag 'artist[rating]', @user_pref&.rating %>
   </div>
 
   <div>

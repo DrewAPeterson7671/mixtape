@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   resources :tracks
   
   
+  get "/auth/status", to: "sessions#status"
   get "/auth/:provider/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
   match "/auth/:provider", to: "sessions#passthru", via: [:get, :post]

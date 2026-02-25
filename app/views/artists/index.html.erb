@@ -6,7 +6,7 @@
 
 <div id="artists">
   <% @artists.each do |artist| %>
-    <%= render artist %>
+    <%= render partial: 'artist', locals: { artist: artist, user_pref: @user_prefs[artist.id] } %>
     <p>
       <%= link_to "Show this artist", artist %>
     </p>

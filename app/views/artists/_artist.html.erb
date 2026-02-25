@@ -1,27 +1,8 @@
+<% user_pref = local_assigns[:user_pref] || @user_pref || @user_prefs&.dig(artist.id) %>
 <div id="<%= dom_id artist %>">
   <p>
     <strong>Name:</strong>
     <%= artist.name %>
-  </p>
-
-  <p>
-    <strong>Priority:</strong>
-    <%= artist.genre_id %>
-  </p>
-
-  <p>
-    <strong>Priority:</strong>
-    <%= artist.priority_id %>
-  </p>
-
-  <p>
-    <strong>Phase:</strong>
-    <%= artist.phase_id %>
-  </p>
-
-  <p>
-    <strong>Complete:</strong>
-    <%= artist.complete %>
   </p>
 
   <p>
@@ -32,6 +13,31 @@
   <p>
     <strong>Discogs:</strong>
     <%= artist.discogs %>
+  </p>
+
+  <p>
+    <strong>Genre:</strong>
+    <%= user_pref&.genres&.map(&:name)&.join(', ') %>
+  </p>
+
+  <p>
+    <strong>Priority:</strong>
+    <%= user_pref&.priority&.name %>
+  </p>
+
+  <p>
+    <strong>Phase:</strong>
+    <%= user_pref&.phase&.name %>
+  </p>
+
+  <p>
+    <strong>Complete:</strong>
+    <%= user_pref&.complete %>
+  </p>
+
+  <p>
+    <strong>Rating:</strong>
+    <%= user_pref&.rating %>
   </p>
 
 </div>

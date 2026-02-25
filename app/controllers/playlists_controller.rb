@@ -1,20 +1,28 @@
 class PlaylistsController < ApplicationController
-  before_action :set_playlist, only: %i[ show edit update destroy ]
+  before_action :set_playlist, only: %i[show edit update destroy]
   skip_before_action :verify_authenticity_token
 
-  # GET /playlists or /playlists.json
+  # GET /playlists
   def index
-    @playlists = Playlist.includes(:genre).all
+    @playlists = current_user.playlists.includes(:genre)
 
-    render json: @playlists.as_json(
-      only: [:id, :sequence, :name, :platform, :comment, :year, :source],
-      methods: [:genre_name]
-    )
+    respond_to do |format|
+      format.html
+      format.json do
+        render json: { data: @playlists.as_json(
+          only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
+          methods: [:genre_name]
+        ) }
+      end
+    end
   end
 
-  # GET /playlists/1 or /playlists/1.json
+  # GET /playlists/1
   def show
-    render json: @playlist
+    respond_to do |format|
+      format.html
+      format.json { render json: { data: @playlist } }
+    end
   end
 
   # GET /playlists/new
@@ -26,14 +34,19 @@ class PlaylistsController < ApplicationController
   def edit
   end
 
-  # POST /playlists or /playlists.json
+  # POST /playlists
   def create
-    @playlist = Playlist.new(playlist_params)
+    @playlist = current_user.playlists.build(playlist_params)
 
     respond_to do |format|
       if @playlist.save
         format.html { redirect_to @playlist, notice: "Playlist was successfully created." }
-        format.json { render :show, status: :created, location: @playlist }
+        format.json do
+          render json: { data: @playlist.as_json(
+            only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
+            methods: [:genre_name]
+          ) }, status: :created, location: @playlist
+        end
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @playlist.errors, status: :unprocessable_entity }
@@ -41,12 +54,17 @@ class PlaylistsController < ApplicationController
     end
   end
 
-  # PATCH/PUT /playlists/1 or /playlists/1.json
+  # PATCH/PUT /playlists/1
   def update
     respond_to do |format|
       if @playlist.update(playlist_params)
         format.html { redirect_to @playlist, notice: "Playlist was successfully updated." }
-        format.json { render :show, status: :ok, location: @playlist }
+        format.json do
+          render json: { data: @playlist.as_json(
+            only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
+            methods: [:genre_name]
+          ) }, status: :ok, location: @playlist
+        end
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @playlist.errors, status: :unprocessable_entity }
@@ -54,7 +72,7 @@ class PlaylistsController < ApplicationController
     end
   end
 
-  # DELETE /playlists/1 or /playlists/1.json
+  # DELETE /playlists/1
   def destroy
     @playlist.destroy!
 
@@ -65,13 +83,12 @@ class PlaylistsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_playlist
-      @playlist = Playlist.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def playlist_params
-      params.require(:playlist).permit(:sequence, :name, :platform, :comment, :genre_id, :year, :source)
-    end
+  def set_playlist
+    @playlist = current_user.playlists.find(params[:id])
+  end
+
+  def playlist_params
+    params.require(:playlist).permit(:sequence, :name, :platform, :comment, :genre_id, :year, :source)
+  end
 end
