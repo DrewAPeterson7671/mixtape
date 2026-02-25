@@ -6,12 +6,12 @@ class EditionsController < ApplicationController
   def index
     @editions = Edition.all
 
-    render json: @editions
+    render json: { data: @editions }
   end
 
   # GET /editions/1 or /editions/1.json
   def show
-    render json: @edition
+    render json: { data: @edition }
   end
 
   # GET /editions/new
@@ -30,7 +30,7 @@ class EditionsController < ApplicationController
     respond_to do |format|
       if @edition.save
         format.html { redirect_to @edition, notice: "Edition was successfully created." }
-        format.json { render :show, status: :created, location: @edition }
+        format.json { render json: { data: @edition }, status: :created, location: @edition }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @edition.errors, status: :unprocessable_entity }
@@ -43,7 +43,7 @@ class EditionsController < ApplicationController
     respond_to do |format|
       if @edition.update(edition_params)
         format.html { redirect_to @edition, notice: "Edition was successfully updated." }
-        format.json { render :show, status: :ok, location: @edition }
+        format.json { render json: { data: @edition }, status: :ok, location: @edition }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @edition.errors, status: :unprocessable_entity }

@@ -10,7 +10,7 @@ RSpec.describe GenresController, type: :controller do
       create(:genre, name: 'Rock')
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       expect(json.first['name']).to eq('Rock')
     end
@@ -21,7 +21,7 @@ RSpec.describe GenresController, type: :controller do
       genre = create(:genre, name: 'Jazz')
       get :show, params: { id: genre.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('Jazz')
     end
   end

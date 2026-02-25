@@ -10,7 +10,7 @@ RSpec.describe MediaController, type: :controller do
       create(:medium, name: 'Vinyl')
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       expect(json.first['name']).to eq('Vinyl')
     end
@@ -21,7 +21,7 @@ RSpec.describe MediaController, type: :controller do
       medium = create(:medium, name: 'CD')
       get :show, params: { id: medium.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('CD')
     end
   end

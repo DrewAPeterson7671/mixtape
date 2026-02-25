@@ -10,7 +10,7 @@ RSpec.describe EditionsController, type: :controller do
       create(:edition, name: 'Deluxe')
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       expect(json.first['name']).to eq('Deluxe')
     end
@@ -21,7 +21,7 @@ RSpec.describe EditionsController, type: :controller do
       edition = create(:edition, name: 'Standard')
       get :show, params: { id: edition.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('Standard')
     end
   end

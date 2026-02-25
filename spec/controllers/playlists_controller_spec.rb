@@ -13,7 +13,7 @@ RSpec.describe PlaylistsController, type: :controller do
       _other = create(:playlist, user: other_user, genre: genre)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json.map { |p| p['id'] }).to eq([own.id])
     end
   end
@@ -40,7 +40,7 @@ RSpec.describe PlaylistsController, type: :controller do
         post :create, params: { playlist: { name: 'My Playlist', platform: 'Spotify', genre_id: genre.id, year: 2020 } }, format: :json
       }.to change(Playlist, :count).by(1)
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('My Playlist')
       expect(Playlist.last.user).to eq(user)
     end

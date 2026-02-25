@@ -6,12 +6,12 @@ class ReleaseTypesController < ApplicationController
   def index
     @release_types = ReleaseType.all
 
-    render json: @release_types
+    render json: { data: @release_types }
   end
 
   # GET /release_types/1 or /release_types/1.json
   def show
-    render json: @release_type
+    render json: { data: @release_type }
   end
 
   # GET /release_types/new
@@ -30,7 +30,7 @@ class ReleaseTypesController < ApplicationController
     respond_to do |format|
       if @release_type.save
         format.html { redirect_to @release_type, notice: "Release type was successfully created." }
-        format.json { render :show, status: :created, location: @release_type }
+        format.json { render json: { data: @release_type }, status: :created, location: @release_type }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @release_type.errors, status: :unprocessable_entity }
@@ -43,7 +43,7 @@ class ReleaseTypesController < ApplicationController
     respond_to do |format|
       if @release_type.update(release_type_params)
         format.html { redirect_to @release_type, notice: "Release type was successfully updated." }
-        format.json { render :show, status: :ok, location: @release_type }
+        format.json { render json: { data: @release_type }, status: :ok, location: @release_type }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @release_type.errors, status: :unprocessable_entity }

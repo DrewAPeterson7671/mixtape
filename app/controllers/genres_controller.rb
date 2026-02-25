@@ -6,12 +6,12 @@ class GenresController < ApplicationController
   def index
     @genres = Genre.all
 
-    render json: @genres
+    render json: { data: @genres }
   end
 
   # GET /genres/1 or /genres/1.json
   def show
-    render json: @genre
+    render json: { data: @genre }
   end
 
   # GET /genres/new
@@ -30,7 +30,7 @@ class GenresController < ApplicationController
     respond_to do |format|
       if @genre.save
         format.html { redirect_to @genre, notice: "Genre was successfully created." }
-        format.json { render :show, status: :created, location: @genre }
+        format.json { render json: { data: @genre }, status: :created, location: @genre }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @genre.errors, status: :unprocessable_entity }
@@ -43,7 +43,7 @@ class GenresController < ApplicationController
     respond_to do |format|
       if @genre.update(genre_params)
         format.html { redirect_to @genre, notice: "Genre was successfully updated." }
-        format.json { render :show, status: :ok, location: @genre }
+        format.json { render json: { data: @genre }, status: :ok, location: @genre }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @genre.errors, status: :unprocessable_entity }

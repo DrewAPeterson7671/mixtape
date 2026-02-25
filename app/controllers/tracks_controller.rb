@@ -14,16 +14,16 @@ class TracksController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @tracks.map { |track|
+        render json: { data: @tracks.map { |track|
           pref = @user_prefs[track.id]
           track.as_json(
-            only: [:id, :title, :number, :disc_number],
+            only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
             methods: [:artist_name, :album_title, :medium_name]
           ).merge(
             listened: pref&.listened || false,
             rating: pref&.rating
           )
-        }
+        } }
       end
     end
   end
@@ -35,13 +35,13 @@ class TracksController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @track.as_json(
-          only: [:id, :title, :number, :disc_number],
+        render json: { data: @track.as_json(
+          only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
           methods: [:artist_name, :album_title, :medium_name]
         ).merge(
           listened: @user_pref.listened || false,
           rating: @user_pref.rating
-        )
+        ) }
       end
     end
   end
@@ -72,13 +72,13 @@ class TracksController < ApplicationController
         respond_to do |format|
           format.html { redirect_to @track, notice: "Track was successfully created." }
           format.json do
-            render json: @track.as_json(
-              only: [:id, :title, :number, :disc_number],
+            render json: { data: @track.as_json(
+              only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
               methods: [:artist_name, :album_title, :medium_name]
             ).merge(
               listened: @user_pref.listened || false,
               rating: @user_pref.rating
-            ), status: :created, location: @track
+            ) }, status: :created, location: @track
           end
         end
       else
@@ -106,13 +106,13 @@ class TracksController < ApplicationController
         respond_to do |format|
           format.html { redirect_to @track, notice: "Track was successfully updated." }
           format.json do
-            render json: @track.as_json(
-              only: [:id, :title, :number, :disc_number],
+            render json: { data: @track.as_json(
+              only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
               methods: [:artist_name, :album_title, :medium_name]
             ).merge(
               listened: @user_pref.listened || false,
               rating: @user_pref.rating
-            ), status: :ok, location: @track
+            ) }, status: :ok, location: @track
           end
         end
       else

@@ -10,7 +10,7 @@ RSpec.describe ArtistsController, type: :controller do
       create(:artist, name: 'Radiohead')
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       expect(json.first['name']).to eq('Radiohead')
     end
@@ -19,7 +19,7 @@ RSpec.describe ArtistsController, type: :controller do
       artist = create(:artist)
       create(:user_artist, user: user, artist: artist, rating: 4, complete: true)
       get :index, format: :json
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       entry = json.find { |a| a['id'] == artist.id }
       expect(entry['rating']).to eq(4)
       expect(entry['complete']).to eq(true)
@@ -31,7 +31,7 @@ RSpec.describe ArtistsController, type: :controller do
       artist = create(:artist, name: 'Radiohead')
       get :show, params: { id: artist.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('Radiohead')
     end
   end
@@ -42,7 +42,7 @@ RSpec.describe ArtistsController, type: :controller do
         post :create, params: { artist: { name: 'New Artist', rating: 3 } }, format: :json
       }.to change(Artist, :count).by(1).and change(UserArtist, :count).by(1)
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('New Artist')
       expect(json['rating']).to eq(3)
     end
@@ -53,7 +53,7 @@ RSpec.describe ArtistsController, type: :controller do
         post :create, params: { artist: { name: 'Existing', rating: 4 } }, format: :json
       }.to change(Artist, :count).by(0).and change(UserArtist, :count).by(1)
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['id']).to eq(existing.id)
     end
   end
@@ -64,7 +64,7 @@ RSpec.describe ArtistsController, type: :controller do
       create(:user_artist, user: user, artist: artist)
       patch :update, params: { id: artist.id, artist: { name: 'New Name', rating: 5 } }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('New Name')
       expect(json['rating']).to eq(5)
     end

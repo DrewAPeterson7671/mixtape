@@ -9,10 +9,10 @@ class PlaylistsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @playlists.as_json(
-          only: [:id, :sequence, :name, :platform, :comment, :year, :source],
+        render json: { data: @playlists.as_json(
+          only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
           methods: [:genre_name]
-        )
+        ) }
       end
     end
   end
@@ -21,7 +21,7 @@ class PlaylistsController < ApplicationController
   def show
     respond_to do |format|
       format.html
-      format.json { render json: @playlist }
+      format.json { render json: { data: @playlist } }
     end
   end
 
@@ -42,10 +42,10 @@ class PlaylistsController < ApplicationController
       if @playlist.save
         format.html { redirect_to @playlist, notice: "Playlist was successfully created." }
         format.json do
-          render json: @playlist.as_json(
-            only: [:id, :sequence, :name, :platform, :comment, :year, :source],
+          render json: { data: @playlist.as_json(
+            only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
             methods: [:genre_name]
-          ), status: :created, location: @playlist
+          ) }, status: :created, location: @playlist
         end
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -60,10 +60,10 @@ class PlaylistsController < ApplicationController
       if @playlist.update(playlist_params)
         format.html { redirect_to @playlist, notice: "Playlist was successfully updated." }
         format.json do
-          render json: @playlist.as_json(
-            only: [:id, :sequence, :name, :platform, :comment, :year, :source],
+          render json: { data: @playlist.as_json(
+            only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
             methods: [:genre_name]
-          ), status: :ok, location: @playlist
+          ) }, status: :ok, location: @playlist
         end
       else
         format.html { render :edit, status: :unprocessable_entity }

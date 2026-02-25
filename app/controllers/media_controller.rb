@@ -7,12 +7,12 @@ class MediaController < ApplicationController
   def index
     @media = Medium.all
 
-    render json: @media
+    render json: { data: @media }
   end
 
   # GET /media/1 or /media/1.json
   def show
-    render json: @medium
+    render json: { data: @medium }
   end
 
   # GET /media/new
@@ -31,7 +31,7 @@ class MediaController < ApplicationController
     respond_to do |format|
       if @medium.save
         format.html { redirect_to @medium, notice: "Medium was successfully created." }
-        format.json { render :show, status: :created, location: @medium }
+        format.json { render json: { data: @medium }, status: :created, location: @medium }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @medium.errors, status: :unprocessable_entity }
@@ -44,7 +44,7 @@ class MediaController < ApplicationController
     respond_to do |format|
       if @medium.update(medium_params)
         format.html { redirect_to @medium, notice: "Medium was successfully updated." }
-        format.json { render :show, status: :ok, location: @medium }
+        format.json { render json: { data: @medium }, status: :ok, location: @medium }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @medium.errors, status: :unprocessable_entity }

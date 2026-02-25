@@ -14,16 +14,16 @@ class AlbumsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @albums.map { |album|
+        render json: { data: @albums.map { |album|
           pref = @user_prefs[album.id]
           album.as_json(
-            only: [:id, :title, :year],
+            only: [:id, :title, :year, :created_at, :updated_at],
             methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
           ).merge(
             listened: pref&.listened || false,
             rating: pref&.rating
           )
-        }
+        } }
       end
     end
   end
@@ -35,13 +35,13 @@ class AlbumsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @album.as_json(
-          only: [:id, :title, :year],
+        render json: { data: @album.as_json(
+          only: [:id, :title, :year, :created_at, :updated_at],
           methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
         ).merge(
           listened: @user_pref.listened || false,
           rating: @user_pref.rating
-        )
+        ) }
       end
     end
   end
@@ -72,13 +72,13 @@ class AlbumsController < ApplicationController
         respond_to do |format|
           format.html { redirect_to @album, notice: "Album was successfully created." }
           format.json do
-            render json: @album.as_json(
-              only: [:id, :title, :year],
+            render json: { data: @album.as_json(
+              only: [:id, :title, :year, :created_at, :updated_at],
               methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
             ).merge(
               listened: @user_pref.listened || false,
               rating: @user_pref.rating
-            ), status: :created, location: @album
+            ) }, status: :created, location: @album
           end
         end
       else
@@ -106,13 +106,13 @@ class AlbumsController < ApplicationController
         respond_to do |format|
           format.html { redirect_to @album, notice: "Album was successfully updated." }
           format.json do
-            render json: @album.as_json(
-              only: [:id, :title, :year],
+            render json: { data: @album.as_json(
+              only: [:id, :title, :year, :created_at, :updated_at],
               methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
             ).merge(
               listened: @user_pref.listened || false,
               rating: @user_pref.rating
-            ), status: :ok, location: @album
+            ) }, status: :ok, location: @album
           end
         end
       else

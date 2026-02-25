@@ -10,7 +10,7 @@ RSpec.describe TagsController, type: :controller do
       create(:tag, name: 'Favorite')
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       expect(json.first['name']).to eq('Favorite')
     end
@@ -21,7 +21,7 @@ RSpec.describe TagsController, type: :controller do
       tag = create(:tag, name: 'Classic')
       get :show, params: { id: tag.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('Classic')
     end
   end

@@ -10,7 +10,7 @@ RSpec.describe PhasesController, type: :controller do
       create(:phase, name: 'Discovery')
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       expect(json.first['name']).to eq('Discovery')
     end
@@ -21,7 +21,7 @@ RSpec.describe PhasesController, type: :controller do
       phase = create(:phase, name: 'Exploration')
       get :show, params: { id: phase.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('Exploration')
     end
   end

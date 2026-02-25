@@ -12,7 +12,7 @@ RSpec.describe TracksController, type: :controller do
       create(:user_track, user: user, track: track, rating: 3, listened: true)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       entry = json.find { |t| t['id'] == track.id }
       expect(entry['title']).to eq('Creep')
@@ -26,7 +26,7 @@ RSpec.describe TracksController, type: :controller do
       track = create(:track, title: 'Creep', artist: artist)
       get :show, params: { id: track.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('Creep')
     end
   end
@@ -37,7 +37,7 @@ RSpec.describe TracksController, type: :controller do
         post :create, params: { track: { title: 'New Track', artist_id: artist.id, rating: 2 } }, format: :json
       }.to change(Track, :count).by(1).and change(UserTrack, :count).by(1)
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('New Track')
       expect(json['rating']).to eq(2)
     end
@@ -54,7 +54,7 @@ RSpec.describe TracksController, type: :controller do
       create(:user_track, user: user, track: track)
       patch :update, params: { id: track.id, track: { title: 'New Title', rating: 5, listened: true } }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('New Title')
       expect(json['rating']).to eq(5)
       expect(json['listened']).to eq(true)

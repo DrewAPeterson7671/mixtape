@@ -11,7 +11,7 @@ RSpec.describe AlbumsController, type: :controller do
       create(:user_album, user: user, album: album, rating: 5, listened: true)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
       entry = json.find { |a| a['id'] == album.id }
       expect(entry['title']).to eq('OK Computer')
@@ -25,7 +25,7 @@ RSpec.describe AlbumsController, type: :controller do
       album = create(:album, title: 'OK Computer')
       get :show, params: { id: album.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('OK Computer')
     end
   end
@@ -36,7 +36,7 @@ RSpec.describe AlbumsController, type: :controller do
         post :create, params: { album: { title: 'New Album', year: 2020, rating: 4 } }, format: :json
       }.to change(Album, :count).by(1).and change(UserAlbum, :count).by(1)
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('New Album')
       expect(json['rating']).to eq(4)
     end
@@ -53,7 +53,7 @@ RSpec.describe AlbumsController, type: :controller do
       create(:user_album, user: user, album: album)
       patch :update, params: { id: album.id, album: { title: 'New Title', rating: 3, listened: true } }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('New Title')
       expect(json['rating']).to eq(3)
       expect(json['listened']).to eq(true)

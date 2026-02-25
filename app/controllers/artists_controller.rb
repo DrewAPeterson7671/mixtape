@@ -14,16 +14,16 @@ class ArtistsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @artists.map { |artist|
+        render json: { data: @artists.map { |artist|
           pref = @user_prefs[artist.id]
-          artist.as_json(only: [:id, :name, :wikipedia, :discogs]).merge(
+          artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
             complete: pref&.complete || false,
             rating: pref&.rating,
             genre_name: pref&.genre_name || [],
             priority_name: pref&.priority_name,
             phase_name: pref&.phase_name
           )
-        }
+        } }
       end
     end
   end
@@ -35,13 +35,13 @@ class ArtistsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @artist.as_json(only: [:id, :name, :wikipedia, :discogs]).merge(
+        render json: { data: @artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
           complete: @user_pref.complete || false,
           rating: @user_pref.rating,
           genre_name: @user_pref.genre_name,
           priority_name: @user_pref.priority_name,
           phase_name: @user_pref.phase_name
-        )
+        ) }
       end
     end
   end
@@ -73,13 +73,13 @@ class ArtistsController < ApplicationController
         respond_to do |format|
           format.html { redirect_to @artist, notice: "Artist was successfully created." }
           format.json do
-            render json: @artist.as_json(only: [:id, :name, :wikipedia, :discogs]).merge(
+            render json: { data: @artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
               complete: @user_pref.complete || false,
               rating: @user_pref.rating,
               genre_name: @user_pref.genre_name,
               priority_name: @user_pref.priority_name,
               phase_name: @user_pref.phase_name
-            ), status: :created, location: @artist
+            ) }, status: :created, location: @artist
           end
         end
       else
@@ -107,13 +107,13 @@ class ArtistsController < ApplicationController
         respond_to do |format|
           format.html { redirect_to @artist, notice: "Artist was successfully updated." }
           format.json do
-            render json: @artist.as_json(only: [:id, :name, :wikipedia, :discogs]).merge(
+            render json: { data: @artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
               complete: @user_pref.complete || false,
               rating: @user_pref.rating,
               genre_name: @user_pref.genre_name,
               priority_name: @user_pref.priority_name,
               phase_name: @user_pref.phase_name
-            ), status: :ok, location: @artist
+            ) }, status: :ok, location: @artist
           end
         end
       else
