@@ -6,7 +6,7 @@
 
 <div id="albums">
   <% @albums.each do |album| %>
-    <%= render album %>
+    <%= render partial: 'album', locals: { album: album, user_pref: @user_prefs[album.id] } %>
     <p>
       <%= link_to "Show this album", album %>
     </p>

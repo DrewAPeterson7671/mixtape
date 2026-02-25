@@ -6,12 +6,12 @@ class PrioritiesController < ApplicationController
   def index
     @priorities = Priority.all
 
-    render json: @priorities
+    render json: { data: @priorities }
   end
 
   # GET /priorities/1 or /priorities/1.json
   def show
-    render json: @priority
+    render json: { data: @priority }
   end
 
   # GET /priorities/new
@@ -30,7 +30,7 @@ class PrioritiesController < ApplicationController
     respond_to do |format|
       if @priority.save
         format.html { redirect_to @priority, notice: "Priority was successfully created." }
-        format.json { render :show, status: :created, location: @priority }
+        format.json { render json: { data: @priority }, status: :created, location: @priority }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @priority.errors, status: :unprocessable_entity }
@@ -43,7 +43,7 @@ class PrioritiesController < ApplicationController
     respond_to do |format|
       if @priority.update(priority_params)
         format.html { redirect_to @priority, notice: "Priority was successfully updated." }
-        format.json { render :show, status: :ok, location: @priority }
+        format.json { render json: { data: @priority }, status: :ok, location: @priority }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @priority.errors, status: :unprocessable_entity }

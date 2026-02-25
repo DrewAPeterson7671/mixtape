@@ -6,12 +6,12 @@ class TagsController < ApplicationController
   def index
     @tags = Tag.all
 
-    render json: @tags
+    render json: { data: @tags }
   end
 
   # GET /tags/1 or /tags/1.json
   def show
-    render json: @tag
+    render json: { data: @tag }
   end
 
   # GET /tags/new
@@ -30,7 +30,7 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         format.html { redirect_to @tag, notice: "Tag was successfully created." }
-        format.json { render :show, status: :created, location: @tag }
+        format.json { render json: { data: @tag }, status: :created, location: @tag }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @tag.errors, status: :unprocessable_entity }
@@ -43,7 +43,7 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.update(tag_params)
         format.html { redirect_to @tag, notice: "Tag was successfully updated." }
-        format.json { render :show, status: :ok, location: @tag }
+        format.json { render json: { data: @tag }, status: :ok, location: @tag }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @tag.errors, status: :unprocessable_entity }

@@ -6,12 +6,12 @@ class PhasesController < ApplicationController
   def index
     @phases = Phase.all
 
-    render json: @phases
+    render json: { data: @phases }
   end
 
   # GET /phases/1 or /phases/1.json
   def show
-    render json: @phase
+    render json: { data: @phase }
   end
 
   # GET /phases/new
@@ -30,7 +30,7 @@ class PhasesController < ApplicationController
     respond_to do |format|
       if @phase.save
         format.html { redirect_to @phase, notice: "Phase was successfully created." }
-        format.json { render :show, status: :created, location: @phase }
+        format.json { render json: { data: @phase }, status: :created, location: @phase }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @phase.errors, status: :unprocessable_entity }
@@ -43,7 +43,7 @@ class PhasesController < ApplicationController
     respond_to do |format|
       if @phase.update(phase_params)
         format.html { redirect_to @phase, notice: "Phase was successfully updated." }
-        format.json { render :show, status: :ok, location: @phase }
+        format.json { render json: { data: @phase }, status: :ok, location: @phase }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @phase.errors, status: :unprocessable_entity }

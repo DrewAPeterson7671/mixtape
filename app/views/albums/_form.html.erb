@@ -12,11 +12,6 @@
   <% end %>
 
   <div>
-    <%= form.label :artist_id, style: "display: block" %>
-    <%= form.number_field :artist_id %>
-  </div>
-
-  <div>
     <%= form.label :title, style: "display: block" %>
     <%= form.text_field :title %>
   </div>
@@ -27,28 +22,28 @@
   </div>
 
   <div>
-    <%= form.label :listened, style: "display: block" %>
-    <%= form.check_box :listened %>
-  </div>
-
-  <div>
-    <%= form.label :release_type, style: "display: block" %>
+    <%= form.label :release_type_id, "Release type", style: "display: block" %>
     <%= form.number_field :release_type_id %>
   </div>
 
   <div>
-    <%= form.label :media, style: "display: block" %>
-    <%= form.number_field :media %>
+    <%= form.label :medium_id, "Medium", style: "display: block" %>
+    <%= form.number_field :medium_id %>
   </div>
 
   <div>
-    <%= form.label :edition, style: "display: block" %>
-    <%= form.number_field :edition %>
+    <%= form.label :edition_id, "Edition", style: "display: block" %>
+    <%= form.number_field :edition_id %>
   </div>
 
   <div>
-    <%= form.label :rating, style: "display: block" %>
-    <%= form.number_field :rating %>
+    <%= label_tag 'album[listened]', 'Listened', style: "display: block" %>
+    <%= check_box_tag 'album[listened]', '1', @user_pref&.listened %>
+  </div>
+
+  <div>
+    <%= label_tag 'album[rating]', 'Rating', style: "display: block" %>
+    <%= number_field_tag 'album[rating]', @user_pref&.rating %>
   </div>
 
   <div>
