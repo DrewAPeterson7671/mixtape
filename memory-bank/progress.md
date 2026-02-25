@@ -75,14 +75,16 @@
 
 ## What's Not Built Yet (Pending)
 
-<!-- Edit this section with your planned work -->
+### Core New Features
+- [ ] Smart playlists — dynamic playlist generation from combinations of attributes (e.g., least recently played tracks by artists starting with "B" in genre "Reggae" from phase "High School")
+- [ ] CSV import/export for artists, albums, tracks, playlists, etc.
+- [ ] Streaming platform integration — connect to Apple Music and Spotify to import artists/albums/tracks and export playlists
+- [ ] Search and filtering — extensive backend filtering/search on index actions
+- [ ] Admin role/privileges — admin-level users who can delete catalog records (artists, albums, tracks) and manage lookup tables
 
+### Infrastructure & Cleanup
 - [ ] Pagination on list endpoints
-- [ ] Backend filtering/search on index actions
 - [ ] Serializer layer (replace inline `as_json` / jbuilder mix)
 - [ ] Extract genre/tag sync into a shared concern or service
-- [ ] Lookup table access control (admin-only create/delete?)
+- [ ] Lookup table access control (admin-only create/delete)
 - [ ] Remove HTML views and `format.html` blocks if frontend is primary UI
-- [ ]
-- [ ]
-- [ ]

@@ -2,13 +2,15 @@
 
 ## Why This Project Exists
 
-Mixtape solves a personal problem: tracking a large music collection across artists, albums, and tracks with subjective metadata that varies per listener. Commercial services (Spotify, Last.fm, RateYourMusic) couple catalog data with their own platforms. Mixtape separates the catalog from any streaming service, letting users maintain a standalone record of what they've listened to, how they rate it, and how they categorize it.
+Mixtape solves a personal problem: tracking a large music collection across artists, albums, and tracks with subjective metadata that varies per listener. Commercial services (Spotify, Last.fm, RateYourMusic) couple catalog data with their own platforms. Mixtape separates the catalog from any streaming service, letting users maintain a standalone record of what they've listened to, how they rate it, and how they categorize it. Mixtape will connect to Apple Music and Spotify to import preferences and populate the Mixtape database.  Users can then better curate what they listened to and in what directions they would like to explore further.  Users will be able to create smartplaylists to dynamically build open-ended playlists that will be exported to the streaming platforms.
 
 ## Who Uses It
 
 Single-user in practice (the developer), but architected for multi-user from the start. The shared catalog / per-user preference split means multiple users could share the same artist/album/track records while each maintaining independent ratings, genres, tags, and listening status.
 
 ## What Users Do
+
+Users will curate their music.  They will be able to tailor dynmamic playlists that can be exported to their streaming platforms.
 
 ### Core Workflows
 
@@ -27,9 +29,17 @@ Single-user in practice (the developer), but architected for multi-user from the
 
 5. **Manage lookup data** — Create and edit the shared reference tables (genres, tags, priorities, phases, media, editions, release types) that populate dropdowns and categorization options.
 
+6. **Import/Export CSV** - CSV will be used to import artists, tracks, albums, playlists, etc.  They will also be exportable.
+
+7. **Smart Playlists** - Playlists can be created dynamically.  Such as creating a playlist of the 10 least recently played tracks of artists that start with the first letter "B" in the genre of "Reggae" that is from the phase "High School" and as the tracks are played, they are automatically removed from the list and replaced with the newest 'least recently played'.
+
+8. **Searching and Filtering** - Extensive searching and filtering.  Split screens with drag and drop features.
+
+9. **Streaming Platform Sync** - The application will reach out to the streaming platform to populate existing artist, albums, etc.  When playlists are generated, they will be exported back out to the streaming platforms for listening.
+
 ### What "Delete" Means
 
-Deleting an artist, album, or track from the UI removes only the user's preference record — the catalog record stays for other users. Deleting a playlist or lookup record removes it entirely.
+Deleting an artist, album, or track from the UI removes only the user's preference record — the catalog record stays for other users. Deleting a playlist or lookup record removes it entirely.  There will be an admin level user allowed to delete artists, albums and tracks.
 
 ## How It Differs From Alternatives
 
@@ -40,11 +50,13 @@ Deleting an artist, album, or track from the UI removes only the user's preferen
 | Per-user isolation | Each user has independent preferences | Single account | Single account |
 | Audio playback | None — metadata only | Core feature | Limited |
 | Data portability | Direct database access | API-dependent | Export tools |
+| Smart playlists | Export of playlists to CSV | Import of playlists to CSV |
+| API connection to streaming services| Importing artist, albums and tracks from streaming services |
+| Exporting playlists to streaming services|
 
 ## Product Boundaries
 
 - **No audio playback or storage** — This is a catalog/metadata tool, not a player.
 - **No social features** — No sharing, following, or public profiles.
-- **No import/sync** — No integration with Spotify, Apple Music, or other services (yet).
 - **No mobile app** — Web-only via the separate frontend.
-- **No search or filtering on the backend** — The frontend handles filtering client-side over full dataset loads.
+

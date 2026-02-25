@@ -27,3 +27,5 @@
 
 - **Lookup table access control** — Genre, Tag, Priority, Phase, Medium, Edition, and ReleaseType controllers have no authorization checks beyond `require_login`. Any authenticated user can create/delete lookup records that affect everyone. Should these be admin-only?
 - **HTML view removal** — Controllers still have `respond_to` blocks with `format.html` handlers and there are presumably view templates. If the frontend is the primary UI, should the HTML views be removed to simplify the controllers?
+- **Artist, Album and Track deletion by Users** - It is likely that those classes will need need to be edited or deleted over time, perhaps only be an admin level user?
+- **Create of Admin priveleges** - There are probably many reasons this will be needed.

@@ -163,6 +163,8 @@ Two different behaviors depending on controller type:
   @playlist.destroy!
   ```
 
+**Planned:** Admin-level users will be able to delete actual catalog records (artists, albums, tracks), not just user preferences. This will require an admin role and authorization checks.
+
 ## Authentication Pattern
 
 Defined in `ApplicationController`:

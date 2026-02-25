@@ -16,6 +16,9 @@ The backend is the system of record for all data. The frontend is a consumer of 
 - Maintain a **shared catalog** of artists, albums, and tracks that exists independent of any single user.
 - Allow each user to layer **personalized metadata** on top of catalog records: ratings, genres, tags, listening/completion status, priority, and phase.
 - Keep catalog data and user-specific data strictly separated at the model level — user preferences live in join models (`UserArtist`, `UserAlbum`, `UserTrack`), never on the catalog models themselves.
+- Allow the creation of smart playlists that can dynamically build playlists from many combinations of attributes.
+- Import and Export CSV files.
+- Connect to streaming services to import data and export playlists.
 
 ## Scope Boundaries
 
