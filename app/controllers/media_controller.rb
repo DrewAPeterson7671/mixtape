@@ -1,75 +1,53 @@
 class MediaController < ApplicationController
-  before_action :set_medium, only: %i[ show edit update destroy ]
+  before_action :set_medium, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
-
-  # GET /media or /media.json
+  # GET /media
   def index
     @media = Medium.all
 
     render json: { data: @media }
   end
 
-  # GET /media/1 or /media/1.json
+  # GET /media/1
   def show
     render json: { data: @medium }
   end
 
-  # GET /media/new
-  def new
-    @medium = Medium.new
-  end
-
-  # GET /media/1/edit
-  def edit
-  end
-
-  # POST /media or /media.json
+  # POST /media
   def create
     @medium = Medium.new(medium_params)
 
-    respond_to do |format|
-      if @medium.save
-        format.html { redirect_to @medium, notice: "Medium was successfully created." }
-        format.json { render json: { data: @medium }, status: :created, location: @medium }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @medium.errors, status: :unprocessable_entity }
-      end
+    if @medium.save
+      render json: { data: @medium }, status: :created, location: @medium
+    else
+      render json: @medium.errors, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /media/1 or /media/1.json
+  # PATCH/PUT /media/1
   def update
-    respond_to do |format|
-      if @medium.update(medium_params)
-        format.html { redirect_to @medium, notice: "Medium was successfully updated." }
-        format.json { render json: { data: @medium }, status: :ok, location: @medium }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @medium.errors, status: :unprocessable_entity }
-      end
+    if @medium.update(medium_params)
+      render json: { data: @medium }, status: :ok, location: @medium
+    else
+      render json: @medium.errors, status: :unprocessable_entity
     end
   end
 
-  # DELETE /media/1 or /media/1.json
+  # DELETE /media/1
   def destroy
     @medium.destroy!
 
-    respond_to do |format|
-      format.html { redirect_to media_path, status: :see_other, notice: "Medium was successfully destroyed." }
-      format.json { head :no_content }
-    end
+    head :no_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_medium
-      @medium = Medium.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def medium_params
-      params.require(:medium).permit(:name)
-    end
+  def set_medium
+    @medium = Medium.find(params[:id])
+  end
+
+  def medium_params
+    params.require(:medium).permit(:name)
+  end
 end

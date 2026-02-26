@@ -1,74 +1,53 @@
 class ReleaseTypesController < ApplicationController
-  before_action :set_release_type, only: %i[ show edit update destroy ]
+  before_action :set_release_type, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
-  # GET /release_types or /release_types.json
+  # GET /release_types
   def index
     @release_types = ReleaseType.all
 
     render json: { data: @release_types }
   end
 
-  # GET /release_types/1 or /release_types/1.json
+  # GET /release_types/1
   def show
     render json: { data: @release_type }
   end
 
-  # GET /release_types/new
-  def new
-    @release_type = ReleaseType.new
-  end
-
-  # GET /release_types/1/edit
-  def edit
-  end
-
-  # POST /release_types or /release_types.json
+  # POST /release_types
   def create
     @release_type = ReleaseType.new(release_type_params)
 
-    respond_to do |format|
-      if @release_type.save
-        format.html { redirect_to @release_type, notice: "Release type was successfully created." }
-        format.json { render json: { data: @release_type }, status: :created, location: @release_type }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @release_type.errors, status: :unprocessable_entity }
-      end
+    if @release_type.save
+      render json: { data: @release_type }, status: :created, location: @release_type
+    else
+      render json: @release_type.errors, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /release_types/1 or /release_types/1.json
+  # PATCH/PUT /release_types/1
   def update
-    respond_to do |format|
-      if @release_type.update(release_type_params)
-        format.html { redirect_to @release_type, notice: "Release type was successfully updated." }
-        format.json { render json: { data: @release_type }, status: :ok, location: @release_type }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @release_type.errors, status: :unprocessable_entity }
-      end
+    if @release_type.update(release_type_params)
+      render json: { data: @release_type }, status: :ok, location: @release_type
+    else
+      render json: @release_type.errors, status: :unprocessable_entity
     end
   end
 
-  # DELETE /release_types/1 or /release_types/1.json
+  # DELETE /release_types/1
   def destroy
     @release_type.destroy!
 
-    respond_to do |format|
-      format.html { redirect_to release_types_path, status: :see_other, notice: "Release type was successfully destroyed." }
-      format.json { head :no_content }
-    end
+    head :no_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_release_type
-      @release_type = ReleaseType.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def release_type_params
-      params.require(:release_type).permit(:name)
-    end
+  def set_release_type
+    @release_type = ReleaseType.find(params[:id])
+  end
+
+  def release_type_params
+    params.require(:release_type).permit(:name)
+  end
 end

@@ -1,7 +1,7 @@
 class AlbumsController < ApplicationController
   include UserPreferable
 
-  before_action :set_album, only: %i[show edit update destroy]
+  before_action :set_album, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
   # GET /albums
@@ -11,50 +11,29 @@ class AlbumsController < ApplicationController
       .includes(:genres, :tags)
       .index_by(&:album_id)
 
-    respond_to do |format|
-      format.html
-      format.json do
-        render json: { data: @albums.map { |album|
-          pref = @user_prefs[album.id]
-          album.as_json(
-            only: [:id, :title, :year, :created_at, :updated_at],
-            methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-          ).merge(
-            listened: pref&.listened || false,
-            rating: pref&.rating
-          )
-        } }
-      end
-    end
+    render json: { data: @albums.map { |album|
+      pref = @user_prefs[album.id]
+      album.as_json(
+        only: [:id, :title, :year, :created_at, :updated_at],
+        methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
+      ).merge(
+        listened: pref&.listened || false,
+        rating: pref&.rating
+      )
+    } }
   end
 
   # GET /albums/1
   def show
     @user_pref = current_user_album(@album)
 
-    respond_to do |format|
-      format.html
-      format.json do
-        render json: { data: @album.as_json(
-          only: [:id, :title, :year, :created_at, :updated_at],
-          methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-        ).merge(
-          listened: @user_pref.listened || false,
-          rating: @user_pref.rating
-        ) }
-      end
-    end
-  end
-
-  # GET /albums/new
-  def new
-    @album = Album.new
-    @user_pref = UserAlbum.new
-  end
-
-  # GET /albums/1/edit
-  def edit
-    @user_pref = current_user_album(@album)
+    render json: { data: @album.as_json(
+      only: [:id, :title, :year, :created_at, :updated_at],
+      methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
+    ).merge(
+      listened: @user_pref.listened || false,
+      rating: @user_pref.rating
+    ) }
   end
 
   # POST /albums
@@ -69,24 +48,15 @@ class AlbumsController < ApplicationController
         update_album_tags(@user_pref)
         @user_pref.save!
 
-        respond_to do |format|
-          format.html { redirect_to @album, notice: "Album was successfully created." }
-          format.json do
-            render json: { data: @album.as_json(
-              only: [:id, :title, :year, :created_at, :updated_at],
-              methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-            ).merge(
-              listened: @user_pref.listened || false,
-              rating: @user_pref.rating
-            ) }, status: :created, location: @album
-          end
-        end
+        render json: { data: @album.as_json(
+          only: [:id, :title, :year, :created_at, :updated_at],
+          methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
+        ).merge(
+          listened: @user_pref.listened || false,
+          rating: @user_pref.rating
+        ) }, status: :created, location: @album
       else
-        @user_pref = UserAlbum.new(preference_params)
-        respond_to do |format|
-          format.html { render :new, status: :unprocessable_entity }
-          format.json { render json: @album.errors, status: :unprocessable_entity }
-        end
+        render json: @album.errors, status: :unprocessable_entity
       end
     end
   end
@@ -103,24 +73,15 @@ class AlbumsController < ApplicationController
         update_album_tags(@user_pref)
         @user_pref.save!
 
-        respond_to do |format|
-          format.html { redirect_to @album, notice: "Album was successfully updated." }
-          format.json do
-            render json: { data: @album.as_json(
-              only: [:id, :title, :year, :created_at, :updated_at],
-              methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-            ).merge(
-              listened: @user_pref.listened || false,
-              rating: @user_pref.rating
-            ) }, status: :ok, location: @album
-          end
-        end
+        render json: { data: @album.as_json(
+          only: [:id, :title, :year, :created_at, :updated_at],
+          methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
+        ).merge(
+          listened: @user_pref.listened || false,
+          rating: @user_pref.rating
+        ) }, status: :ok, location: @album
       else
-        @user_pref = current_user_album(@album)
-        respond_to do |format|
-          format.html { render :edit, status: :unprocessable_entity }
-          format.json { render json: @album.errors, status: :unprocessable_entity }
-        end
+        render json: @album.errors, status: :unprocessable_entity
       end
     end
   end
@@ -129,10 +90,7 @@ class AlbumsController < ApplicationController
   def destroy
     current_user.user_albums.where(album: @album).destroy_all
 
-    respond_to do |format|
-      format.html { redirect_to albums_path, status: :see_other, notice: "Album preferences were removed." }
-      format.json { head :no_content }
-    end
+    head :no_content
   end
 
   private

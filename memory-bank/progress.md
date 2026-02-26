@@ -25,13 +25,13 @@
 - [x] `Current.user` set for access outside controllers
 
 ### API Endpoints
-- [x] Full CRUD for Artists (JSON + HTML)
-- [x] Full CRUD for Albums (JSON + HTML)
-- [x] Full CRUD for Tracks (JSON + HTML)
-- [x] Full CRUD for Playlists (user-scoped, JSON + HTML)
+- [x] Full CRUD for Artists (JSON API)
+- [x] Full CRUD for Albums (JSON API)
+- [x] Full CRUD for Tracks (JSON API)
+- [x] Full CRUD for Playlists (user-scoped, JSON API)
 - [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Media, Editions, ReleaseTypes)
 - [x] CSRF skip on all JSON-serving controllers
-- [x] CORS configured for frontend at localhost:1841
+- [x] CORS configured for frontend at localhost:1841 with `credentials: true`
 
 ### Controller Patterns
 - [x] UserPreferable concern for find_or_initialize_by preference lookup
@@ -40,6 +40,15 @@
 - [x] Preference pre-loading via `.index_by` on index actions
 - [x] Delete removes user preference only (not catalog record) on catalog controllers
 - [x] Playlist scoped through `current_user.playlists`
+- [x] ArtistsController `artist_json` helper with ID fields for form population
+- [x] ArtistsController saves preferences before genre/tag sync to avoid `pref.reload` data loss
+
+### Ext.js Frontend
+- [x] Artist CRUD: ArtistView (border layout), ArtistDetail (form panel), ArtistController (ViewController)
+- [x] Star rating widget: reusable `StarRating` custom form field (`app/view/common/StarRating.js`)
+- [x] Inline grid star rating with direct AJAX save (no full form submit needed)
+- [x] `withCredentials: true` on all 11 stores and all 11 model proxies
+- [x] All stores/models point to `http://localhost:3000` API
 
 ### Testing
 - [x] RSpec configured with FactoryBot and Shoulda Matchers
@@ -70,6 +79,7 @@
 - [ ] CI has no PostgreSQL service container for the test job
 - [ ] Inconsistent JSON rendering (inline `as_json` vs `render json:` vs jbuilder views)
 - [ ] Genre/tag sync logic duplicated across 3 controllers — not extracted to shared module
+- [ ] AlbumsController and TracksController `update` actions have same `pref.reload` bug — `save!` should come before genre/tag sync
 - [ ] `database.yml` contains stale commented-out SQLite configuration
 - [ ] Dockerfile (if present) may reference sqlite3
 
@@ -82,9 +92,16 @@
 - [ ] Search and filtering — extensive backend filtering/search on index actions
 - [ ] Admin role/privileges — admin-level users who can delete catalog records (artists, albums, tracks) and manage lookup tables
 
+### Frontend CRUD Rollout
+- [x] Artist CRUD (grid + detail form + star rating) — template pattern for other entities
+- [ ] Album CRUD (copy Artist pattern, customize fields)
+- [ ] Track CRUD (copy Artist pattern, customize fields)
+- [ ] Playlist CRUD (copy Artist pattern, customize fields)
+- [ ] Lookup table CRUD (simpler single-field forms)
+
 ### Infrastructure & Cleanup
 - [ ] Pagination on list endpoints
 - [ ] Serializer layer (replace inline `as_json` / jbuilder mix)
 - [ ] Extract genre/tag sync into a shared concern or service
 - [ ] Lookup table access control (admin-only create/delete)
-- [ ] Remove HTML views and `format.html` blocks if frontend is primary UI
+- [x] Remove HTML views and `format.html` blocks — controllers now render JSON directly

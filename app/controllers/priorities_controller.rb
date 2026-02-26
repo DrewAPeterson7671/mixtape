@@ -1,74 +1,53 @@
 class PrioritiesController < ApplicationController
-  before_action :set_priority, only: %i[ show edit update destroy ]
+  before_action :set_priority, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
-  # GET /priorities or /priorities.json
+  # GET /priorities
   def index
     @priorities = Priority.all
 
     render json: { data: @priorities }
   end
 
-  # GET /priorities/1 or /priorities/1.json
+  # GET /priorities/1
   def show
     render json: { data: @priority }
   end
 
-  # GET /priorities/new
-  def new
-    @priority = Priority.new
-  end
-
-  # GET /priorities/1/edit
-  def edit
-  end
-
-  # POST /priorities or /priorities.json
+  # POST /priorities
   def create
     @priority = Priority.new(priority_params)
 
-    respond_to do |format|
-      if @priority.save
-        format.html { redirect_to @priority, notice: "Priority was successfully created." }
-        format.json { render json: { data: @priority }, status: :created, location: @priority }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @priority.errors, status: :unprocessable_entity }
-      end
+    if @priority.save
+      render json: { data: @priority }, status: :created, location: @priority
+    else
+      render json: @priority.errors, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /priorities/1 or /priorities/1.json
+  # PATCH/PUT /priorities/1
   def update
-    respond_to do |format|
-      if @priority.update(priority_params)
-        format.html { redirect_to @priority, notice: "Priority was successfully updated." }
-        format.json { render json: { data: @priority }, status: :ok, location: @priority }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @priority.errors, status: :unprocessable_entity }
-      end
+    if @priority.update(priority_params)
+      render json: { data: @priority }, status: :ok, location: @priority
+    else
+      render json: @priority.errors, status: :unprocessable_entity
     end
   end
 
-  # DELETE /priorities/1 or /priorities/1.json
+  # DELETE /priorities/1
   def destroy
     @priority.destroy!
 
-    respond_to do |format|
-      format.html { redirect_to priorities_path, status: :see_other, notice: "Priority was successfully destroyed." }
-      format.json { head :no_content }
-    end
+    head :no_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_priority
-      @priority = Priority.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def priority_params
-      params.require(:priority).permit(:name)
-    end
+  def set_priority
+    @priority = Priority.find(params[:id])
+  end
+
+  def priority_params
+    params.require(:priority).permit(:name)
+  end
 end
