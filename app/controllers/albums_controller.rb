@@ -12,14 +12,7 @@ class AlbumsController < ApplicationController
       .index_by(&:album_id)
 
     render json: { data: @albums.map { |album|
-      pref = @user_prefs[album.id]
-      album.as_json(
-        only: [:id, :title, :year, :created_at, :updated_at],
-        methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-      ).merge(
-        listened: pref&.listened || false,
-        rating: pref&.rating
-      )
+      album_json(album, @user_prefs[album.id])
     } }
   end
 
@@ -27,13 +20,7 @@ class AlbumsController < ApplicationController
   def show
     @user_pref = current_user_album(@album)
 
-    render json: { data: @album.as_json(
-      only: [:id, :title, :year, :created_at, :updated_at],
-      methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-    ).merge(
-      listened: @user_pref.listened || false,
-      rating: @user_pref.rating
-    ) }
+    render json: { data: album_json(@album, @user_pref) }
   end
 
   # POST /albums
@@ -48,13 +35,7 @@ class AlbumsController < ApplicationController
         update_album_tags(@user_pref)
         @user_pref.save!
 
-        render json: { data: @album.as_json(
-          only: [:id, :title, :year, :created_at, :updated_at],
-          methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-        ).merge(
-          listened: @user_pref.listened || false,
-          rating: @user_pref.rating
-        ) }, status: :created, location: @album
+        render json: { data: album_json(@album, @user_pref) }, status: :created, location: @album
       else
         render json: @album.errors, status: :unprocessable_entity
       end
@@ -73,13 +54,7 @@ class AlbumsController < ApplicationController
         update_album_tags(@user_pref)
         @user_pref.save!
 
-        render json: { data: @album.as_json(
-          only: [:id, :title, :year, :created_at, :updated_at],
-          methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
-        ).merge(
-          listened: @user_pref.listened || false,
-          rating: @user_pref.rating
-        ) }, status: :ok, location: @album
+        render json: { data: album_json(@album, @user_pref) }, status: :ok, location: @album
       else
         render json: @album.errors, status: :unprocessable_entity
       end
@@ -129,5 +104,23 @@ class AlbumsController < ApplicationController
       pref.user_album_tags.find_or_create_by!(user: current_user, album: pref.album, tag_id: tid)
     end
     pref.reload
+  end
+
+  def album_json(album, pref)
+    album.as_json(
+      only: [:id, :title, :year, :created_at, :updated_at],
+      methods: [:artist_name, :medium_name, :edition_name, :release_type_name]
+    ).merge(
+      listened: pref&.listened || false,
+      rating: pref&.rating,
+      release_type_id: album.release_type_id,
+      medium_id: album.medium_id,
+      edition_id: album.edition_id,
+      artist_ids: album.artist_ids,
+      genre_ids: pref&.genres&.map(&:id) || [],
+      tag_ids: pref&.tags&.map(&:id) || [],
+      genre_name: pref&.genre_name || [],
+      tag_name: pref&.tags&.map(&:name) || []
+    )
   end
 end
