@@ -1,7 +1,7 @@
 class TracksController < ApplicationController
   include UserPreferable
 
-  before_action :set_track, only: %i[show edit update destroy]
+  before_action :set_track, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
   # GET /tracks
@@ -11,50 +11,29 @@ class TracksController < ApplicationController
       .includes(:genres, :tags)
       .index_by(&:track_id)
 
-    respond_to do |format|
-      format.html
-      format.json do
-        render json: { data: @tracks.map { |track|
-          pref = @user_prefs[track.id]
-          track.as_json(
-            only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-            methods: [:artist_name, :album_title, :medium_name]
-          ).merge(
-            listened: pref&.listened || false,
-            rating: pref&.rating
-          )
-        } }
-      end
-    end
+    render json: { data: @tracks.map { |track|
+      pref = @user_prefs[track.id]
+      track.as_json(
+        only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
+        methods: [:artist_name, :album_title, :medium_name]
+      ).merge(
+        listened: pref&.listened || false,
+        rating: pref&.rating
+      )
+    } }
   end
 
   # GET /tracks/1
   def show
     @user_pref = current_user_track(@track)
 
-    respond_to do |format|
-      format.html
-      format.json do
-        render json: { data: @track.as_json(
-          only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-          methods: [:artist_name, :album_title, :medium_name]
-        ).merge(
-          listened: @user_pref.listened || false,
-          rating: @user_pref.rating
-        ) }
-      end
-    end
-  end
-
-  # GET /tracks/new
-  def new
-    @track = Track.new
-    @user_pref = UserTrack.new
-  end
-
-  # GET /tracks/1/edit
-  def edit
-    @user_pref = current_user_track(@track)
+    render json: { data: @track.as_json(
+      only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
+      methods: [:artist_name, :album_title, :medium_name]
+    ).merge(
+      listened: @user_pref.listened || false,
+      rating: @user_pref.rating
+    ) }
   end
 
   # POST /tracks
@@ -69,24 +48,15 @@ class TracksController < ApplicationController
         update_track_tags(@user_pref)
         @user_pref.save!
 
-        respond_to do |format|
-          format.html { redirect_to @track, notice: "Track was successfully created." }
-          format.json do
-            render json: { data: @track.as_json(
-              only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-              methods: [:artist_name, :album_title, :medium_name]
-            ).merge(
-              listened: @user_pref.listened || false,
-              rating: @user_pref.rating
-            ) }, status: :created, location: @track
-          end
-        end
+        render json: { data: @track.as_json(
+          only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
+          methods: [:artist_name, :album_title, :medium_name]
+        ).merge(
+          listened: @user_pref.listened || false,
+          rating: @user_pref.rating
+        ) }, status: :created, location: @track
       else
-        @user_pref = UserTrack.new(preference_params)
-        respond_to do |format|
-          format.html { render :new, status: :unprocessable_entity }
-          format.json { render json: @track.errors, status: :unprocessable_entity }
-        end
+        render json: @track.errors, status: :unprocessable_entity
       end
     end
   end
@@ -103,24 +73,15 @@ class TracksController < ApplicationController
         update_track_tags(@user_pref)
         @user_pref.save!
 
-        respond_to do |format|
-          format.html { redirect_to @track, notice: "Track was successfully updated." }
-          format.json do
-            render json: { data: @track.as_json(
-              only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-              methods: [:artist_name, :album_title, :medium_name]
-            ).merge(
-              listened: @user_pref.listened || false,
-              rating: @user_pref.rating
-            ) }, status: :ok, location: @track
-          end
-        end
+        render json: { data: @track.as_json(
+          only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
+          methods: [:artist_name, :album_title, :medium_name]
+        ).merge(
+          listened: @user_pref.listened || false,
+          rating: @user_pref.rating
+        ) }, status: :ok, location: @track
       else
-        @user_pref = current_user_track(@track)
-        respond_to do |format|
-          format.html { render :edit, status: :unprocessable_entity }
-          format.json { render json: @track.errors, status: :unprocessable_entity }
-        end
+        render json: @track.errors, status: :unprocessable_entity
       end
     end
   end
@@ -129,10 +90,7 @@ class TracksController < ApplicationController
   def destroy
     current_user.user_tracks.where(track: @track).destroy_all
 
-    respond_to do |format|
-      format.html { redirect_to tracks_path, status: :see_other, notice: "Track preferences were removed." }
-      format.json { head :no_content }
-    end
+    head :no_content
   end
 
   private

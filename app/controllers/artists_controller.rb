@@ -1,7 +1,7 @@
 class ArtistsController < ApplicationController
   include UserPreferable
 
-  before_action :set_artist, only: %i[show edit update destroy]
+  before_action :set_artist, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
   # GET /artists
@@ -11,50 +11,16 @@ class ArtistsController < ApplicationController
       .includes(:priority, :phase, :genres, :tags)
       .index_by(&:artist_id)
 
-    respond_to do |format|
-      format.html
-      format.json do
-        render json: { data: @artists.map { |artist|
-          pref = @user_prefs[artist.id]
-          artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
-            complete: pref&.complete || false,
-            rating: pref&.rating,
-            genre_name: pref&.genre_name || [],
-            priority_name: pref&.priority_name,
-            phase_name: pref&.phase_name
-          )
-        } }
-      end
-    end
+    render json: { data: @artists.map { |artist|
+      artist_json(artist, @user_prefs[artist.id])
+    } }
   end
 
   # GET /artists/1
   def show
     @user_pref = current_user_artist(@artist)
 
-    respond_to do |format|
-      format.html
-      format.json do
-        render json: { data: @artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
-          complete: @user_pref.complete || false,
-          rating: @user_pref.rating,
-          genre_name: @user_pref.genre_name,
-          priority_name: @user_pref.priority_name,
-          phase_name: @user_pref.phase_name
-        ) }
-      end
-    end
-  end
-
-  # GET /artists/new
-  def new
-    @artist = Artist.new
-    @user_pref = UserArtist.new
-  end
-
-  # GET /artists/1/edit
-  def edit
-    @user_pref = current_user_artist(@artist)
+    render json: { data: artist_json(@artist, @user_pref) }
   end
 
   # POST /artists
@@ -70,24 +36,9 @@ class ArtistsController < ApplicationController
         update_artist_tags(@user_pref)
         @user_pref.save!
 
-        respond_to do |format|
-          format.html { redirect_to @artist, notice: "Artist was successfully created." }
-          format.json do
-            render json: { data: @artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
-              complete: @user_pref.complete || false,
-              rating: @user_pref.rating,
-              genre_name: @user_pref.genre_name,
-              priority_name: @user_pref.priority_name,
-              phase_name: @user_pref.phase_name
-            ) }, status: :created, location: @artist
-          end
-        end
+        render json: { data: artist_json(@artist, @user_pref) }, status: :created, location: @artist
       else
-        @user_pref = UserArtist.new(preference_params)
-        respond_to do |format|
-          format.html { render :new, status: :unprocessable_entity }
-          format.json { render json: @artist.errors, status: :unprocessable_entity }
-        end
+        render json: @artist.errors, status: :unprocessable_entity
       end
     end
   end
@@ -100,28 +51,13 @@ class ArtistsController < ApplicationController
       if @artist.save
         @user_pref = current_user_artist(@artist)
         @user_pref.assign_attributes(preference_params)
+        @user_pref.save!
         update_artist_genres(@user_pref)
         update_artist_tags(@user_pref)
-        @user_pref.save!
 
-        respond_to do |format|
-          format.html { redirect_to @artist, notice: "Artist was successfully updated." }
-          format.json do
-            render json: { data: @artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
-              complete: @user_pref.complete || false,
-              rating: @user_pref.rating,
-              genre_name: @user_pref.genre_name,
-              priority_name: @user_pref.priority_name,
-              phase_name: @user_pref.phase_name
-            ) }, status: :ok, location: @artist
-          end
-        end
+        render json: { data: artist_json(@artist, @user_pref) }, status: :ok, location: @artist
       else
-        @user_pref = current_user_artist(@artist)
-        respond_to do |format|
-          format.html { render :edit, status: :unprocessable_entity }
-          format.json { render json: @artist.errors, status: :unprocessable_entity }
-        end
+        render json: @artist.errors, status: :unprocessable_entity
       end
     end
   end
@@ -130,10 +66,7 @@ class ArtistsController < ApplicationController
   def destroy
     current_user.user_artists.where(artist: @artist).destroy_all
 
-    respond_to do |format|
-      format.html { redirect_to artists_path, status: :see_other, notice: "Artist preferences were removed." }
-      format.json { head :no_content }
-    end
+    head :no_content
   end
 
   private
@@ -172,5 +105,20 @@ class ArtistsController < ApplicationController
       pref.user_artist_tags.find_or_create_by!(user: current_user, artist: pref.artist, tag_id: tid)
     end
     pref.reload
+  end
+
+  def artist_json(artist, pref)
+    artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
+      complete: pref&.complete || false,
+      rating: pref&.rating,
+      priority_id: pref&.priority_id,
+      phase_id: pref&.phase_id,
+      genre_ids: pref&.genres&.map(&:id) || [],
+      tag_ids: pref&.tags&.map(&:id) || [],
+      genre_name: pref&.genre_name || [],
+      tag_name: pref&.tags&.map(&:name) || [],
+      priority_name: pref&.priority_name,
+      phase_name: pref&.phase_name
+    )
   end
 end

@@ -27,6 +27,8 @@ Simple CRUD for reference data:
 
 Canonical example: `app/controllers/genres_controller.rb`
 
+All controllers now render JSON directly (no `respond_to` blocks or HTML views).
+
 ### 3. PlaylistsController
 
 User-scoped CRUD:
@@ -60,18 +62,16 @@ ActiveRecord::Base.transaction do
     # 2. Find or initialize the user preference
     @user_pref = current_user_artist(@artist)   # from UserPreferable concern
 
-    # 3. Assign preference-specific params
+    # 3. Assign preference-specific params and SAVE FIRST
     @user_pref.assign_attributes(preference_params)
+    @user_pref.save!
 
-    # 4. Sync genres and tags
+    # 4. Sync genres and tags (these call pref.reload internally)
     update_artist_genres(@user_pref)
     update_artist_tags(@user_pref)
 
-    # 5. Save the preference
-    @user_pref.save!
-
-    # 6. Respond with merged JSON
-    respond_to { ... }
+    # 5. Respond with merged JSON
+    render json: { data: artist_json(@artist, @user_pref) }, status: :ok
   end
 end
 ```
@@ -101,7 +101,8 @@ Key details:
 - **Save-if-new:** Sub-joins require the preference record to be persisted first
 - **Destroy missing:** Removes any genres/tags no longer in the submitted list
 - **Find or create remaining:** Idempotent — won't duplicate existing associations
-- **Reload:** Refreshes the in-memory association cache
+- **Reload:** Refreshes the in-memory association cache after modifying sub-joins
+- **IMPORTANT:** `pref.reload` discards any unsaved attribute changes. Preference attributes (rating, complete, priority_id, phase_id) must be saved via `save!` BEFORE calling genre/tag sync. This is fixed in ArtistsController but still needs fixing in AlbumsController and TracksController.
 - This logic is duplicated across three controllers — not yet extracted to a shared module
 
 ## JSON Response Shape
@@ -126,7 +127,9 @@ render json: @artists.map { |artist|
 
 The `as_json(only: [...])` pattern whitelists catalog fields, then `.merge(...)` appends preference fields. Albums and tracks use `methods: [...]` to include computed fields like `artist_name` and `medium_name`.
 
-Lookup controllers render differently — some use `render json: @genres` (full serialization), others use `render :show` (jbuilder views).
+ArtistsController extracts this into a private `artist_json(artist, pref)` helper that also includes ID fields (`priority_id`, `phase_id`, `genre_ids`, `tag_ids`) needed by the frontend form. Albums and Tracks should follow this pattern when their frontend CRUD is built.
+
+Lookup controllers use `render json: { data: @model }` with the `{ data: ... }` envelope.
 
 ## UserPreferable Concern
 
@@ -203,3 +206,54 @@ end
 ```
 
 Genre/tag IDs are extracted directly from `params[:artist][:genre_ids]` outside of strong params, since they're processed by the sync methods rather than `assign_attributes`.
+
+## Ext.js Frontend CRUD Pattern
+
+Artist is the template entity. Each entity needs 3 new files + modifications to 3 existing files.
+
+### Three-File Pattern (new files per entity)
+
+**1. `{Entity}View.js`** — Border layout container (`Ext.panel.Panel`)
+- `layout: 'border'` with grid as `region: 'center'` and detail form as `region: 'east'`
+- Detail panel: `collapsed: true`, `collapsible: true`, `split: true`, `width: 400`
+- Attaches the entity's ViewController and an inline `viewModel` with `phantom: false` flag
+- Grid wired to `cellclick: 'onGridCellClick'` (NOT `select` — see star rating note below)
+
+**2. `{Entity}Detail.js`** — Form panel (`Ext.form.Panel`)
+- Requires `mixtape.view.common.StarRating` for the rating field
+- Fields for catalog data (textfields) and preference data (starrating, checkbox, comboboxes, tagfields)
+- Comboboxes use `queryMode: 'local'` with lookup stores (`{ type: 'priorities' }`, etc.)
+- Save button with `formBind: true` and Cancel button
+
+**3. `{Entity}Controller.js`** — ViewController (`Ext.app.ViewController`)
+- `onGridCellClick(view, td, cellIndex, record, tr, rowIndex, e)`:
+  - First arg is the grid **view** (not the grid panel) — use `view.getHeaderCt().getGridColumns()[cellIndex]` to get the column
+  - If rating column and click target is a `.star-rating-star` span: send inline `PUT` with just `{ entity: { rating: N } }`, update record locally via `record.set()` + `record.commit()`, then `return` (don't open detail panel)
+  - Otherwise: load record into detail form, expand detail panel
+- `onSaveClick`: Build payload by reading each field's `getValue()` directly (do NOT use `form.getValues()` — it misses custom fields like StarRating and tagfields that lack native `<input>` elements)
+- `onAddClick`: Reset form, expand detail, deselect grid, set `phantom: true`
+- `onDeleteClick`: Confirm dialog, send `DELETE`, reload store
+- All AJAX requests use `withCredentials: true` for session cookies
+
+### Star Rating Widget
+
+Reusable component at `app/view/common/StarRating.js`:
+- Extends `Ext.form.field.Base`, alias `widget.starrating`
+- Uses FontAwesome 5 classes: `fas fa-star` (gold filled, color `#f5a623`) and `far fa-star` (gray outline, color `#ccc`)
+  - **NOT** FA4's `fa-star-o` — that class doesn't exist in the bundled FA5
+- Each star is a `<span>` with `display:inline-block` and fixed width for consistent click targets (empty outline stars are tiny without this)
+- Grid renderer: 14px stars, 16px wide spans; Form field: 18px stars, 20px wide spans
+- Click a star to set rating; clicking the current rating keeps it (no toggle-to-clear)
+- Implements `setValue`, `getValue`, `setRawValue`, `getRawValue` for form integration
+- Works with `form.loadRecord()` and `form.reset()`
+
+### Existing File Modifications (per entity)
+
+- **Grid**: Add `tbar` with Add/Delete buttons. Add star `renderer` on rating column (width: 110)
+- **Model**: Add ID fields (`priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`) for form population
+- **Main.js**: Swap grid xtype for view xtype in navigation
+
+### Backend Requirements (per entity)
+
+- Controller must include ID fields in JSON responses (see `artist_json` helper pattern)
+- Controller `update` must call `save!` BEFORE genre/tag sync to prevent `pref.reload` data loss
