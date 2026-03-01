@@ -42,6 +42,8 @@
 - [x] Playlist scoped through `current_user.playlists`
 - [x] ArtistsController `artist_json` helper with ID fields for form population
 - [x] ArtistsController saves preferences before genre/tag sync to avoid `pref.reload` data loss
+- [x] AlbumsController saves preferences before genre/tag sync to avoid `pref.reload` data loss
+- [x] AlbumsController `album_json` helper with ID fields for form population
 
 ### Ext.js Frontend
 - [x] Artist CRUD: ArtistView (border layout), ArtistDetail (form panel), ArtistController (ViewController)
@@ -79,7 +81,7 @@
 - [ ] CI has no PostgreSQL service container for the test job
 - [ ] Inconsistent JSON rendering (inline `as_json` vs `render json:` vs jbuilder views)
 - [ ] Genre/tag sync logic duplicated across 3 controllers — not extracted to shared module
-- [ ] AlbumsController and TracksController `update` actions have same `pref.reload` bug — `save!` should come before genre/tag sync
+- [ ] TracksController `update` action has same `pref.reload` bug — `save!` should come before genre/tag sync
 - [ ] `database.yml` contains stale commented-out SQLite configuration
 - [ ] Dockerfile (if present) may reference sqlite3
 
@@ -94,7 +96,7 @@
 
 ### Frontend CRUD Rollout
 - [x] Artist CRUD (grid + detail form + star rating) — template pattern for other entities
-- [ ] Album CRUD (copy Artist pattern, customize fields)
+- [x] Album CRUD (grid + detail form + star rating + genre auto-populate from artists)
 - [ ] Track CRUD (copy Artist pattern, customize fields)
 - [ ] Playlist CRUD (copy Artist pattern, customize fields)
 - [ ] Lookup table CRUD (simpler single-field forms)

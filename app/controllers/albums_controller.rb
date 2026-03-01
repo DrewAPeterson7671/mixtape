@@ -50,9 +50,9 @@ class AlbumsController < ApplicationController
       if @album.save
         @user_pref = current_user_album(@album)
         @user_pref.assign_attributes(preference_params)
+        @user_pref.save!
         update_album_genres(@user_pref)
         update_album_tags(@user_pref)
-        @user_pref.save!
 
         render json: { data: album_json(@album, @user_pref) }, status: :ok, location: @album
       else

@@ -4,7 +4,15 @@
 
 `mixtape-develop` — main development branch.
 
-## Recent Changes (Feb 2026)
+## Recent Changes (Mar 2026)
+
+- **Album CRUD frontend** — Full create/update/delete UI for Albums in Ext.js, following the Artist template pattern. AlbumView (border layout), AlbumDetail (form panel), AlbumController (ViewController). Includes genre auto-populate from selected artists on new albums.
+- **Album preference save order fix** — In AlbumsController `update`, moved `@user_pref.save!` before `update_album_genres`/`update_album_tags` to prevent `pref.reload` from discarding unsaved rating/listened changes. Same fix previously applied to ArtistsController. TracksController still needs this fix.
+- **Genre auto-populate** — When adding a new album, selecting artists auto-populates the genre tagfield with the union of those artists' genre_ids. Implemented via `change` listener on the artist_ids tagfield routing to `onArtistChange` in AlbumController. Only fires in phantom (new album) mode.
+- **Explicit setValue after loadRecord** — Added explicit `ratingField.setValue()` calls after `form.loadRecord()` in both AlbumController and ArtistController, since `loadRecord` doesn't reliably set values on custom `Ext.form.field.Base` subclasses (StarRating) or tagfields.
+- **Duplicate reference fix** — Removed unused `reference: 'mainContent'` from the center panel in Main.js. The `removeAll()`/`add()` navigation pattern triggered `[W] Duplicate reference` warnings during Ext JS's asynchronous reference cleanup.
+
+## Older Changes (Feb 2026)
 
 - **Artist CRUD frontend** — Full create/update/delete UI for Artists in Ext.js. Border layout with grid (center) and collapsible detail form panel (east). Uses `Ext.Ajax.request` with `jsonData` for full payload control. Designed as a reusable template pattern for other entities.
 - **Star rating widget** — Reusable `StarRating` custom form field (`app/view/common/StarRating.js`) using FontAwesome 5 `fas fa-star` / `far fa-star` icons. Clickable stars in both the grid (inline save via AJAX) and detail form. Gold for filled, gray for empty.
@@ -24,7 +32,7 @@
 - **No pagination** — All list endpoints return every record. Will become a problem as the catalog grows.
 - **No backend filtering/search** — Index endpoints return all records; filtering happens client-side only.
 - **Genre/tag sync duplication** — The `update_*_genres` and `update_*_tags` methods are copy-pasted across ArtistsController, AlbumsController, and TracksController with only model name differences.
-- **Preference save order (Albums/Tracks)** — The `pref.reload` bug fixed in ArtistsController also exists in AlbumsController and TracksController. `save!` should be moved before genre/tag sync in those controllers too.
+- **Preference save order (Tracks)** — The `pref.reload` bug fixed in ArtistsController and AlbumsController still exists in TracksController. `save!` should be moved before genre/tag sync when Tracks CRUD is built.
 - **Dockerfile references sqlite3** — The production Dockerfile (if present) may install sqlite3, a leftover from the Rails scaffold before PostgreSQL migration.
 - **database.yml has stale SQLite comments** — The config file still contains commented-out SQLite configuration blocks.
 
