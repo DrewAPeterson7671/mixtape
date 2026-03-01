@@ -102,7 +102,7 @@ Key details:
 - **Destroy missing:** Removes any genres/tags no longer in the submitted list
 - **Find or create remaining:** Idempotent — won't duplicate existing associations
 - **Reload:** Refreshes the in-memory association cache after modifying sub-joins
-- **IMPORTANT:** `pref.reload` discards any unsaved attribute changes. Preference attributes (rating, complete, priority_id, phase_id) must be saved via `save!` BEFORE calling genre/tag sync. This is fixed in ArtistsController but still needs fixing in AlbumsController and TracksController.
+- **IMPORTANT:** `pref.reload` discards any unsaved attribute changes. Preference attributes (rating, complete, listened, priority_id, phase_id) must be saved via `save!` BEFORE calling genre/tag sync. This is fixed in ArtistsController and AlbumsController. TracksController still needs this fix when its frontend CRUD is built.
 - This logic is duplicated across three controllers — not yet extracted to a shared module
 
 ## JSON Response Shape
@@ -230,6 +230,7 @@ Artist is the template entity. Each entity needs 3 new files + modifications to 
   - First arg is the grid **view** (not the grid panel) — use `view.getHeaderCt().getGridColumns()[cellIndex]` to get the column
   - If rating column and click target is a `.star-rating-star` span: send inline `PUT` with just `{ entity: { rating: N } }`, update record locally via `record.set()` + `record.commit()`, then `return` (don't open detail panel)
   - Otherwise: load record into detail form, expand detail panel
+  - **After `loadRecord`:** Explicitly call `setValue` on custom/array fields (StarRating, tagfields) — `loadRecord` does not reliably set them. Set `phantom: false` LAST, after all `setValue` calls, to prevent `change` listeners from running with stale phantom state
 - `onSaveClick`: Build payload by reading each field's `getValue()` directly (do NOT use `form.getValues()` — it misses custom fields like StarRating and tagfields that lack native `<input>` elements)
 - `onAddClick`: Reset form, expand detail, deselect grid, set `phantom: true`
 - `onDeleteClick`: Confirm dialog, send `DELETE`, reload store
@@ -246,12 +247,26 @@ Reusable component at `app/view/common/StarRating.js`:
 - Click a star to set rating; clicking the current rating keeps it (no toggle-to-clear)
 - Implements `setValue`, `getValue`, `setRawValue`, `getRawValue` for form integration
 - Works with `form.loadRecord()` and `form.reset()`
+- **Requires explicit `setValue` after `loadRecord`** — `form.loadRecord()` does not reliably set values on custom `Ext.form.field.Base` subclasses (same issue as tagfields with array values). After `loadRecord`, call `ratingField.setValue(record.get('rating'))` explicitly
 
 ### Existing File Modifications (per entity)
 
 - **Grid**: Add `tbar` with Add/Delete buttons. Add star `renderer` on rating column (width: 110)
 - **Model**: Add ID fields (`priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`) for form population
 - **Main.js**: Swap grid xtype for view xtype in navigation
+
+### Genre Auto-Populate from Artists (Albums)
+
+When adding a new album, selecting artists auto-populates the genre tagfield with the union of those artists' genres. Implemented via a `change` listener on the `artist_ids` tagfield that routes to `onArtistChange` in `AlbumController.js`:
+
+- **New albums only** (`phantom === true`): replaces genre field with merged artist genres (deduplicated via `Ext.Array.unique`)
+- **Existing albums** (`phantom === false`): returns early, no auto-population
+- Artist records in the Artists store include `genre_ids` (populated by the backend's `artist_json` helper), so no extra API calls needed
+- User can freely modify genres after auto-population
+
+### Main.js Navigation
+
+The center panel in `Main.js` should NOT have a `reference` config. The `removeAll()` / `add()` navigation pattern triggers Ext JS's asynchronous `fixReferences` cleanup, which produces `[W] Duplicate reference` warnings if the container has a `reference` set. The navigation handler locates the center panel via `view.up('viewport').down('panel[region=center]')` instead.
 
 ### Backend Requirements (per entity)
 
