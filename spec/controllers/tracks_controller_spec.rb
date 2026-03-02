@@ -8,7 +8,8 @@ RSpec.describe TracksController, type: :controller do
 
   describe 'GET #index' do
     it 'returns 200 and JSON array of tracks with user preferences' do
-      track = create(:track, title: 'Creep', artist: artist)
+      track = create(:track, title: 'Creep')
+      track.artists << artist
       create(:user_track, user: user, track: track, rating: 3, listened: true)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
@@ -18,12 +19,16 @@ RSpec.describe TracksController, type: :controller do
       expect(entry['title']).to eq('Creep')
       expect(entry['rating']).to eq(3)
       expect(entry['listened']).to eq(true)
+      expect(entry['artist_name']).to be_an(Array)
+      expect(entry['artist_ids']).to be_an(Array)
+      expect(entry['album_ids']).to be_an(Array)
     end
   end
 
   describe 'GET #show' do
     it 'returns 200 and single track JSON' do
-      track = create(:track, title: 'Creep', artist: artist)
+      track = create(:track, title: 'Creep')
+      track.artists << artist
       get :show, params: { id: track.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -34,12 +39,23 @@ RSpec.describe TracksController, type: :controller do
   describe 'POST #create' do
     it 'creates a Track and UserTrack and returns 201' do
       expect {
-        post :create, params: { track: { title: 'New Track', artist_id: artist.id, rating: 2 } }, format: :json
+        post :create, params: { track: { title: 'New Track', artist_ids: [artist.id], rating: 2 } }, format: :json
       }.to change(Track, :count).by(1).and change(UserTrack, :count).by(1)
       expect(response).to have_http_status(:created)
       json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('New Track')
       expect(json['rating']).to eq(2)
+    end
+
+    it 'creates an AlbumTrack when album_id is provided' do
+      album = create(:album)
+      expect {
+        post :create, params: { track: { title: 'Album Track', artist_ids: [artist.id], album_id: album.id, position: 3, disc_number: 1 } }, format: :json
+      }.to change(AlbumTrack, :count).by(1)
+      expect(response).to have_http_status(:created)
+      at = AlbumTrack.last
+      expect(at.position).to eq(3)
+      expect(at.disc_number).to eq(1)
     end
 
     it 'returns 422 with invalid params' do
@@ -50,7 +66,8 @@ RSpec.describe TracksController, type: :controller do
 
   describe 'PATCH #update' do
     it 'updates track and user preferences' do
-      track = create(:track, title: 'Old Title', artist: artist)
+      track = create(:track, title: 'Old Title')
+      track.artists << artist
       create(:user_track, user: user, track: track)
       patch :update, params: { id: track.id, track: { title: 'New Title', rating: 5, listened: true } }, format: :json
       expect(response).to have_http_status(:ok)
@@ -63,7 +80,8 @@ RSpec.describe TracksController, type: :controller do
 
   describe 'DELETE #destroy' do
     it 'removes only the UserTrack, not the Track' do
-      track = create(:track, artist: artist)
+      track = create(:track)
+      track.artists << artist
       create(:user_track, user: user, track: track)
       expect {
         delete :destroy, params: { id: track.id }, format: :json

@@ -6,20 +6,14 @@ class TracksController < ApplicationController
 
   # GET /tracks
   def index
-    @tracks = Track.includes(:artist, :album, :medium).all
+    @tracks = Track.includes(:artists, :albums, :medium).all
     @user_prefs = current_user.user_tracks
       .includes(:genres, :tags)
       .index_by(&:track_id)
 
     render json: { data: @tracks.map { |track|
       pref = @user_prefs[track.id]
-      track.as_json(
-        only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-        methods: [:artist_name, :album_title, :medium_name]
-      ).merge(
-        listened: pref&.listened || false,
-        rating: pref&.rating
-      )
+      track_json(track, pref)
     } }
   end
 
@@ -27,13 +21,7 @@ class TracksController < ApplicationController
   def show
     @user_pref = current_user_track(@track)
 
-    render json: { data: @track.as_json(
-      only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-      methods: [:artist_name, :album_title, :medium_name]
-    ).merge(
-      listened: @user_pref.listened || false,
-      rating: @user_pref.rating
-    ) }
+    render json: { data: track_json(@track, @user_pref) }
   end
 
   # POST /tracks
@@ -42,19 +30,15 @@ class TracksController < ApplicationController
       @track = Track.new(track_params)
 
       if @track.save
+        handle_album_association
+
         @user_pref = current_user_track(@track)
         @user_pref.assign_attributes(preference_params)
+        @user_pref.save!
         update_track_genres(@user_pref)
         update_track_tags(@user_pref)
-        @user_pref.save!
 
-        render json: { data: @track.as_json(
-          only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-          methods: [:artist_name, :album_title, :medium_name]
-        ).merge(
-          listened: @user_pref.listened || false,
-          rating: @user_pref.rating
-        ) }, status: :created, location: @track
+        render json: { data: track_json(@track, @user_pref) }, status: :created, location: @track
       else
         render json: @track.errors, status: :unprocessable_entity
       end
@@ -67,19 +51,15 @@ class TracksController < ApplicationController
       @track.assign_attributes(track_params)
 
       if @track.save
+        handle_album_association
+
         @user_pref = current_user_track(@track)
         @user_pref.assign_attributes(preference_params)
+        @user_pref.save!
         update_track_genres(@user_pref)
         update_track_tags(@user_pref)
-        @user_pref.save!
 
-        render json: { data: @track.as_json(
-          only: [:id, :title, :number, :disc_number, :created_at, :updated_at],
-          methods: [:artist_name, :album_title, :medium_name]
-        ).merge(
-          listened: @user_pref.listened || false,
-          rating: @user_pref.rating
-        ) }, status: :ok, location: @track
+        render json: { data: track_json(@track, @user_pref) }, status: :ok, location: @track
       else
         render json: @track.errors, status: :unprocessable_entity
       end
@@ -100,11 +80,37 @@ class TracksController < ApplicationController
   end
 
   def track_params
-    params.require(:track).permit(:title, :number, :disc_number, :medium_id, :artist_id, :album_id)
+    params.require(:track).permit(:title, :duration, :isrc, :medium_id, artist_ids: [])
   end
 
   def preference_params
     params.require(:track).permit(:rating, :listened)
+  end
+
+  def handle_album_association
+    return unless params[:track][:album_id].present?
+
+    at = AlbumTrack.find_or_initialize_by(album_id: params[:track][:album_id], track_id: @track.id)
+    at.position = params[:track][:position]
+    at.disc_number = params[:track][:disc_number]
+    at.save!
+  end
+
+  def track_json(track, pref)
+    track.as_json(
+      only: [:id, :title, :duration, :isrc, :created_at, :updated_at],
+      methods: [:artist_name, :album_title, :medium_name]
+    ).merge(
+      listened: pref&.listened || false,
+      rating: pref&.rating,
+      artist_ids: track.artist_ids,
+      album_ids: track.album_ids,
+      medium_id: track.medium_id,
+      genre_ids: pref&.genres&.map(&:id) || [],
+      tag_ids: pref&.tags&.map(&:id) || [],
+      genre_name: pref&.genre_name || [],
+      tag_name: pref&.tags&.map(&:name) || []
+    )
   end
 
   def update_track_genres(pref)
