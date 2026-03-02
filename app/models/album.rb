@@ -1,5 +1,7 @@
 class Album < ApplicationRecord
   has_and_belongs_to_many :artists
+  has_many :album_tracks, dependent: :destroy
+  has_many :tracks, through: :album_tracks
   belongs_to :medium, optional: true
   belongs_to :edition, optional: true
   belongs_to :release_type, optional: true

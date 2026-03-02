@@ -4,14 +4,16 @@
 
 ### Data Model
 - [x] Catalog models: Artist, Album, Track with validations and relationships
-- [x] User preference join models: UserArtist, UserAlbum, UserTrack
+- [x] Track data model refactored: HABTM artists (via `artists_tracks`), has_many albums through `AlbumTrack` join model, `duration`/`isrc` fields added
+- [x] AlbumTrack join model with position/disc_number metadata (allows same track on multiple albums)
+- [x] User preference join models: UserArtist, UserAlbum, UserTrack (all with `genre_name` helper)
 - [x] Sub-join models for per-user genres: UserArtistGenre, UserAlbumGenre, UserTrackGenre
 - [x] Sub-join models for per-user tags: UserArtistTag, UserAlbumTag, UserTrackTag
 - [x] Scoped `has_many` lambda pattern on all preference models
 - [x] Lookup tables: Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType
 - [x] Playlist model with HABTM to artists, tracks, tags
 - [x] User model with `cognito_sub` unique identifier
-- [x] All HABTM join tables with dual unique indexes
+- [x] All HABTM join tables with dual unique indexes (albums_artists, artists_tracks, artists_playlists, playlists_tracks, playlists_tags)
 - [x] Foreign keys and uniqueness constraints across all join models
 
 ### Authentication
@@ -44,6 +46,9 @@
 - [x] ArtistsController saves preferences before genre/tag sync to avoid `pref.reload` data loss
 - [x] AlbumsController saves preferences before genre/tag sync to avoid `pref.reload` data loss
 - [x] AlbumsController `album_json` helper with ID fields for form population
+- [x] TracksController saves preferences before genre/tag sync to avoid `pref.reload` data loss
+- [x] TracksController `track_json` helper with ID arrays (artist_ids, album_ids) and preference data
+- [x] TracksController handles album association via AlbumTrack in create/update
 
 ### Ext.js Frontend
 - [x] Artist CRUD: ArtistView (border layout), ArtistDetail (form panel), ArtistController (ViewController)
@@ -81,7 +86,6 @@
 - [ ] CI has no PostgreSQL service container for the test job
 - [ ] Inconsistent JSON rendering (inline `as_json` vs `render json:` vs jbuilder views)
 - [ ] Genre/tag sync logic duplicated across 3 controllers — not extracted to shared module
-- [ ] TracksController `update` action has same `pref.reload` bug — `save!` should come before genre/tag sync
 - [ ] `database.yml` contains stale commented-out SQLite configuration
 - [ ] Dockerfile (if present) may reference sqlite3
 
@@ -99,7 +103,7 @@
 - [x] Album CRUD (grid + detail form + star rating + genre auto-populate from artists)
 - [ ] Track CRUD (copy Artist pattern, customize fields)
 - [ ] Playlist CRUD (copy Artist pattern, customize fields)
-- [ ] Lookup table CRUD (simpler single-field forms)
+- [x] Lookup table CRUD (simpler single-field forms — editions, genres, media, phases, priorities, release types)
 
 ### Infrastructure & Cleanup
 - [ ] Pagination on list endpoints

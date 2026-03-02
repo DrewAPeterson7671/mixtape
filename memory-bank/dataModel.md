@@ -17,19 +17,26 @@ Lookup tables (Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType) are sh
 ### Artist
 - **Fields:** `name`, `wikipedia`, `discogs`
 - **Validations:** `name` uniqueness
-- **Relationships:** HABTM `albums`, HABTM `playlists`, has_many `user_artists` (dependent: destroy)
+- **Relationships:** HABTM `albums`, HABTM `tracks` (via `artists_tracks`), HABTM `playlists`, has_many `user_artists` (dependent: destroy)
 
 ### Album
 - **Fields:** `title`, `year`, `release_type_id`, `medium_id`, `edition_id`
 - **Validations:** `title` presence; `year` integer 1500..current year (nullable)
-- **Relationships:** HABTM `artists`, belongs_to `medium`/`edition`/`release_type` (all optional), has_many `user_albums` (dependent: destroy)
+- **Relationships:** HABTM `artists`, has_many `album_tracks` (dependent: destroy), has_many `tracks` through `album_tracks`, belongs_to `medium`/`edition`/`release_type` (all optional), has_many `user_albums` (dependent: destroy)
 - **Helper methods:** `artist_name`, `release_type_name`, `medium_name`, `edition_name`
 
 ### Track
-- **Fields:** `title`, `number`, `disc_number`, `medium_id`, `artist_id`, `album_id`
-- **Validations:** `title` presence, `artist` presence
-- **Relationships:** belongs_to `artist` (required), belongs_to `album`/`medium` (optional), HABTM `playlists`, has_many `user_tracks` (dependent: destroy)
-- **Helper methods:** `artist_name`, `album_title`, `medium_name`
+- **Fields:** `title`, `duration` (integer, seconds), `isrc` (string, indexed), `medium_id`
+- **Validations:** `title` presence
+- **Relationships:** HABTM `artists` (via `artists_tracks`), has_many `album_tracks` (dependent: destroy), has_many `albums` through `album_tracks`, belongs_to `medium` (optional), HABTM `playlists`, has_many `user_tracks` (dependent: destroy)
+- **Helper methods:** `artist_name` (returns array), `album_title` (returns array), `medium_name`
+- **Note:** Track represents a unique recording. Multiple artists supported via HABTM (matching Album pattern). Album association via `AlbumTrack` join model with position/disc metadata, so the same track can appear on multiple albums without duplication.
+
+### AlbumTrack (join model)
+- **Fields:** `album_id`, `track_id`, `position` (integer), `disc_number` (integer)
+- **Validations:** `album_id` uniqueness scoped to `track_id`
+- **Relationships:** belongs_to `album`, belongs_to `track`
+- **Note:** This is a `has_many :through` model (not HABTM) because it carries `position` and `disc_number` metadata.
 
 ## User Preference Models
 
@@ -50,6 +57,7 @@ These join a `User` to a catalog record and hold per-user metadata.
 - **Fields:** `user_id`, `track_id`, `rating`, `listened` (boolean, default false)
 - **Validations:** `track_id` uniqueness scoped to `user_id`; `rating` integer 1-5 (nullable)
 - **Relationships:** belongs_to `user`, `track`; has_many `user_track_genres`/`user_track_tags` (scoped)
+- **Helper methods:** `genre_name` (returns array of genre names)
 
 ## Scoped Sub-Join Pattern
 
@@ -108,9 +116,12 @@ These are ID-less join tables with dual unique indexes:
 | Table | Joins |
 |-------|-------|
 | `albums_artists` | Album <-> Artist |
+| `artists_tracks` | Artist <-> Track |
 | `artists_playlists` | Artist <-> Playlist |
 | `playlists_tracks` | Playlist <-> Track |
 | `playlists_tags` | Playlist <-> Tag |
+
+Note: `album_tracks` is NOT a HABTM table — it's a full model (`AlbumTrack`) with its own `id`, `position`, `disc_number`, and timestamps, managed via `has_many :through`.
 
 ## Entity Relationship Overview
 
@@ -132,15 +143,19 @@ These are ID-less join tables with dual unique indexes:
                │               │               │
                ▼               ▼               ▼
           ┌────────┐     ┌────────┐     ┌────────┐
-          │ Artist │◄───►│ Album  │     │ Track  │
-          └────────┘HABTM└────────┘     └────┬───┘
-               │                             │
-               │         ┌──────────┐        │
-               └────────►│ Playlist │◄───────┘
+          │ Artist │◄───►│ Album  │◄───►│ Track  │
+          └────┬───┘HABTM└────────┘ HMT └────┬───┘
+               │    HABTM                HABTM│
+               ├─────────────────────────────►│
+               │                              │
+               │         ┌──────────┐         │
+               └────────►│ Playlist │◄────────┘
                    HABTM └────┬─────┘ HABTM
                               │
                          Tags (HABTM)
 
+  Album◄──►Track: via AlbumTrack join model (position, disc_number)
+  Artist◄──►Track: via artists_tracks HABTM
   Lookup tables: Priority, Phase ──► UserArtist
                  Medium ──► Album, Track
                  Edition, ReleaseType ──► Album

@@ -12,4 +12,8 @@ class UserTrack < ApplicationRecord
 
   validates :track_id, uniqueness: { scope: :user_id }
   validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 5 }, allow_nil: true
+
+  def genre_name
+    genres.map(&:name)
+  end
 end

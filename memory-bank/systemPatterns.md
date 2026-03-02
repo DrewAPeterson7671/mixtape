@@ -76,7 +76,7 @@ ActiveRecord::Base.transaction do
 end
 ```
 
-Note: `ArtistsController#create` uses `find_or_initialize_by(name:)` to avoid duplicate catalog records. `AlbumsController` and `TracksController` use `new` instead — albums/tracks are not deduplicated by title.
+Note: `ArtistsController#create` uses `find_or_initialize_by(name:)` to avoid duplicate catalog records. `AlbumsController` and `TracksController` use `new` instead — albums/tracks are not deduplicated by title. `TracksController` additionally calls `handle_album_association` after save to create/update `AlbumTrack` join records when `album_id` is provided.
 
 ## Genre/Tag Sync Pattern
 
@@ -102,7 +102,7 @@ Key details:
 - **Destroy missing:** Removes any genres/tags no longer in the submitted list
 - **Find or create remaining:** Idempotent — won't duplicate existing associations
 - **Reload:** Refreshes the in-memory association cache after modifying sub-joins
-- **IMPORTANT:** `pref.reload` discards any unsaved attribute changes. Preference attributes (rating, complete, listened, priority_id, phase_id) must be saved via `save!` BEFORE calling genre/tag sync. This is fixed in ArtistsController and AlbumsController. TracksController still needs this fix when its frontend CRUD is built.
+- **IMPORTANT:** `pref.reload` discards any unsaved attribute changes. Preference attributes (rating, complete, listened, priority_id, phase_id) must be saved via `save!` BEFORE calling genre/tag sync. This is fixed in all three catalog controllers (Artists, Albums, Tracks).
 - This logic is duplicated across three controllers — not yet extracted to a shared module
 
 ## JSON Response Shape
@@ -127,7 +127,10 @@ render json: @artists.map { |artist|
 
 The `as_json(only: [...])` pattern whitelists catalog fields, then `.merge(...)` appends preference fields. Albums and tracks use `methods: [...]` to include computed fields like `artist_name` and `medium_name`.
 
-ArtistsController extracts this into a private `artist_json(artist, pref)` helper that also includes ID fields (`priority_id`, `phase_id`, `genre_ids`, `tag_ids`) needed by the frontend form. Albums and Tracks should follow this pattern when their frontend CRUD is built.
+All three catalog controllers extract this into private `*_json` helpers that include ID fields needed by the frontend form:
+- `artist_json(artist, pref)` — includes `priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`
+- `album_json(album, pref)` — includes `artist_ids`, `medium_id`, `edition_id`, `release_type_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`
+- `track_json(track, pref)` — includes `artist_ids` (array), `album_ids` (array), `medium_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`
 
 Lookup controllers use `render json: { data: @model }` with the `{ data: ... }` envelope.
 
@@ -207,6 +210,14 @@ end
 
 Genre/tag IDs are extracted directly from `params[:artist][:genre_ids]` outside of strong params, since they're processed by the sync methods rather than `assign_attributes`.
 
+TracksController additionally handles album association outside strong params:
+```ruby
+def track_params
+  params.require(:track).permit(:title, :duration, :isrc, :medium_id, artist_ids: [])
+end
+```
+Album linking (`album_id`, `position`, `disc_number`) is processed by a `handle_album_association` method that creates/updates `AlbumTrack` records directly from `params[:track]`.
+
 ## Ext.js Frontend CRUD Pattern
 
 Artist is the template entity. Each entity needs 3 new files + modifications to 3 existing files.
@@ -270,5 +281,5 @@ The center panel in `Main.js` should NOT have a `reference` config. The `removeA
 
 ### Backend Requirements (per entity)
 
-- Controller must include ID fields in JSON responses (see `artist_json` helper pattern)
-- Controller `update` must call `save!` BEFORE genre/tag sync to prevent `pref.reload` data loss
+- Controller must include ID fields in JSON responses (see `artist_json`/`album_json`/`track_json` helper pattern)
+- Controller `update` must call `save!` BEFORE genre/tag sync to prevent `pref.reload` data loss (all three catalog controllers now follow this pattern)
