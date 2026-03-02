@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_01_000006) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_02_023240) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -21,8 +21,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_01_000006) do
     t.integer "disc_number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["album_id", "track_id"], name: "index_album_tracks_on_album_id_and_track_id", unique: true
+    t.bigint "edition_id"
+    t.index ["album_id", "track_id", "edition_id"], name: "index_album_tracks_on_album_track_edition", unique: true
     t.index ["album_id"], name: "index_album_tracks_on_album_id"
+    t.index ["edition_id"], name: "index_album_tracks_on_edition_id"
     t.index ["track_id"], name: "index_album_tracks_on_track_id"
   end
 
@@ -31,7 +33,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_01_000006) do
     t.integer "year"
     t.bigint "release_type_id"
     t.bigint "medium_id"
-    t.bigint "edition_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -268,6 +269,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_01_000006) do
   end
 
   add_foreign_key "album_tracks", "albums"
+  add_foreign_key "album_tracks", "editions"
   add_foreign_key "album_tracks", "tracks"
   add_foreign_key "albums_artists", "albums"
   add_foreign_key "albums_artists", "artists"

@@ -8,7 +8,6 @@ RSpec.describe Album, type: :model do
   describe 'associations' do
     it { is_expected.to have_and_belong_to_many(:artists) }
     it { is_expected.to belong_to(:medium).optional }
-    it { is_expected.to belong_to(:edition).optional }
     it { is_expected.to belong_to(:release_type).optional }
     it { is_expected.to have_many(:user_albums).dependent(:destroy) }
     it { is_expected.to have_many(:users).through(:user_albums) }
@@ -56,16 +55,4 @@ RSpec.describe Album, type: :model do
     end
   end
 
-  describe '#edition_name' do
-    it 'returns edition name when present' do
-      edition = create(:edition, name: 'Deluxe')
-      album = build(:album, edition: edition)
-      expect(album.edition_name).to eq('Deluxe')
-    end
-
-    it 'returns nil when edition is absent' do
-      album = build(:album, edition: nil)
-      expect(album.edition_name).to be_nil
-    end
-  end
 end
