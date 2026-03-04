@@ -8,10 +8,15 @@ For detailed documentation, see the `memory-bank/` directory.
 
 Catalog records (Artist, Album, Track) are shared across all users. User-specific data (ratings, tags, genres, listened/explored flags) lives in join models: UserArtist, UserAlbum, UserTrack. Never put user-specific fields on the catalog models directly.
 
+## Ruby Environment
+
+Ruby 3.4.2 is managed via rbenv. The CLI agent's shell may not resolve rbenv correctly — if `bin/rails` or `bundle exec` fail with "version not installed", have the user run commands directly in their terminal.
+
 ## Common Commands
 
 - `bundle exec rspec` — run tests
 - `bin/rails server` — start dev server (port 3000)
+- `bin/rails db:migrate` — run pending migrations
 - `bin/brakeman --no-pager` — security scan (runs in CI)
 - `bin/rubocop` — lint (runs in CI)
 
