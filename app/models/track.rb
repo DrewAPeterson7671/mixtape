@@ -15,7 +15,7 @@ class Track < ApplicationRecord
   end
 
   def album_title
-    albums.map(&:title)
+    albums.distinct.map(&:title)
   end
 
   def medium_name
