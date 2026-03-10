@@ -79,7 +79,7 @@ class AlbumsController < ApplicationController
   end
 
   def album_params
-    params.require(:album).permit(:title, :year, :release_type_id, :medium_id, artist_ids: [])
+    params.require(:album).permit(:title, :year, :various_artists, :release_type_id, :medium_id, artist_ids: [])
   end
 
   def preference_params
@@ -136,9 +136,10 @@ class AlbumsController < ApplicationController
 
   def album_json(album, pref)
     album.as_json(
-      only: [:id, :title, :year, :created_at, :updated_at],
-      methods: [:artist_name, :medium_name, :release_type_name]
+      only: [:id, :title, :year, :various_artists, :created_at, :updated_at],
+      methods: [:medium_name, :release_type_name]
     ).merge(
+      artist_name: album.various_artists? ? ['Various Artists'] : album.artist_name,
       listened: pref&.listened || false,
       consider_editions: pref&.consider_editions || false,
       rating: pref&.rating,

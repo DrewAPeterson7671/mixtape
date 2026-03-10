@@ -18,6 +18,13 @@ RSpec.describe Album, type: :model do
     it { is_expected.to validate_numericality_of(:year).only_integer.is_greater_than_or_equal_to(1500).is_less_than_or_equal_to(Date.current.year).allow_nil }
   end
 
+  describe 'various_artists' do
+    it 'defaults to false' do
+      album = create(:album)
+      expect(album.various_artists).to be false
+    end
+  end
+
   describe '#artist_name' do
     it 'returns array of artist names' do
       album = create(:album)
