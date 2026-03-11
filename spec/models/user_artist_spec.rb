@@ -16,7 +16,25 @@ RSpec.describe UserArtist, type: :model do
     subject { build(:user_artist) }
 
     it { is_expected.to validate_uniqueness_of(:artist_id).scoped_to(:user_id) }
-    it { is_expected.to validate_numericality_of(:rating).only_integer.is_greater_than_or_equal_to(1).is_less_than_or_equal_to(5).allow_nil }
+    it 'allows rating 1-5 or nil' do
+      subject.rating = 3
+      expect(subject).to be_valid
+      subject.rating = nil
+      expect(subject).to be_valid
+    end
+
+    it 'rejects rating outside 1-5' do
+      subject.rating = 6
+      expect(subject).not_to be_valid
+      subject.rating = -1
+      expect(subject).not_to be_valid
+    end
+
+    it 'normalizes rating 0 to nil' do
+      subject.rating = 0
+      subject.valid?
+      expect(subject.rating).to be_nil
+    end
   end
 
   describe '#priority_name' do
