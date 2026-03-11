@@ -21,13 +21,15 @@
 
 ### CORS & API
 - `rack-cors` — Cross-origin request handling for frontend at localhost:1841
-- `jbuilder` — JSON view templates (used by some lookup controllers)
+- `jbuilder` — JSON view templates (in Gemfile but orphaned — all controllers render JSON directly via `render json:`. The 32 `.json.jbuilder` files under `app/views/` are unused)
 
-### Frontend/Hotwire
+### Frontend/Hotwire (Rails scaffold defaults — not actively used)
 - `importmap-rails` — JavaScript ESM import maps
 - `turbo-rails` — Hotwire Turbo for SPA-like page loads
 - `stimulus-rails` — Hotwire Stimulus for JavaScript sprinkles
 - `sprockets-rails` — Asset pipeline
+
+**Note:** These are Rails scaffold defaults still in the Gemfile but not actively used. The frontend is a separate Ext JS application at `localhost:1841`.
 
 ### Database
 - `pg` — PostgreSQL adapter
@@ -119,6 +121,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     resource '*',
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true,
       expose: ['Authorization']
   end
 end

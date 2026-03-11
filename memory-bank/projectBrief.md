@@ -6,7 +6,7 @@ Mixtape is a personal music catalog and collection manager. It lets users track 
 
 The architecture is split across two repositories:
 
-- **Backend (this repo)** — A Rails 7.2 application that serves both server-rendered HTML views (via Hotwire/Turbo) and a JSON API. Runs on `localhost:3000`.
+- **Backend (this repo)** — A Rails 7.2 JSON API application. Runs on `localhost:3000`.
 - **Frontend** — A separate JavaScript application located at `/Users/drewpeterson/code/pers/music-project/mixtapeUI/mixtape`. Runs on `localhost:1841` and communicates with the backend exclusively via JSON endpoints.
 
 The backend is the system of record for all data. The frontend is a consumer of its API.

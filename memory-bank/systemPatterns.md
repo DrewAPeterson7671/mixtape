@@ -78,6 +78,23 @@ end
 
 Note: `ArtistsController#create` uses `find_or_initialize_by(name:)` to avoid duplicate catalog records. `AlbumsController` and `TracksController` use `new` instead — albums/tracks are not deduplicated by title. `TracksController` additionally calls `handle_album_association` after save to create/update `AlbumTrack` join records when `album_id` is provided.
 
+## Inline Track Creation Pattern (AlbumsController)
+
+When `params[:album][:album_tracks]` is present, `handle_album_tracks` orchestrates a full sync of the album's tracklist within the same transaction as the album save:
+
+1. **Split submitted entries** — Entries with `track_id` are existing tracks; entries with `title` (no `track_id`) are new inline tracks
+2. **Remove deleted album_tracks** — Any `AlbumTrack` not in the submitted existing list is destroyed
+3. **Sync existing entries** — `find_or_initialize_by(track_id, edition_id)` then update position/disc_number
+4. **Create new inline tracks** — Each new entry calls `create_inline_track`:
+   - `resolve_duplicate_title(title, existing_titles)` — appends `(n)` suffix for same-title tracks on the same album
+   - Creates `Track` record with title, duration, isrc
+   - **Artist assignment:** uses per-track `artist_ids` if provided (VA albums), otherwise inherits from album's `artist_ids`
+   - Creates `UserTrack` preference for current user (with optional listened/rating)
+   - `copy_album_genres_to_track(user_track)` — copies the album's user genres to the new track (one-time copy, no ongoing propagation)
+   - Creates `AlbumTrack` with position, disc_number, edition_id
+
+This runs inside the same `ActiveRecord::Base.transaction` as the album create/update, so all tracks are committed atomically.
+
 ## Genre/Tag Sync Pattern
 
 Each catalog controller has private methods to sync genres and tags. The pattern is identical across all three controllers (artists, albums, tracks):
@@ -129,8 +146,14 @@ The `as_json(only: [...])` pattern whitelists catalog fields, then `.merge(...)`
 
 All three catalog controllers extract this into private `*_json` helpers that include ID fields needed by the frontend form:
 - `artist_json(artist, pref)` — includes `priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`
-- `album_json(album, pref)` — includes `artist_ids`, `medium_id`, `edition_id`, `release_type_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`
+- `album_json(album, pref, user_track_prefs)` — includes `artist_ids`, `medium_id`, `release_type_id`, `consider_editions`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`, and an `album_tracks` array (see below)
 - `track_json(track, pref)` — includes `artist_ids` (array), `album_ids` (array), `medium_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`
+
+The `album_json` response includes an `album_tracks` array sorted by `[disc_number, position]`. Each entry contains:
+- `track_id`, `track_title`, `artist_name` (array), `artist_ids` (array)
+- `position`, `disc_number`, `duration`, `isrc`
+- `edition_id`, `edition_name`
+- `listened` (boolean), `rating` (integer, from user_track preference)
 
 Lookup controllers use `render json: { data: @model }` with the `{ data: ... }` envelope.
 
@@ -259,6 +282,37 @@ Reusable component at `app/view/common/StarRating.js`:
 - Implements `setValue`, `getValue`, `setRawValue`, `getRawValue` for form integration
 - Works with `form.loadRecord()` and `form.reset()`
 - **Requires explicit `setValue` after `loadRecord`** — `form.loadRecord()` does not reliably set values on custom `Ext.form.field.Base` subclasses (same issue as tagfields with array values). After `loadRecord`, call `ratingField.setValue(record.get('rating'))` explicitly
+
+### DurationField Widget
+
+Reusable component at `app/view/common/DurationField.js`:
+- Custom text field that parses "m:ss" input to seconds and displays seconds as "m:ss"
+- Used in the Album Detail tracklist grid and Track Detail form
+- Handles conversion bidirectionally: user types "3:45" → stored as 225 seconds; display converts 225 → "3:45"
+
+### Album Detail Tracklist Grid
+
+The Album Detail form includes an inline tracklist grid for viewing and editing album tracks:
+- **CellEditing plugin** — enables inline editing of track fields (title, duration, ISRC, per-track artists for VA)
+- **Entry mode toggle** — "Enter Track Names" checkbox switches the grid into entry mode. New rows are added with `is_new: true` flag and are not saved until the album form is submitted
+- **Typeahead combobox** — Track title column uses a combobox that searches existing catalog tracks for linking
+- **Edition filter combobox** — Dropdown to filter tracklist by edition; visibility controlled by `consider_editions` checkbox
+- **Edition column** — Shows edition name per track; visibility also tied to `consider_editions`
+- **Per-track artist editing** — For VA albums (`various_artists: true`), each track row has an editable artist field; for non-VA albums, artists are inherited from the album
+
+### VA Album Pattern
+
+- "VA Collection" checkbox on the album form sets `various_artists: true` on the catalog record
+- When checked: artist tagfield is disabled/cleared (album has no single artist), per-track `artist_ids` are sent for inline-created tracks
+- When unchecked: album's `artist_ids` are inherited by all new inline tracks
+- In JSON output, `artist_name` returns `['Various Artists']` when `various_artists` is true
+
+### Edition UI Pattern
+
+- "Consider Editions" checkbox on the album form toggles `consider_editions` on the UserAlbum preference
+- When checked: edition filter dropdown and edition column become visible in the tracklist grid
+- When unchecked: edition UI is hidden, all tracks shown regardless of edition
+- Edition is stored on `AlbumTrack` (not Album), so the same track can appear on different editions
 
 ### Existing File Modifications (per entity)
 

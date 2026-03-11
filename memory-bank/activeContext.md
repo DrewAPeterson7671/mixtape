@@ -5,27 +5,44 @@
 - **Backend:** `mix-dev-tracks_controller2`
 - **Frontend:** `mixtape-dev-tracks-improve`
 
-## Recent Changes (Mar 10, 2026)
+## Recent Changes (Mar 10-11, 2026)
 
+- **Inline track creation on album save (Phase 1)** — Full backend implementation of bulk track entry during album create/update. `handle_album_tracks` orchestrates album_track sync, `create_inline_track` creates Track + UserTrack with artist inheritance and genre transfer, `resolve_duplicate_title` handles same-title tracks. Frontend: tracklist grid with CellEditing plugin, "Enter Track Names" checkbox toggle, entry mode with `is_new` flag rows, typeahead combobox, DurationField widget, per-track artist editing for VA albums, edition filter/column. Backend commit: `0d0eb3f`.
+- **Track CRUD frontend** — TrackGrid, TrackDetail, TrackController with full CRUD following the Artist/Album template pattern. Frontend commit: `679ab08`.
+- **consider_editions toggle** — Per-user `consider_editions` boolean on UserAlbum. Frontend checkbox toggles edition filter dropdown and edition column visibility in tracklist grid. Backend commit: `96cc099`, frontend commit: `adf861d`.
+- **DurationField custom widget** — `app/view/common/DurationField.js` — custom text field that parses "m:ss" input to seconds and displays seconds as "m:ss". Used in tracklist grid and track detail form.
 - **various_artists boolean on Album** — Added catalog-level `various_artists` boolean to `albums` table. In JSON output, `artist_name` returns `['Various Artists']` when true, real artists otherwise. Frontend has "VA Collection" checkbox next to Artists tagfield; checking it disables/clears the artist tagfield. Commits: backend `98975d3`, frontend `c4db19f`.
 - **Duplicate album title fix** — `Track#album_title` now uses `albums.distinct.map(&:title)` to prevent duplicate album names when a track appears on the same album via multiple editions. Commit: `da3ce04`.
 
-## In-Progress Design: Inline Track Entry & Edition Management
+## Inline Track Entry & Edition Management
 
-**Status: Design discussion, not yet implemented.**
+**Status: Phase 1 complete. Phase 2 & 3 pending.**
 
-Feature to allow bulk track entry directly in the album detail tracklist grid, replacing the one-at-a-time "Add Track" workflow.
+### Implemented in Phase 1
 
-### Decided
-1. **Checkbox toggle** ("Enter Track Names") switches the tracklist grid into edit mode — Title column becomes editable input fields
+1. **Checkbox toggle** ("Enter Track Names") switches the tracklist grid into entry mode — Title column becomes an editable typeahead combobox, new rows marked with `is_new` flag
 2. **Artist inheritance** — Non-VA albums: album's `artist_ids` copied to each new track's `artists_tracks`. VA albums: per-track artist editing in the grid
-3. **Genre transfer** — Album's user genres copied to new tracks at creation time only (one-time copy, no propagation)
+3. **Genre transfer** — Album's user genres copied to new tracks at creation time only (one-time copy, no propagation) via `copy_album_genres_to_track`
 4. **Rating + Listened** — Per-track star rating and listened checkbox in the grid (user_track preferences)
-5. **Duration + ISRC** — Editable columns in the grid (catalog-level fields on tracks)
-6. **Save timing** — All new tracks created on album save (single transactional request), not individually
-7. **Duplicate handling** — Typeahead on track title to show existing catalog tracks. OS-style `(1)` suffix for same-title tracks on same album. For future CSV/streaming imports, ISRC-based deduplication preferred over title matching.
+5. **Duration + ISRC** — Editable columns in the grid (catalog-level fields on tracks); DurationField widget parses "m:ss" to seconds
+6. **Save timing** — All new tracks created on album save (single transactional request) via `handle_album_tracks`
+7. **Duplicate handling** — Typeahead on track title to show existing catalog tracks. OS-style `(1)` suffix for same-title tracks on same album via `resolve_duplicate_title`
 
-### Edition Management Design (Under Discussion)
+**Backend implementation (AlbumsController):**
+- `handle_album_tracks(album)` — orchestrates album_track sync: splits submitted entries into existing (has `track_id`) vs new (has `title`, no `track_id`), removes album_tracks not in submitted list, syncs existing, creates new via `create_inline_track`
+- `create_inline_track(at_params, existing_titles)` — creates Track + UserTrack, handles duplicate title resolution, inherits artist_ids from album (unless per-track for VA), copies album genres to track
+- `copy_album_genres_to_track(user_track)` — propagates current album's user genres to newly created track
+- `resolve_duplicate_title(title, existing_titles)` — appends `(n)` suffix for same-title tracks on same album
+
+**Frontend implementation:**
+- Album Detail tracklist grid with CellEditing plugin and entry mode toggle
+- `is_new` flag rows for newly added tracks (unsaved until album save)
+- Typeahead combobox for track title (searches existing catalog tracks)
+- DurationField widget (`app/view/common/DurationField.js`) for m:ss parsing
+- Per-track artist editing for VA albums
+- Edition filter combobox and edition column (visibility tied to `consider_editions` checkbox)
+
+### Phase 2: Edition Management Modal (Pending)
 - **Default edition** — Tracks without an edition keep `edition_id: null`. UI presents null-edition tracks as "Unsorted" or "Default" (no sentinel record in editions table preferred over creating an "Unsorted Album Tracks" edition — still being discussed)
 - **Edition management modal** — Separate from main album form. Features:
   - Edition selector/creator at top
@@ -33,10 +50,9 @@ Feature to allow bulk track entry directly in the album detail tracklist grid, r
   - Sortable track list with up/down buttons and per-track remove (remove from edition only, track stays in unsorted pool)
   - Available tracks pool showing unassigned tracks
 - **New inline tracks** — Inherit currently-selected edition filter value (or null if none)
-- **Phased implementation proposed:**
-  - Phase 1: Inline track name entry with checkbox toggle, artist inheritance, album-save transaction
-  - Phase 2: Edition management modal with template system, sorting, unsorted pool
-  - Phase 3: CSV/streaming import with ISRC-based deduplication
+
+### Phase 3: CSV/Streaming Import (Pending)
+- CSV/streaming import with ISRC-based deduplication
 
 ## Earlier Changes (Mar 2026)
 
