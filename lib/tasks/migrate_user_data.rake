@@ -1,8 +1,8 @@
 namespace :data do
-  desc 'Migrate existing preference data to per-user tables (assigns to User.first)'
+  desc "Migrate existing preference data to per-user tables (assigns to User.first)"
   task migrate_to_user_preferences: :environment do
     user = User.first
-    abort 'No users found. Create a user first.' unless user
+    abort "No users found. Create a user first." unless user
 
     ActiveRecord::Base.transaction do
       # 1. Artists -> UserArtists
@@ -47,11 +47,11 @@ namespace :data do
 
       # 4. artists_genres -> user_artist_genres
       genre_count = 0
-      ActiveRecord::Base.connection.execute('SELECT artist_id, genre_id FROM artists_genres').each do |row|
+      ActiveRecord::Base.connection.execute("SELECT artist_id, genre_id FROM artists_genres").each do |row|
         UserArtistGenre.create!(
           user: user,
-          artist_id: row['artist_id'],
-          genre_id: row['genre_id']
+          artist_id: row["artist_id"],
+          genre_id: row["genre_id"]
         )
         genre_count += 1
       end
@@ -59,11 +59,11 @@ namespace :data do
 
       # 5. artists_tags -> user_artist_tags
       artist_tag_count = 0
-      ActiveRecord::Base.connection.execute('SELECT artist_id, tag_id FROM artists_tags').each do |row|
+      ActiveRecord::Base.connection.execute("SELECT artist_id, tag_id FROM artists_tags").each do |row|
         UserArtistTag.create!(
           user: user,
-          artist_id: row['artist_id'],
-          tag_id: row['tag_id']
+          artist_id: row["artist_id"],
+          tag_id: row["tag_id"]
         )
         artist_tag_count += 1
       end
@@ -71,11 +71,11 @@ namespace :data do
 
       # 6. albums_tags -> user_album_tags
       album_tag_count = 0
-      ActiveRecord::Base.connection.execute('SELECT album_id, tag_id FROM albums_tags').each do |row|
+      ActiveRecord::Base.connection.execute("SELECT album_id, tag_id FROM albums_tags").each do |row|
         UserAlbumTag.create!(
           user: user,
-          album_id: row['album_id'],
-          tag_id: row['tag_id']
+          album_id: row["album_id"],
+          tag_id: row["tag_id"]
         )
         album_tag_count += 1
       end
@@ -83,11 +83,11 @@ namespace :data do
 
       # 7. tags_tracks -> user_track_tags
       track_tag_count = 0
-      ActiveRecord::Base.connection.execute('SELECT track_id, tag_id FROM tags_tracks').each do |row|
+      ActiveRecord::Base.connection.execute("SELECT track_id, tag_id FROM tags_tracks").each do |row|
         UserTrackTag.create!(
           user: user,
-          track_id: row['track_id'],
-          tag_id: row['tag_id']
+          track_id: row["track_id"],
+          tag_id: row["tag_id"]
         )
         track_tag_count += 1
       end
@@ -98,6 +98,6 @@ namespace :data do
       puts "Assigned #{playlist_count} playlists to user #{user.id}"
     end
 
-    puts 'Data migration complete!'
+    puts "Data migration complete!"
   end
 end

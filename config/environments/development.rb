@@ -82,5 +82,4 @@ Rails.application.configure do
   # Ensure OmniAuth middleware is loaded for authentication routes
   Rails.application.routes.default_url_options[:host] = "localhost"
   Rails.application.routes.default_url_options[:port] = 3000
-
 end

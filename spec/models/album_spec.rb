@@ -30,7 +30,7 @@ RSpec.describe Album, type: :model do
       album = create(:album)
       artist1 = create(:artist)
       artist2 = create(:artist)
-      album.artists << [artist1, artist2]
+      album.artists << [ artist1, artist2 ]
 
       expect(album.artist_name).to contain_exactly(artist1.name, artist2.name)
     end
@@ -61,5 +61,4 @@ RSpec.describe Album, type: :model do
       expect(album.medium_name).to be_nil
     end
   end
-
 end

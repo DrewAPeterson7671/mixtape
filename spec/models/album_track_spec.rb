@@ -14,6 +14,6 @@ RSpec.describe AlbumTrack, type: :model do
   describe 'validations' do
     subject { create(:album_track) }
 
-    it { is_expected.to validate_uniqueness_of(:album_id).scoped_to([:track_id, :edition_id]) }
+    it { is_expected.to validate_uniqueness_of(:album_id).scoped_to([ :track_id, :edition_id ]) }
   end
 end

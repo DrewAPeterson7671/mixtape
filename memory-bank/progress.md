@@ -91,7 +91,14 @@
 
 ## What's Not Built Yet (Pending)
 
+### Completed Recently
+- [x] `various_artists` boolean on Album — catalog-level flag, JSON artist_name override, frontend checkbox with artist field toggle
+- [x] Duplicate album title fix — `Track#album_title` uses `.distinct` for multi-edition tracks
+
 ### Core New Features
+- [ ] **Inline track entry (Phase 1)** — Checkbox toggle in tracklist grid for bulk track name entry, artist inheritance, album-save transaction
+- [ ] **Edition management modal (Phase 2)** — Separate modal for organizing tracks into editions with template system and sorting
+- [ ] **CSV/streaming import (Phase 3)** — Import tracks from CSV files and streaming platforms with ISRC-based deduplication
 - [ ] Smart playlists — dynamic playlist generation from combinations of attributes (e.g., least recently played tracks by artists starting with "B" in genre "Reggae" from phase "High School")
 - [ ] CSV import/export for artists, albums, tracks, playlists, etc.
 - [ ] Streaming platform integration — connect to Apple Music and Spotify to import artists/albums/tracks and export playlists

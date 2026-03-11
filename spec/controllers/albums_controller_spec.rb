@@ -9,7 +9,7 @@ RSpec.describe AlbumsController, type: :controller do
     it 'returns 200 and JSON array of albums with user preferences' do
       album = create(:album, title: 'OK Computer')
       create(:user_album, user: user, album: album, rating: 5, listened: true)
-      get :index, format: :json
+      get :index, as: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
       expect(json).to be_an(Array)
@@ -26,7 +26,7 @@ RSpec.describe AlbumsController, type: :controller do
       create(:album_track, album: album, track: track, position: 1, disc_number: 1, edition: edition)
       create(:user_album, user: user, album: album)
 
-      get :index, format: :json
+      get :index, as: :json
       entry = JSON.parse(response.body)['data'].find { |a| a['id'] == album.id }
       expect(entry['album_tracks']).to be_an(Array)
       at = entry['album_tracks'].first
@@ -41,7 +41,7 @@ RSpec.describe AlbumsController, type: :controller do
     it 'does not include edition_id at the album level' do
       album = create(:album, title: 'OK Computer')
       create(:user_album, user: user, album: album)
-      get :index, format: :json
+      get :index, as: :json
       entry = JSON.parse(response.body)['data'].find { |a| a['id'] == album.id }
       expect(entry).not_to have_key('edition_id')
       expect(entry).not_to have_key('edition_name')
@@ -53,7 +53,7 @@ RSpec.describe AlbumsController, type: :controller do
       album = create(:album, title: 'OK Computer')
       track = create(:track, title: 'Paranoid Android')
       create(:album_track, album: album, track: track, position: 2, disc_number: 1)
-      get :show, params: { id: album.id }, format: :json
+      get :show, params: { id: album.id }, as: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('OK Computer')
@@ -65,7 +65,7 @@ RSpec.describe AlbumsController, type: :controller do
   describe 'POST #create' do
     it 'creates an Album and UserAlbum and returns 201' do
       expect {
-        post :create, params: { album: { title: 'New Album', year: 2020, rating: 4 } }, format: :json
+        post :create, params: { album: { title: 'New Album', year: 2020, rating: 4 } }, as: :json
       }.to change(Album, :count).by(1).and change(UserAlbum, :count).by(1)
       expect(response).to have_http_status(:created)
       json = JSON.parse(response.body)['data']
@@ -84,7 +84,7 @@ RSpec.describe AlbumsController, type: :controller do
             { track_id: track.id, position: 1, disc_number: 1, edition_id: edition.id }
           ]
         }
-      }, format: :json
+      }, as: :json
 
       expect(response).to have_http_status(:created)
       json = JSON.parse(response.body)['data']
@@ -96,8 +96,155 @@ RSpec.describe AlbumsController, type: :controller do
     end
 
     it 'returns 422 with invalid params' do
-      post :create, params: { album: { title: '' } }, format: :json
+      post :create, params: { album: { title: '' } }, as: :json
       expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'creates inline tracks when album_tracks have title but no track_id' do
+      expect {
+        post :create, params: {
+          album: {
+            title: 'Inline Album',
+            album_tracks: [
+              { title: 'Song One', position: 1, disc_number: 1 },
+              { title: 'Song Two', position: 2, disc_number: 1, duration: 225, isrc: 'US1234567890' }
+            ]
+          }
+        }, as: :json
+      }.to change(Track, :count).by(2).and change(AlbumTrack, :count).by(2)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      titles = json['album_tracks'].map { |at| at['track_title'] }
+      expect(titles).to contain_exactly('Song One', 'Song Two')
+
+      song_two = json['album_tracks'].find { |at| at['track_title'] == 'Song Two' }
+      expect(song_two['duration']).to eq(225)
+      expect(song_two['isrc']).to eq('US1234567890')
+    end
+
+    it 'inherits album artists for inline tracks on non-VA albums' do
+      artist = create(:artist, name: 'Radiohead')
+
+      post :create, params: {
+        album: {
+          title: 'Artist Inherit Album',
+          artist_ids: [ artist.id ],
+          album_tracks: [
+            { title: 'Inherited Track', position: 1, disc_number: 1 }
+          ]
+        }
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      at = json['album_tracks'].first
+      expect(at['artist_ids']).to eq([ artist.id ])
+      expect(at['artist_name']).to eq([ 'Radiohead' ])
+    end
+
+    it 'assigns per-track artists for VA album inline tracks' do
+      artist1 = create(:artist, name: 'Artist A')
+      artist2 = create(:artist, name: 'Artist B')
+
+      post :create, params: {
+        album: {
+          title: 'VA Compilation',
+          various_artists: true,
+          album_tracks: [
+            { title: 'Track A', position: 1, disc_number: 1, artist_ids: [ artist1.id ] },
+            { title: 'Track B', position: 2, disc_number: 1, artist_ids: [ artist2.id ] }
+          ]
+        }
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      track_a = json['album_tracks'].find { |at| at['track_title'] == 'Track A' }
+      track_b = json['album_tracks'].find { |at| at['track_title'] == 'Track B' }
+      expect(track_a['artist_ids']).to eq([ artist1.id ])
+      expect(track_b['artist_ids']).to eq([ artist2.id ])
+    end
+
+    it 'transfers album genres to inline tracks' do
+      genre = create(:genre, name: 'Rock')
+      user_album = nil
+
+      post :create, params: {
+        album: {
+          title: 'Genre Transfer Album',
+          genre_ids: [ genre.id ],
+          album_tracks: [
+            { title: 'Genre Track', position: 1, disc_number: 1 }
+          ]
+        }
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      track_id = json['album_tracks'].first['track_id']
+      track_genres = UserTrackGenre.where(user: user, track_id: track_id).pluck(:genre_id)
+      expect(track_genres).to include(genre.id)
+    end
+
+    it 'appends suffix for duplicate track titles' do
+      track = create(:track, title: 'Untitled')
+
+      post :create, params: {
+        album: {
+          title: 'Dupe Title Album',
+          album_tracks: [
+            { track_id: track.id, position: 1, disc_number: 1 },
+            { title: 'Untitled', position: 2, disc_number: 1 }
+          ]
+        }
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      titles = json['album_tracks'].map { |at| at['track_title'] }
+      expect(titles).to include('Untitled')
+      expect(titles).to include('Untitled (1)')
+    end
+
+    it 'handles mixed existing and new inline tracks' do
+      existing_track = create(:track, title: 'Existing Song')
+
+      expect {
+        post :create, params: {
+          album: {
+            title: 'Mixed Album',
+            album_tracks: [
+              { track_id: existing_track.id, position: 1, disc_number: 1 },
+              { title: 'New Song', position: 2, disc_number: 1 }
+            ]
+          }
+        }, as: :json
+      }.to change(Track, :count).by(1).and change(AlbumTrack, :count).by(2)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      titles = json['album_tracks'].map { |at| at['track_title'] }
+      expect(titles).to contain_exactly('Existing Song', 'New Song')
+    end
+
+    it 'creates UserTrack with listened and rating for inline tracks' do
+      expect {
+        post :create, params: {
+          album: {
+            title: 'Prefs Album',
+            album_tracks: [
+              { title: 'Rated Track', position: 1, disc_number: 1, listened: true, rating: 4 }
+            ]
+          }
+        }, as: :json
+      }.to change(UserTrack, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      at = json['album_tracks'].first
+      expect(at['listened']).to eq(true)
+      expect(at['rating']).to eq(4)
     end
   end
 
@@ -105,7 +252,7 @@ RSpec.describe AlbumsController, type: :controller do
     it 'updates album and user preferences' do
       album = create(:album, title: 'Old Title')
       create(:user_album, user: user, album: album)
-      patch :update, params: { id: album.id, album: { title: 'New Title', rating: 3, listened: true } }, format: :json
+      patch :update, params: { id: album.id, album: { title: 'New Title', rating: 3, listened: true } }, as: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
       expect(json['title']).to eq('New Title')
@@ -132,7 +279,7 @@ RSpec.describe AlbumsController, type: :controller do
             { track_id: track3.id, position: 2, disc_number: 1, edition_id: edition.id }
           ]
         }
-      }, format: :json
+      }, as: :json
 
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -144,13 +291,38 @@ RSpec.describe AlbumsController, type: :controller do
       expect(updated['position']).to eq(1)
     end
 
+    it 'creates inline tracks on update' do
+      album = create(:album, title: 'Update Album')
+      create(:user_album, user: user, album: album)
+      existing_track = create(:track, title: 'Old Track')
+      create(:album_track, album: album, track: existing_track, position: 1, disc_number: 1)
+
+      expect {
+        patch :update, params: {
+          id: album.id,
+          album: {
+            title: 'Update Album',
+            album_tracks: [
+              { track_id: existing_track.id, position: 1, disc_number: 1 },
+              { title: 'New Inline Track', position: 2, disc_number: 1, duration: 180 }
+            ]
+          }
+        }, as: :json
+      }.to change(Track, :count).by(1)
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      titles = json['album_tracks'].map { |at| at['track_title'] }
+      expect(titles).to contain_exactly('Old Track', 'New Inline Track')
+    end
+
     it 'leaves tracks unchanged when album_tracks key is not present' do
       album = create(:album, title: 'OK Computer')
       create(:user_album, user: user, album: album)
       track = create(:track, title: 'Airbag')
       create(:album_track, album: album, track: track, position: 1, disc_number: 1)
 
-      patch :update, params: { id: album.id, album: { title: 'Updated Title' } }, format: :json
+      patch :update, params: { id: album.id, album: { title: 'Updated Title' } }, as: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
       expect(json['album_tracks'].length).to eq(1)
@@ -162,7 +334,7 @@ RSpec.describe AlbumsController, type: :controller do
       album = create(:album)
       create(:user_album, user: user, album: album)
       expect {
-        delete :destroy, params: { id: album.id }, format: :json
+        delete :destroy, params: { id: album.id }, as: :json
       }.to change(UserAlbum, :count).by(-1).and change(Album, :count).by(0)
       expect(response).to have_http_status(:no_content)
     end
@@ -171,7 +343,7 @@ RSpec.describe AlbumsController, type: :controller do
   describe 'unauthenticated' do
     it 'returns 401 when not logged in' do
       session.delete(:user_id)
-      get :index, format: :json
+      get :index, as: :json
       expect(response).to have_http_status(:unauthorized)
     end
   end

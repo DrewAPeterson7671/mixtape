@@ -1,10 +1,44 @@
 # Active Context
 
-## Current Branch
+## Current Branches
 
-`mixtape-dev-tracks_controller` — Track data model refactor branch.
+- **Backend:** `mix-dev-tracks_controller2`
+- **Frontend:** `mixtape-dev-tracks-improve`
 
-## Recent Changes (Mar 2026)
+## Recent Changes (Mar 10, 2026)
+
+- **various_artists boolean on Album** — Added catalog-level `various_artists` boolean to `albums` table. In JSON output, `artist_name` returns `['Various Artists']` when true, real artists otherwise. Frontend has "VA Collection" checkbox next to Artists tagfield; checking it disables/clears the artist tagfield. Commits: backend `98975d3`, frontend `c4db19f`.
+- **Duplicate album title fix** — `Track#album_title` now uses `albums.distinct.map(&:title)` to prevent duplicate album names when a track appears on the same album via multiple editions. Commit: `da3ce04`.
+
+## In-Progress Design: Inline Track Entry & Edition Management
+
+**Status: Design discussion, not yet implemented.**
+
+Feature to allow bulk track entry directly in the album detail tracklist grid, replacing the one-at-a-time "Add Track" workflow.
+
+### Decided
+1. **Checkbox toggle** ("Enter Track Names") switches the tracklist grid into edit mode — Title column becomes editable input fields
+2. **Artist inheritance** — Non-VA albums: album's `artist_ids` copied to each new track's `artists_tracks`. VA albums: per-track artist editing in the grid
+3. **Genre transfer** — Album's user genres copied to new tracks at creation time only (one-time copy, no propagation)
+4. **Rating + Listened** — Per-track star rating and listened checkbox in the grid (user_track preferences)
+5. **Duration + ISRC** — Editable columns in the grid (catalog-level fields on tracks)
+6. **Save timing** — All new tracks created on album save (single transactional request), not individually
+7. **Duplicate handling** — Typeahead on track title to show existing catalog tracks. OS-style `(1)` suffix for same-title tracks on same album. For future CSV/streaming imports, ISRC-based deduplication preferred over title matching.
+
+### Edition Management Design (Under Discussion)
+- **Default edition** — Tracks without an edition keep `edition_id: null`. UI presents null-edition tracks as "Unsorted" or "Default" (no sentinel record in editions table preferred over creating an "Unsorted Album Tracks" edition — still being discussed)
+- **Edition management modal** — Separate from main album form. Features:
+  - Edition selector/creator at top
+  - "Use As Template" dropdown — lists populated editions as starting points (e.g., copy Original Release track order into Anniversary Edition, then add bonus tracks)
+  - Sortable track list with up/down buttons and per-track remove (remove from edition only, track stays in unsorted pool)
+  - Available tracks pool showing unassigned tracks
+- **New inline tracks** — Inherit currently-selected edition filter value (or null if none)
+- **Phased implementation proposed:**
+  - Phase 1: Inline track name entry with checkbox toggle, artist inheritance, album-save transaction
+  - Phase 2: Edition management modal with template system, sorting, unsorted pool
+  - Phase 3: CSV/streaming import with ISRC-based deduplication
+
+## Earlier Changes (Mar 2026)
 
 - **Track data model refactor** — Major restructure of the Track model to support multiple artists and multiple albums per track:
   - Track `belongs_to :artist` replaced with HABTM `artists` (via `artists_tracks` join table, matching the Album/Artist pattern)

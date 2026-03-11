@@ -23,5 +23,4 @@ class Album < ApplicationRecord
   def medium_name
     medium&.name
   end
-
 end

@@ -98,8 +98,8 @@ class TracksController < ApplicationController
 
   def track_json(track, pref)
     track.as_json(
-      only: [:id, :title, :duration, :isrc, :created_at, :updated_at],
-      methods: [:artist_name, :album_title, :medium_name]
+      only: [ :id, :title, :duration, :isrc, :created_at, :updated_at ],
+      methods: [ :artist_name, :album_title, :medium_name ]
     ).merge(
       listened: pref&.listened || false,
       rating: pref&.rating,

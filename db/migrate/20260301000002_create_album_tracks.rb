@@ -8,6 +8,6 @@ class CreateAlbumTracks < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :album_tracks, [:album_id, :track_id], unique: true
+    add_index :album_tracks, [ :album_id, :track_id ], unique: true
   end
 end

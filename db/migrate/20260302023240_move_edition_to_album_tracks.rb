@@ -9,8 +9,8 @@ class MoveEditionToAlbumTracks < ActiveRecord::Migration[7.2]
       WHERE album_tracks.album_id = albums.id
     SQL
 
-    remove_index :album_tracks, [:album_id, :track_id], unique: true
-    add_index :album_tracks, [:album_id, :track_id, :edition_id],
+    remove_index :album_tracks, [ :album_id, :track_id ], unique: true
+    add_index :album_tracks, [ :album_id, :track_id, :edition_id ],
               unique: true,
               name: "index_album_tracks_on_album_track_edition"
 
@@ -29,7 +29,7 @@ class MoveEditionToAlbumTracks < ActiveRecord::Migration[7.2]
     SQL
 
     remove_index :album_tracks, name: "index_album_tracks_on_album_track_edition"
-    add_index :album_tracks, [:album_id, :track_id], unique: true
+    add_index :album_tracks, [ :album_id, :track_id ], unique: true
 
     remove_reference :album_tracks, :edition, foreign_key: true
   end

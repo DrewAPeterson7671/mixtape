@@ -108,7 +108,7 @@ class ArtistsController < ApplicationController
   end
 
   def artist_json(artist, pref)
-    artist.as_json(only: [:id, :name, :wikipedia, :discogs, :created_at, :updated_at]).merge(
+    artist.as_json(only: [ :id, :name, :wikipedia, :discogs, :created_at, :updated_at ]).merge(
       complete: pref&.complete || false,
       rating: pref&.rating,
       priority_id: pref&.priority_id,
