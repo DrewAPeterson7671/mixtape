@@ -5,6 +5,16 @@
 - **Backend:** `mix-dev-tracks_controller2`
 - **Frontend:** `mixtape-dev-tracks-improve`
 
+## Recent Changes (Mar 12, 2026)
+
+- **Edition Management Modal (Phase 2)** — Full implementation of edition management:
+  - **Backend:** New `PUT /albums/:id/edition_tracks` endpoint in AlbumsController. Accepts `{ edition_id, tracks: [{ track_id, position, disc_number }] }`. Handles removing tracks from edition (returns to unsorted), adding unsorted tracks to edition, creating new album_tracks for multi-edition tracks, and disc_number validation (consecutive from 1, no gaps). 13 new RSpec tests in `albums_controller_edition_tracks_spec.rb`.
+  - **Frontend modal:** `EditionManagerModal.js` (Ext.window.Window) with border layout — edition selector tbar, edition tracks grid (center, sortable), available tracks grid (east), Up/Down reorder, Save/Close bbar.
+  - **Frontend controller:** `EditionManagerController.js` with edition selection, dual-grid loading, add/remove between grids, reorder, renumber positions, dirty tracking (snapshot-based), save via API, and edition operations (Create New Edition, Copy To with Overwrite/Append/Cancel, Move To, Clear with confirmation).
+  - **AlbumDetail.js:** Added "Manage Editions" button (hidden, shown when consider_editions enabled), added `EditionManagerModal` to requires.
+  - **AlbumController.js:** `updateEditionVisibility` toggles the new button; `onManageEditionsClick` guards for saved albums, collects all album_tracks, creates/shows modal, listens for `editionsaved` to refresh tracklist.
+  - **Route:** `resources :albums` changed to block with `member { put :edition_tracks }`.
+
 ## Recent Changes (Mar 10-11, 2026)
 
 - **Inline track creation on album save (Phase 1)** — Full backend implementation of bulk track entry during album create/update. `handle_album_tracks` orchestrates album_track sync, `create_inline_track` creates Track + UserTrack with artist inheritance and genre transfer, `resolve_duplicate_title` handles same-title tracks. Frontend: tracklist grid with CellEditing plugin, "Enter Track Names" checkbox toggle, entry mode with `is_new` flag rows, typeahead combobox, DurationField widget, per-track artist editing for VA albums, edition filter/column. Backend commit: `0d0eb3f`.
@@ -16,7 +26,7 @@
 
 ## Inline Track Entry & Edition Management
 
-**Status: Phase 1 complete. Phase 2 & 3 pending.**
+**Status: Phase 1 & 2 complete. Phase 3 pending.**
 
 ### Implemented in Phase 1
 
@@ -42,7 +52,7 @@
 - Per-track artist editing for VA albums
 - Edition filter combobox and edition column (visibility tied to `consider_editions` checkbox)
 
-### Phase 2: Edition Management Modal (Pending)
+### Phase 2: Edition Management Modal (Complete)
 
 **Entry point:** "Manage Editions" button on the tracklist toolbar in Album Detail.
 

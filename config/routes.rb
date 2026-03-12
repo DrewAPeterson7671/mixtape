@@ -8,7 +8,11 @@ Rails.application.routes.draw do
   resources :tags
   resources :playlists
   resources :artists
-  resources :albums
+  resources :albums do
+    member do
+      put :edition_tracks
+    end
+  end
   resources :tracks
 
 

@@ -2,7 +2,15 @@
 
 Rails JSON API backend for a music catalog app. The frontend is a separate project at `/Users/drewpeterson/code/pers/music-project/mixtapeUI/mixtape`.
 
+## Memory Bank
+
 For detailed documentation, see the `memory-bank/` directory.
+
+The Memory Bank files are a living document that summarizes this project and it's many aspects.  It is a knowledge base for both the frontend and backend apps.
+
+Review it when planning for this app.
+
+Upon a commit, please update the memory bank with an relevant changes.
 
 ## Architecture
 

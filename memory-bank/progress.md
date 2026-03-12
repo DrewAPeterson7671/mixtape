@@ -93,6 +93,7 @@
 ## What's Not Built Yet (Pending)
 
 ### Completed Recently
+- [x] Edition management modal (Phase 2) — Backend `PUT /albums/:id/edition_tracks` endpoint with disc_number validation and transaction logic. Frontend `EditionManagerModal` + `EditionManagerController` with edition selector, dual grids (edition tracks + available tracks), add/remove/reorder, save via API, dirty tracking, and edition operations (Create New, Copy To, Move To, Clear). "Manage Editions" button in AlbumDetail tracklist tbar, visibility toggled by `consider_editions`.
 - [x] Inline track entry (Phase 1) — checkbox toggle, artist inheritance, genre transfer, duration/ISRC, entry mode, album-save transaction, `handle_album_tracks`/`create_inline_track`/`copy_album_genres_to_track`/`resolve_duplicate_title` in AlbumsController
 - [x] Track CRUD frontend — TrackGrid, TrackDetail, TrackController with full CRUD following Artist/Album template pattern
 - [x] `consider_editions` toggle — backend boolean on UserAlbum + frontend checkbox with edition UI visibility
@@ -102,7 +103,7 @@
 
 ### Core New Features
 - [x] **Inline track entry (Phase 1)** — Checkbox toggle in tracklist grid for bulk track name entry, artist inheritance, album-save transaction
-- [ ] **Edition management modal (Phase 2)** — Separate modal for organizing tracks into editions with template system and sorting
+- [x] **Edition management modal (Phase 2)** — Separate modal for organizing tracks into editions, dual-grid UI, save via `PUT /albums/:id/edition_tracks`, Copy To/Move To/Clear operations
 - [ ] **CSV/streaming import (Phase 3)** — Import tracks from CSV files and streaming platforms with ISRC-based deduplication
 - [ ] Smart playlists — dynamic playlist generation from combinations of attributes (e.g., least recently played tracks by artists starting with "B" in genre "Reggae" from phase "High School")
 - [ ] CSV import/export for artists, albums, tracks, playlists, etc.

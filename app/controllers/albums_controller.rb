@@ -1,7 +1,7 @@
 class AlbumsController < ApplicationController
   include UserPreferable
 
-  before_action :set_album, only: %i[show update destroy]
+  before_action :set_album, only: %i[show update destroy edition_tracks]
   skip_before_action :verify_authenticity_token
 
   # GET /albums
@@ -75,10 +75,73 @@ class AlbumsController < ApplicationController
     head :no_content
   end
 
+  # PUT /albums/:id/edition_tracks
+  def edition_tracks
+    edition_id = params[:edition_id].present? ? params[:edition_id].to_i : nil
+    submitted = Array(params[:tracks])
+
+    unless validate_disc_numbers(submitted)
+      return render json: { error: "Disc numbers must be consecutive starting from 1 with no gaps" },
+                    status: :unprocessable_entity
+    end
+
+    ActiveRecord::Base.transaction do
+      existing = @album.album_tracks.where(edition_id: edition_id)
+      existing_by_track_id = existing.index_by(&:track_id)
+      submitted_track_ids = submitted.map { |t| t[:track_id].to_i }.to_set
+
+      # Tracks in DB but not in submitted list → return to unsorted pool
+      existing_by_track_id.each do |track_id, at|
+        next if submitted_track_ids.include?(track_id)
+
+        null_row = @album.album_tracks.find_by(track_id: track_id, edition_id: nil)
+        if null_row
+          at.destroy!
+        else
+          at.update!(edition_id: nil, position: nil, disc_number: nil)
+        end
+      end
+
+      # Tracks in submitted list
+      submitted.each do |t_params|
+        track_id = t_params[:track_id].to_i
+        position = t_params[:position].to_i
+        disc_number = t_params[:disc_number].present? ? t_params[:disc_number].to_i : nil
+
+        if existing_by_track_id.key?(track_id)
+          # Update existing
+          existing_by_track_id[track_id].update!(position: position, disc_number: disc_number)
+        else
+          # Find unsorted album_track for this track and reassign, or create new
+          unsorted = @album.album_tracks.find_by(track_id: track_id, edition_id: nil)
+          if unsorted
+            unsorted.update!(edition_id: edition_id, position: position, disc_number: disc_number)
+          else
+            @album.album_tracks.create!(track_id: track_id, edition_id: edition_id, position: position, disc_number: disc_number)
+          end
+        end
+      end
+    end
+
+    @album.reload
+    @user_pref = current_user_album(@album)
+    @user_track_prefs = current_user.user_tracks.where(track_id: @album.track_ids).index_by(&:track_id)
+
+    render json: { data: album_json(@album, @user_pref, @user_track_prefs) }
+  end
+
   private
 
   def set_album
     @album = Album.find(params[:id])
+  end
+
+  def validate_disc_numbers(submitted_tracks)
+    disc_numbers = submitted_tracks.map { |t| t[:disc_number] }.compact.map(&:to_i)
+    return true if disc_numbers.empty?
+
+    sorted = disc_numbers.uniq.sort
+    sorted == (1..sorted.length).to_a
   end
 
   def album_params
