@@ -43,13 +43,35 @@
 - Edition filter combobox and edition column (visibility tied to `consider_editions` checkbox)
 
 ### Phase 2: Edition Management Modal (Pending)
-- **Default edition** — Tracks without an edition keep `edition_id: null`. UI presents null-edition tracks as "Unsorted" or "Default" (no sentinel record in editions table preferred over creating an "Unsorted Album Tracks" edition — still being discussed)
-- **Edition management modal** — Separate from main album form. Features:
-  - Edition selector/creator at top
-  - "Use As Template" dropdown — lists populated editions as starting points (e.g., copy Original Release track order into Anniversary Edition, then add bonus tracks)
-  - Sortable track list with up/down buttons and per-track remove (remove from edition only, track stays in unsorted pool)
-  - Available tracks pool showing unassigned tracks
-- **New inline tracks** — Inherit currently-selected edition filter value (or null if none)
+
+**Entry point:** "Manage Editions" button on the tracklist toolbar in Album Detail.
+
+**Default edition:** Tracks without an edition keep `edition_id: null`. No sentinel record in the editions table. UI presents null-edition tracks as "Unsorted" in the available tracks pool.
+
+**Modal layout:**
+- **Edition selector** at top — dropdown of editions that have tracks populated on this album (not all editions in the catalog). Selecting an edition loads its tracks into the sortable list.
+- **Sortable track list** (left/main panel) — tracks assigned to the selected edition, with up/down reorder buttons and per-track remove (returns track to available pool). Each track has an editable `disc_number` field (nullable integer) and `position` is derived from list order.
+- **Available tracks pool** (right/secondary panel) — shows album tracks not assigned to the currently selected edition. Tracks can be on multiple editions simultaneously.
+
+**Edition operations (buttons in modal toolbar):**
+- **Create New Edition** — creates a new Edition record (catalog-level, visible to all users), same as the Editions lookup screen. Needed because edition names are not standardized.
+- **Copy To** — copies all tracks from the current edition to a target edition (selected via dropdown showing all editions, including unpopulated ones). If the target already has tracks, a confirmation popup offers three choices: Overwrite, Append, or Cancel.
+- **Move To** — same as Copy To, but clears the source edition after copying. Confirmation popup shows the same Overwrite/Append/Cancel options, with messaging that makes clear the source will also be cleared.
+- **Clear** — removes all track assignments from the current edition (sets `edition_id: null` on those `AlbumTrack` rows, returning tracks to the unsorted pool). Confirmation popup: "Clear this edition? Are you sure?" Y/N.
+
+**Edition dropdown scoping:**
+- The edition selector in the modal and the edition filter on the Album Detail tracklist only show editions that have tracks populated on this album.
+- The Copy To and Move To target dropdowns show all editions (including unpopulated ones), giving users the opportunity to bring in a different edition without cluttering the main dropdown.
+
+**Save behavior:** Batch save — user arranges tracks, then saves all changes at once on confirm. Modal state is preserved on save failure with an error message.
+
+**Validation on save:**
+- Track positions are auto-renumbered from list order (position = index + 1). Removing a track renumbers the remaining tracks with no gaps.
+- Disc numbers are validated for consecutive ordering with no gaps when present. Null disc numbers are allowed (single-disc albums don't need them).
+
+**Catalog-level implications:** Editions and track-to-edition assignments live on `AlbumTrack` (shared catalog data). Any user with `consider_editions` enabled can modify edition assignments, affecting all users. This is intentional — editions are catalog metadata. Future consideration: admin curation layer where new editions are user-local until an admin promotes them to the catalog.
+
+**New inline tracks:** Inherit the currently-selected edition filter value (or null if none) when created via the tracklist entry mode.
 
 ### Phase 3: CSV/Streaming Import (Pending)
 - CSV/streaming import with ISRC-based deduplication
