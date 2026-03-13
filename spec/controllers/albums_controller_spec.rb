@@ -316,6 +316,28 @@ RSpec.describe AlbumsController, type: :controller do
       expect(titles).to contain_exactly('Old Track', 'New Inline Track')
     end
 
+    it 'sets default_edition_id and returns it in the response' do
+      album = create(:album, title: 'Edition Album')
+      edition = create(:edition, name: 'Deluxe')
+      create(:user_album, user: user, album: album)
+
+      patch :update, params: { id: album.id, album: { default_edition_id: edition.id } }, as: :json
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json['default_edition_id']).to eq(edition.id)
+    end
+
+    it 'clears default_edition_id when set to nil' do
+      album = create(:album, title: 'Edition Album')
+      edition = create(:edition, name: 'Deluxe')
+      create(:user_album, user: user, album: album, default_edition: edition)
+
+      patch :update, params: { id: album.id, album: { default_edition_id: nil } }, as: :json
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json['default_edition_id']).to be_nil
+    end
+
     it 'leaves tracks unchanged when album_tracks key is not present' do
       album = create(:album, title: 'OK Computer')
       create(:user_album, user: user, album: album)

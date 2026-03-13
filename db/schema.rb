@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_09_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_13_021253) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -180,7 +180,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_09_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "consider_editions", default: false, null: false
+    t.bigint "default_edition_id"
     t.index ["album_id"], name: "index_user_albums_on_album_id"
+    t.index ["default_edition_id"], name: "index_user_albums_on_default_edition_id"
     t.index ["user_id", "album_id"], name: "index_user_albums_on_user_id_and_album_id", unique: true
     t.index ["user_id"], name: "index_user_albums_on_user_id"
   end
@@ -291,6 +293,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_09_000001) do
   add_foreign_key "user_album_tags", "tags"
   add_foreign_key "user_album_tags", "users"
   add_foreign_key "user_albums", "albums"
+  add_foreign_key "user_albums", "editions", column: "default_edition_id"
   add_foreign_key "user_albums", "users"
   add_foreign_key "user_artist_genres", "artists"
   add_foreign_key "user_artist_genres", "genres"

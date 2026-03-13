@@ -149,7 +149,7 @@ class AlbumsController < ApplicationController
   end
 
   def preference_params
-    params.require(:album).permit(:rating, :listened, :consider_editions)
+    params.require(:album).permit(:rating, :listened, :consider_editions, :default_edition_id)
   end
 
   def handle_album_tracks
@@ -287,6 +287,7 @@ class AlbumsController < ApplicationController
       artist_name: album.various_artists? ? [ "Various Artists" ] : album.artist_name,
       listened: pref&.listened || false,
       consider_editions: pref&.consider_editions || false,
+      default_edition_id: pref&.default_edition_id,
       rating: pref&.rating,
       release_type_id: album.release_type_id,
       medium_id: album.medium_id,
