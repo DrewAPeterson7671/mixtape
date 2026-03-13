@@ -49,9 +49,9 @@ These join a `User` to a catalog record and hold per-user metadata.
 - **Helper methods:** `genre_name`, `priority_name`, `phase_name`
 
 ### UserAlbum
-- **Fields:** `user_id`, `album_id`, `rating`, `listened` (boolean, default false), `consider_editions` (boolean, default false)
+- **Fields:** `user_id`, `album_id`, `rating`, `listened` (boolean, default false), `consider_editions` (boolean, default false), `default_edition_id` (nullable FK to `editions`)
 - **Validations:** `album_id` uniqueness scoped to `user_id`; `rating` integer 1-5 (nullable)
-- **Relationships:** belongs_to `user`, `album`; has_many `user_album_genres`/`user_album_tags` (scoped)
+- **Relationships:** belongs_to `user`, `album`; belongs_to `default_edition` (class_name: 'Edition', optional: true); has_many `user_album_genres`/`user_album_tags` (scoped)
 
 ### UserTrack
 - **Fields:** `user_id`, `track_id`, `rating`, `listened` (boolean, default false)
@@ -94,7 +94,7 @@ Simple `name`-only models with no custom logic:
 | Priority | UserArtist |
 | Phase | UserArtist |
 | Medium | Album, Track |
-| Edition | AlbumTrack |
+| Edition | AlbumTrack, UserAlbum (default_edition) |
 | ReleaseType | Album |
 
 ## Playlist

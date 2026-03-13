@@ -146,7 +146,7 @@ The `as_json(only: [...])` pattern whitelists catalog fields, then `.merge(...)`
 
 All three catalog controllers extract this into private `*_json` helpers that include ID fields needed by the frontend form:
 - `artist_json(artist, pref)` — includes `priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`
-- `album_json(album, pref, user_track_prefs)` — includes `artist_ids`, `medium_id`, `release_type_id`, `consider_editions`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`, and an `album_tracks` array (see below)
+- `album_json(album, pref, user_track_prefs)` — includes `artist_ids`, `medium_id`, `release_type_id`, `consider_editions`, `default_edition_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`, and an `album_tracks` array (see below)
 - `track_json(track, pref)` — includes `artist_ids` (array), `album_ids` (array), `medium_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`
 
 The `album_json` response includes an `album_tracks` array sorted by `[disc_number, position]`. Each entry contains:
@@ -310,9 +310,10 @@ The Album Detail form includes an inline tracklist grid for viewing and editing 
 ### Edition UI Pattern
 
 - "Consider Editions" checkbox on the album form toggles `consider_editions` on the UserAlbum preference
-- When checked: edition filter dropdown and edition column become visible in the tracklist grid
+- When checked: edition filter dropdown, edition column, "Manage Editions" button, and "Default Edition" checkbox become visible in the tracklist grid
 - When unchecked: edition UI is hidden, all tracks shown regardless of edition
 - Edition is stored on `AlbumTrack` (not Album), so the same track can appear on different editions
+- **Default Edition:** Users can set a default edition per album via `default_edition_id` on `UserAlbum`. When loading an album with a default edition, the edition filter auto-selects it. The "Default Edition" checkbox in the tracklist tbar saves/clears this preference via PUT. A `_syncingDefaultEdition` guard flag prevents the checkbox change handler from re-saving when the checkbox is being programmatically synced (e.g., on album load or edition filter change)
 
 ### Existing File Modifications (per entity)
 

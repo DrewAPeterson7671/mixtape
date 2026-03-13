@@ -5,6 +5,12 @@
 - **Backend:** `mix-dev-tracks_controller2`
 - **Frontend:** `mixtape-dev-tracks-improve`
 
+## Recent Changes (Mar 13, 2026)
+
+- **Default Edition per Album** — Users can now set a default edition that auto-selects when loading an album:
+  - **Backend:** New `default_edition_id` column on `user_albums` (nullable FK to `editions`). `UserAlbum` model has `belongs_to :default_edition, class_name: 'Edition', optional: true`. AlbumsController permits `default_edition_id` in `preference_params` and includes it in `album_json` response. Two new RSpec tests (set and clear).
+  - **Frontend:** "Default Edition" checkbox added to tracklist tbar (hidden when editions disabled). `onGridCellClick` auto-selects the default edition in the filter and checks the checkbox on album load. `onDefaultEditionChange` handler saves/clears via PUT (validates an edition is selected first). `onEditionFilterChange` syncs checkbox state using `_syncingDefaultEdition` guard flag. `onSaveClick` includes `default_edition_id` from the record in the save payload.
+
 ## Recent Changes (Mar 12, 2026)
 
 - **Edition Management Modal (Phase 2)** — Full implementation of edition management:
