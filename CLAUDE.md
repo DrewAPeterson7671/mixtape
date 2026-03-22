@@ -29,6 +29,14 @@ Ruby 3.4.2 is managed via rbenv. The CLI agent's shell may not resolve rbenv cor
 - `bin/rubocop` — lint (runs in CI)
 - `POST /test/login` — dev/test-only endpoint for E2E auth bypass (sets session directly, accepts `email` and `name` params)
 
+## Slash Commands (Test Sub-Agent)
+
+Custom Claude Code commands in `.claude/commands/` for RSpec testing:
+
+- `/project:test-write <model or controller>` — Generates a new RSpec spec following existing patterns (FactoryBot, Shoulda Matchers, `sign_in` helper)
+- `/project:test-run [path]` — Runs `bundle exec rspec` (full suite or targeted), analyzes failures
+- `/project:test-debug <failure>` — Diagnoses a specific test failure by reading spec + source + factories
+
 ## Dev Database
 
 PostgreSQL runs on port **5433** (not the default 5432). Dev credentials are in `config/database.yml`.

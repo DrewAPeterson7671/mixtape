@@ -75,6 +75,9 @@
 - [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, and album tests
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
+- [x] Claude Code test sub-agents — backend RSpec agent and frontend E2E agent as slash commands in `.claude/commands/`
+- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, ComponentQuery wrappers)
+- [x] Playwright MCP config in frontend repo (`.mcp.json`)
 
 ### Documentation
 - [x] CLAUDE.md with project context

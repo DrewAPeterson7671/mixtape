@@ -338,3 +338,68 @@ The center panel in `Main.js` should NOT have a `reference` config. The `removeA
 
 - Controller must include ID fields in JSON responses (see `artist_json`/`album_json`/`track_json` helper pattern)
 - Controller `update` must call `save!` BEFORE genre/tag sync to prevent `pref.reload` data loss (all three catalog controllers now follow this pattern)
+
+## Testing Patterns
+
+### RSpec Controller Spec Pattern
+
+```ruby
+RSpec.describe SomeController, type: :controller do
+  let(:user) { create(:user) }
+  before { sign_in(user) }
+
+  describe 'GET #index' do
+    it 'returns records with user preferences' do
+      record = create(:some_model)
+      create(:user_some_model, user: user, some_model: record, rating: 5)
+
+      get :index, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json.first['rating']).to eq(5)
+    end
+  end
+end
+```
+
+Key conventions: `sign_in(user)` helper, `as: :json` format, parse from `['data']`, create join records explicitly for user preferences, test auth rejection separately.
+
+### RSpec Model Spec Pattern
+
+```ruby
+RSpec.describe SomeModel, type: :model do
+  it 'has a valid factory' do
+    expect(build(:some_model)).to be_valid
+  end
+
+  describe 'associations' do
+    it { is_expected.to have_many(:users).through(:user_some_models) }
+    it { is_expected.to belong_to(:lookup).optional }
+  end
+
+  describe 'validations' do
+    it { is_expected.to validate_presence_of(:name) }
+  end
+end
+```
+
+Key conventions: factory validation first, Shoulda Matchers for associations/validations, `.optional`/`.dependent(:destroy)` modifiers.
+
+### Playwright E2E Test Pattern
+
+```javascript
+const { waitForExtReady, navigateToView } = require('./helpers/extjs');
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/');
+  await waitForExtReady(page);
+  await navigateToView(page, 'Albums');
+});
+```
+
+Key conventions: wait for `Ext.isReady` via shared helper, navigate via tree nodes using `navigateToView()`, wait for grid via `getByRole('grid')`, use Ext.js CSS selectors (`.x-grid-row`, `.x-column-header-text`, `.x-form-item`, `.x-btn-inner`). Shared helpers in `e2e/helpers/extjs.js`.
+
+### Claude Code Test Sub-Agent Architecture
+
+Two specialized agents in separate repos, each with 3 slash commands (write/run/debug). Backend agent knows RSpec/FactoryBot/Shoulda. Frontend agent knows Playwright/Ext.js/MCP tools. Each agent references its repo's test patterns as templates.

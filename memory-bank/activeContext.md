@@ -5,7 +5,16 @@
 - **Backend:** `mix-dev-tracks_controller2`
 - **Frontend:** `mixtape-dev-tracks-improve`
 
-## Recent Changes (Mar 22, 2026)
+## Recent Changes (Mar 22, 2026) — Test Sub-Agents
+
+- **Claude Code Test Sub-Agents** — Two specialized testing sub-agents as slash commands:
+  - **Backend:** `.claude/commands/test-write.md`, `test-run.md`, `test-debug.md` for RSpec testing
+  - **Frontend:** `.claude/commands/e2e-write.md`, `e2e-run.md`, `e2e-debug.md` for Playwright E2E testing
+  - **E2E helpers:** `e2e/helpers/extjs.js` with shared utilities (`waitForExtReady`, `navigateToView`, ComponentQuery wrappers)
+  - **Frontend MCP config:** Added `.mcp.json` to frontend repo for Playwright MCP access
+  - Existing E2E tests refactored to use shared helpers
+
+## Recent Changes (Mar 22, 2026) — E2E Testing
 
 - **Playwright E2E Testing & MCP Server** — Added full-stack browser testing infrastructure:
   - **Frontend:** Installed Playwright in `mixtapeUI/mixtape/`, created `playwright.config.js` with auth setup + chromium projects, added E2E test suite (`e2e/auth.setup.js`, `smoke.spec.js`, `navigation.spec.js`, `albums.spec.js`). Tests use Ext JS CSS class selectors and text-based locators.

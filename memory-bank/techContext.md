@@ -189,4 +189,28 @@ Playwright is installed in the **frontend repo** (`mixtapeUI/mixtape/`) for full
 
 ### MCP Server
 
-`@playwright/mcp` is configured in `.mcp.json` (backend repo) as a Claude Code MCP server. It launches a headed browser that Claude Code can drive interactively for debugging, testing, and navigating the app during dev sessions.
+`@playwright/mcp` is configured in `.mcp.json` (both repos) as a Claude Code MCP server. It launches a headed browser that Claude Code can drive interactively for debugging, testing, and navigating the app during dev sessions.
+
+### Claude Code Test Sub-Agents
+
+Two specialized testing sub-agents implemented as Claude Code slash commands, one per repo:
+
+**Backend Agent** (`mixtape/.claude/commands/`):
+- `test-write.md` — Generates RSpec specs following existing patterns
+- `test-run.md` — Runs specs and analyzes failures
+- `test-debug.md` — Diagnoses specific test failures
+
+**Frontend Agent** (`mixtapeUI/mixtape/.claude/commands/`):
+- `e2e-write.md` — Generates Playwright E2E specs following existing patterns
+- `e2e-run.md` — Runs E2E suite and analyzes results
+- `e2e-debug.md` — Interactive browser debugging via Playwright MCP tools
+
+**MCP Tool Names** (correct names for use in slash commands):
+- `mcp__playwright__browser_navigate` — go to URL
+- `mcp__playwright__browser_snapshot` — accessibility tree (preferred over screenshots)
+- `mcp__playwright__browser_take_screenshot` — visual capture
+- `mcp__playwright__browser_evaluate` — run JS (ComponentQuery, store access)
+- `mcp__playwright__browser_click` — click elements (uses `ref` from snapshot)
+- `mcp__playwright__browser_type` — type into fields
+
+Shared E2E helpers in `mixtapeUI/mixtape/e2e/helpers/extjs.js` provide `waitForExtReady()`, `navigateToView()`, and ComponentQuery utilities.
