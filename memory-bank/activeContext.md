@@ -5,6 +5,13 @@
 - **Backend:** `mix-dev-tracks_controller2`
 - **Frontend:** `mixtape-dev-tracks-improve`
 
+## Recent Changes (Mar 22, 2026)
+
+- **Playwright E2E Testing & MCP Server** — Added full-stack browser testing infrastructure:
+  - **Frontend:** Installed Playwright in `mixtapeUI/mixtape/`, created `playwright.config.js` with auth setup + chromium projects, added E2E test suite (`e2e/auth.setup.js`, `smoke.spec.js`, `navigation.spec.js`, `albums.spec.js`). Tests use Ext JS CSS class selectors and text-based locators.
+  - **Backend:** New `TestAuthController` with `POST /test/login` endpoint (dev/test only) that bypasses Cognito OAuth by setting `session[:user_id]` directly. Route guarded by `Rails.env.development? || Rails.env.test?`.
+  - **MCP Server:** Added `.mcp.json` with `@playwright/mcp` server config for Claude Code browser automation during dev sessions.
+
 ## Recent Changes (Mar 13, 2026)
 
 - **Default Edition per Album** — Users can now set a default edition that auto-selects when loading an album:

@@ -23,6 +23,10 @@ Rails.application.routes.draw do
   get "/logout", to: "sessions#destroy"
   delete "/logout", to: "sessions#destroy"
 
+  if Rails.env.development? || Rails.env.test?
+    post "/test/login", to: "test_auth#create"
+  end
+
   root to: "home#index"
   # end
 

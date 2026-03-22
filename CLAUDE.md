@@ -27,6 +27,7 @@ Ruby 3.4.2 is managed via rbenv. The CLI agent's shell may not resolve rbenv cor
 - `bin/rails db:migrate` — run pending migrations
 - `bin/brakeman --no-pager` — security scan (runs in CI)
 - `bin/rubocop` — lint (runs in CI)
+- `POST /test/login` — dev/test-only endpoint for E2E auth bypass (sets session directly, accepts `email` and `name` params)
 
 ## Dev Database
 
@@ -47,3 +48,7 @@ AWS Cognito via OmniAuth with session-based auth. `current_user` is looked up fr
 ## Testing
 
 RSpec with FactoryBot and Shoulda Matchers. No Minitest.
+
+## MCP Servers
+
+Configured in `.mcp.json`. The `playwright` MCP server (`@playwright/mcp`) launches a headed browser that Claude Code can drive interactively — useful for debugging UI issues, testing flows, and navigating the app during dev sessions.

@@ -72,6 +72,9 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
+- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, and album tests
+- [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
+- [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 
 ### Documentation
 - [x] CLAUDE.md with project context
