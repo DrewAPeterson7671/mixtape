@@ -5,6 +5,13 @@
 - **Backend:** `mix-dev-tracks_controller2`
 - **Frontend:** `mixtape-dev-tracks-improve`
 
+## Recent Changes (Mar 22, 2026) — Test Orchestrator Commands
+
+- **Test orchestrator slash commands** — Single-invocation write → run → fix cycle:
+  - **Backend:** `/project:test-full` — writes RSpec spec, runs it, diagnoses/fixes failures, re-runs (up to 3 attempts)
+  - **Frontend:** `/project:e2e-full` — writes Playwright spec, runs it, debugs with MCP browser tools, re-runs (up to 3 attempts)
+  - Each orchestrator contains full inline logic (spec patterns, diagnosis checklists, MCP tool references) rather than delegating to sub-commands
+
 ## Recent Changes (Mar 22, 2026) — Test Sub-Agents
 
 - **Claude Code Test Sub-Agents** — Two specialized testing sub-agents as slash commands:

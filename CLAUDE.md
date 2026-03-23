@@ -36,6 +36,7 @@ Custom Claude Code commands in `.claude/commands/` for RSpec testing:
 - `/project:test-write <model or controller>` — Generates a new RSpec spec following existing patterns (FactoryBot, Shoulda Matchers, `sign_in` helper)
 - `/project:test-run [path]` — Runs `bundle exec rspec` (full suite or targeted), analyzes failures
 - `/project:test-debug <failure>` — Diagnoses a specific test failure by reading spec + source + factories
+- `/project:test-full <model or controller>` — Full cycle: writes spec, runs it, diagnoses/fixes failures, re-runs (up to 3 attempts)
 
 ## Dev Database
 
