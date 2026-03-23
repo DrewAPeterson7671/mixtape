@@ -21,7 +21,7 @@ class OmniAuthLogger
   end
 
   def call(env)
-    if env['PATH_INFO']&.start_with?('/auth/')
+    if env["PATH_INFO"]&.start_with?("/auth/")
       Rails.logger.info "OmniAuth middleware handling: #{env['PATH_INFO']}"
     end
     @app.call(env)

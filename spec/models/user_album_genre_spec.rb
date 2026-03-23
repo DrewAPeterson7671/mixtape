@@ -14,6 +14,6 @@ RSpec.describe UserAlbumGenre, type: :model do
   describe 'validations' do
     subject { build(:user_album_genre) }
 
-    it { is_expected.to validate_uniqueness_of(:genre_id).scoped_to([:user_id, :album_id]) }
+    it { is_expected.to validate_uniqueness_of(:genre_id).scoped_to([ :user_id, :album_id ]) }
   end
 end

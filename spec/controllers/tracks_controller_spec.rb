@@ -39,7 +39,7 @@ RSpec.describe TracksController, type: :controller do
   describe 'POST #create' do
     it 'creates a Track and UserTrack and returns 201' do
       expect {
-        post :create, params: { track: { title: 'New Track', artist_ids: [artist.id], rating: 2 } }, format: :json
+        post :create, params: { track: { title: 'New Track', artist_ids: [ artist.id ], rating: 2 } }, format: :json
       }.to change(Track, :count).by(1).and change(UserTrack, :count).by(1)
       expect(response).to have_http_status(:created)
       json = JSON.parse(response.body)['data']
@@ -50,7 +50,7 @@ RSpec.describe TracksController, type: :controller do
     it 'creates an AlbumTrack when album_id is provided' do
       album = create(:album)
       expect {
-        post :create, params: { track: { title: 'Album Track', artist_ids: [artist.id], album_id: album.id, position: 3, disc_number: 1 } }, format: :json
+        post :create, params: { track: { title: 'Album Track', artist_ids: [ artist.id ], album_id: album.id, position: 3, disc_number: 1 } }, format: :json
       }.to change(AlbumTrack, :count).by(1)
       expect(response).to have_http_status(:created)
       at = AlbumTrack.last

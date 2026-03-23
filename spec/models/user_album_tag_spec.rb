@@ -14,6 +14,6 @@ RSpec.describe UserAlbumTag, type: :model do
   describe 'validations' do
     subject { build(:user_album_tag) }
 
-    it { is_expected.to validate_uniqueness_of(:tag_id).scoped_to([:user_id, :album_id]) }
+    it { is_expected.to validate_uniqueness_of(:tag_id).scoped_to([ :user_id, :album_id ]) }
   end
 end

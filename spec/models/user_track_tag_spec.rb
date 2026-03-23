@@ -14,6 +14,6 @@ RSpec.describe UserTrackTag, type: :model do
   describe 'validations' do
     subject { build(:user_track_tag) }
 
-    it { is_expected.to validate_uniqueness_of(:tag_id).scoped_to([:user_id, :track_id]) }
+    it { is_expected.to validate_uniqueness_of(:tag_id).scoped_to([ :user_id, :track_id ]) }
   end
 end

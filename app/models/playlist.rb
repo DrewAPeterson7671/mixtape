@@ -7,7 +7,7 @@ class Playlist < ApplicationRecord
 
   validates :year, numericality: { only_integer: true, greater_than_or_equal_to: 1500, less_than_or_equal_to: ->(_album) { Date.current.year } }, allow_nil: true
 
-  validates :name, presence: true, uniqueness: { scope: :user_id, message: ': Playlist %{value} already exists.' }
+  validates :name, presence: true, uniqueness: { scope: :user_id, message: ": Playlist %{value} already exists." }
 
   validates :platform, presence: true
 

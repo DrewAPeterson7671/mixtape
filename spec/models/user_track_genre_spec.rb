@@ -14,6 +14,6 @@ RSpec.describe UserTrackGenre, type: :model do
   describe 'validations' do
     subject { build(:user_track_genre) }
 
-    it { is_expected.to validate_uniqueness_of(:genre_id).scoped_to([:user_id, :track_id]) }
+    it { is_expected.to validate_uniqueness_of(:genre_id).scoped_to([ :user_id, :track_id ]) }
   end
 end

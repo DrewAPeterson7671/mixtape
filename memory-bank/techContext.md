@@ -21,13 +21,15 @@
 
 ### CORS & API
 - `rack-cors` — Cross-origin request handling for frontend at localhost:1841
-- `jbuilder` — JSON view templates (used by some lookup controllers)
+- `jbuilder` — JSON view templates (in Gemfile but orphaned — all controllers render JSON directly via `render json:`. The 32 `.json.jbuilder` files under `app/views/` are unused)
 
-### Frontend/Hotwire
+### Frontend/Hotwire (Rails scaffold defaults — not actively used)
 - `importmap-rails` — JavaScript ESM import maps
 - `turbo-rails` — Hotwire Turbo for SPA-like page loads
 - `stimulus-rails` — Hotwire Stimulus for JavaScript sprinkles
 - `sprockets-rails` — Asset pipeline
+
+**Note:** These are Rails scaffold defaults still in the Gemfile but not actively used. The frontend is a separate Ext JS application at `localhost:1841`.
 
 ### Database
 - `pg` — PostgreSQL adapter
@@ -119,6 +121,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     resource '*',
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true,
       expose: ['Authorization']
   end
 end
@@ -174,3 +177,40 @@ Specs live under `spec/` following Rails conventions:
 - `spec/controllers/` — controller action tests
 - `spec/factories/` — FactoryBot factory definitions
 - `spec/support/` — shared helpers (currently just `auth_helpers.rb`)
+
+### E2E Testing (Playwright)
+
+Playwright is installed in the **frontend repo** (`mixtapeUI/mixtape/`) for full-stack browser testing.
+
+- **Config:** `playwright.config.js` — baseURL `http://localhost:1841`, testDir `./e2e`, auth setup project + chromium project with saved `storageState`
+- **Auth bypass:** `TestAuthController` in the backend (`POST /test/login`, dev/test only) sets `session[:user_id]` directly, bypassing Cognito OAuth for E2E tests
+- **Test files:** `e2e/auth.setup.js` (auth), `e2e/smoke.spec.js`, `e2e/navigation.spec.js`, `e2e/albums.spec.js`
+- **Prerequisites:** Both servers must be running (Rails on 3000, Sencha on 1841)
+
+### MCP Server
+
+`@playwright/mcp` is configured in `.mcp.json` (both repos) as a Claude Code MCP server. It launches a headed browser that Claude Code can drive interactively for debugging, testing, and navigating the app during dev sessions.
+
+### Claude Code Test Sub-Agents
+
+Two specialized testing sub-agents implemented as Claude Code slash commands, one per repo:
+
+**Backend Agent** (`mixtape/.claude/commands/`):
+- `test-write.md` — Generates RSpec specs following existing patterns
+- `test-run.md` — Runs specs and analyzes failures
+- `test-debug.md` — Diagnoses specific test failures
+
+**Frontend Agent** (`mixtapeUI/mixtape/.claude/commands/`):
+- `e2e-write.md` — Generates Playwright E2E specs following existing patterns
+- `e2e-run.md` — Runs E2E suite and analyzes results
+- `e2e-debug.md` — Interactive browser debugging via Playwright MCP tools
+
+**MCP Tool Names** (correct names for use in slash commands):
+- `mcp__playwright__browser_navigate` — go to URL
+- `mcp__playwright__browser_snapshot` — accessibility tree (preferred over screenshots)
+- `mcp__playwright__browser_take_screenshot` — visual capture
+- `mcp__playwright__browser_evaluate` — run JS (ComponentQuery, store access)
+- `mcp__playwright__browser_click` — click elements (uses `ref` from snapshot)
+- `mcp__playwright__browser_type` — type into fields
+
+Shared E2E helpers in `mixtapeUI/mixtape/e2e/helpers/extjs.js` provide `waitForExtReady()`, `navigateToView()`, and ComponentQuery utilities.

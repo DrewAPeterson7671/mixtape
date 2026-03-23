@@ -3,7 +3,6 @@ class Album < ApplicationRecord
   has_many :album_tracks, dependent: :destroy
   has_many :tracks, through: :album_tracks
   belongs_to :medium, optional: true
-  belongs_to :edition, optional: true
   belongs_to :release_type, optional: true
 
   has_many :user_albums, dependent: :destroy
@@ -23,9 +22,5 @@ class Album < ApplicationRecord
 
   def medium_name
     medium&.name
-  end
-
-  def edition_name
-    edition&.name
   end
 end

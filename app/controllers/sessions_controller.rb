@@ -1,10 +1,10 @@
 class SessionsController < ApplicationController
   require "uri"
 
-  skip_before_action :require_login, only: [:create, :oidc_callback, :destroy, :passthru, :status]
+  skip_before_action :require_login, only: [ :create, :oidc_callback, :destroy, :passthru, :status ]
 
   # Callback endpoints are reached via a cross-site redirect; don't require Rails CSRF token.
-  skip_forgery_protection only: [:create, :oidc_callback]
+  skip_forgery_protection only: [ :create, :oidc_callback ]
 
   # OmniAuth default callback endpoint:
   # GET /auth/:provider/callback  -> sessions#create
@@ -21,8 +21,8 @@ class SessionsController < ApplicationController
 
     domain = ENV.fetch("COGNITO_DOMAIN")
     client_id = ENV.fetch("COGNITO_CLIENT_ID")
-    logout_uri = ENV.fetch("COGNITO_LOGOUT_REDIRECT") 
-    logout_path = ENV.fetch("COGNITO_LOGOUT_PATH", "/logout") 
+    logout_uri = ENV.fetch("COGNITO_LOGOUT_REDIRECT")
+    logout_path = ENV.fetch("COGNITO_LOGOUT_PATH", "/logout")
 
     uri = URI::HTTPS.build(host: domain, path: logout_path)
     uri.query = URI.encode_www_form(

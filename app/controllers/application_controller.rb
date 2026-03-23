@@ -22,5 +22,3 @@ class ApplicationController < ActionController::Base
     head :unauthorized unless current_user
   end
 end
-
-
