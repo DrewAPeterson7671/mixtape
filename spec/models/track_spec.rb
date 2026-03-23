@@ -24,7 +24,7 @@ RSpec.describe Track, type: :model do
       artist = create(:artist, name: 'Radiohead')
       track = create(:track)
       track.artists << artist
-      expect(track.artist_name).to eq(['Radiohead'])
+      expect(track.artist_name).to eq([ 'Radiohead' ])
     end
 
     it 'returns multiple artist names' do
@@ -40,7 +40,7 @@ RSpec.describe Track, type: :model do
       album = create(:album, title: 'OK Computer')
       track = create(:track)
       create(:album_track, album: album, track: track)
-      expect(track.album_title).to eq(['OK Computer'])
+      expect(track.album_title).to eq([ 'OK Computer' ])
     end
 
     it 'returns empty array when no albums' do

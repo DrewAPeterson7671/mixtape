@@ -72,6 +72,13 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
+- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, and album tests
+- [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
+- [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
+- [x] Claude Code test sub-agents — backend RSpec agent and frontend E2E agent as slash commands in `.claude/commands/`
+- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, ComponentQuery wrappers)
+- [x] Playwright MCP config in frontend repo (`.mcp.json`)
+- [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
 
 ### Documentation
 - [x] CLAUDE.md with project context
@@ -88,10 +95,24 @@
 - [ ] Genre/tag sync logic duplicated across 3 controllers — not extracted to shared module
 - [ ] `database.yml` contains stale commented-out SQLite configuration
 - [ ] Dockerfile (if present) may reference sqlite3
+- [ ] Orphaned jbuilder view files — 32 `.json.jbuilder` files exist under `app/views/` but are unused since all controllers render JSON directly
 
 ## What's Not Built Yet (Pending)
 
+### Completed Recently
+- [x] Default edition per album — `default_edition_id` on UserAlbum (nullable FK to editions), auto-selects in edition filter on album load, "Default Edition" checkbox in tracklist tbar with save/clear via PUT, sync with edition filter changes
+- [x] Edition management modal (Phase 2) — Backend `PUT /albums/:id/edition_tracks` endpoint with disc_number validation and transaction logic. Frontend `EditionManagerModal` + `EditionManagerController` with edition selector, dual grids (edition tracks + available tracks), add/remove/reorder, save via API, dirty tracking, and edition operations (Create New, Copy To, Move To, Clear). "Manage Editions" button in AlbumDetail tracklist tbar, visibility toggled by `consider_editions`.
+- [x] Inline track entry (Phase 1) — checkbox toggle, artist inheritance, genre transfer, duration/ISRC, entry mode, album-save transaction, `handle_album_tracks`/`create_inline_track`/`copy_album_genres_to_track`/`resolve_duplicate_title` in AlbumsController
+- [x] Track CRUD frontend — TrackGrid, TrackDetail, TrackController with full CRUD following Artist/Album template pattern
+- [x] `consider_editions` toggle — backend boolean on UserAlbum + frontend checkbox with edition UI visibility
+- [x] DurationField custom widget — `app/view/common/DurationField.js`, m:ss parsing in tracklist grid and track detail
+- [x] `various_artists` boolean on Album — catalog-level flag, JSON artist_name override, frontend checkbox with artist field toggle
+- [x] Duplicate album title fix — `Track#album_title` uses `.distinct` for multi-edition tracks
+
 ### Core New Features
+- [x] **Inline track entry (Phase 1)** — Checkbox toggle in tracklist grid for bulk track name entry, artist inheritance, album-save transaction
+- [x] **Edition management modal (Phase 2)** — Separate modal for organizing tracks into editions, dual-grid UI, save via `PUT /albums/:id/edition_tracks`, Copy To/Move To/Clear operations
+- [ ] **CSV/streaming import (Phase 3)** — Import tracks from CSV files and streaming platforms with ISRC-based deduplication
 - [ ] Smart playlists — dynamic playlist generation from combinations of attributes (e.g., least recently played tracks by artists starting with "B" in genre "Reggae" from phase "High School")
 - [ ] CSV import/export for artists, albums, tracks, playlists, etc.
 - [ ] Streaming platform integration — connect to Apple Music and Spotify to import artists/albums/tracks and export playlists
@@ -101,7 +122,7 @@
 ### Frontend CRUD Rollout
 - [x] Artist CRUD (grid + detail form + star rating) — template pattern for other entities
 - [x] Album CRUD (grid + detail form + star rating + genre auto-populate from artists)
-- [ ] Track CRUD (copy Artist pattern, customize fields)
+- [x] Track CRUD (TrackGrid, TrackDetail, TrackController — full CRUD following Artist/Album pattern)
 - [ ] Playlist CRUD (copy Artist pattern, customize fields)
 - [x] Lookup table CRUD (simpler single-field forms — editions, genres, media, phases, priorities, release types)
 

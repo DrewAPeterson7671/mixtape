@@ -78,6 +78,23 @@ end
 
 Note: `ArtistsController#create` uses `find_or_initialize_by(name:)` to avoid duplicate catalog records. `AlbumsController` and `TracksController` use `new` instead — albums/tracks are not deduplicated by title. `TracksController` additionally calls `handle_album_association` after save to create/update `AlbumTrack` join records when `album_id` is provided.
 
+## Inline Track Creation Pattern (AlbumsController)
+
+When `params[:album][:album_tracks]` is present, `handle_album_tracks` orchestrates a full sync of the album's tracklist within the same transaction as the album save:
+
+1. **Split submitted entries** — Entries with `track_id` are existing tracks; entries with `title` (no `track_id`) are new inline tracks
+2. **Remove deleted album_tracks** — Any `AlbumTrack` not in the submitted existing list is destroyed
+3. **Sync existing entries** — `find_or_initialize_by(track_id, edition_id)` then update position/disc_number
+4. **Create new inline tracks** — Each new entry calls `create_inline_track`:
+   - `resolve_duplicate_title(title, existing_titles)` — appends `(n)` suffix for same-title tracks on the same album
+   - Creates `Track` record with title, duration, isrc
+   - **Artist assignment:** uses per-track `artist_ids` if provided (VA albums), otherwise inherits from album's `artist_ids`
+   - Creates `UserTrack` preference for current user (with optional listened/rating)
+   - `copy_album_genres_to_track(user_track)` — copies the album's user genres to the new track (one-time copy, no ongoing propagation)
+   - Creates `AlbumTrack` with position, disc_number, edition_id
+
+This runs inside the same `ActiveRecord::Base.transaction` as the album create/update, so all tracks are committed atomically.
+
 ## Genre/Tag Sync Pattern
 
 Each catalog controller has private methods to sync genres and tags. The pattern is identical across all three controllers (artists, albums, tracks):
@@ -129,8 +146,14 @@ The `as_json(only: [...])` pattern whitelists catalog fields, then `.merge(...)`
 
 All three catalog controllers extract this into private `*_json` helpers that include ID fields needed by the frontend form:
 - `artist_json(artist, pref)` — includes `priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`
-- `album_json(album, pref)` — includes `artist_ids`, `medium_id`, `edition_id`, `release_type_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`
+- `album_json(album, pref, user_track_prefs)` — includes `artist_ids`, `medium_id`, `release_type_id`, `consider_editions`, `default_edition_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`, and an `album_tracks` array (see below)
 - `track_json(track, pref)` — includes `artist_ids` (array), `album_ids` (array), `medium_id`, `genre_ids`, `tag_ids`, `genre_name`, `tag_name`
+
+The `album_json` response includes an `album_tracks` array sorted by `[disc_number, position]`. Each entry contains:
+- `track_id`, `track_title`, `artist_name` (array), `artist_ids` (array)
+- `position`, `disc_number`, `duration`, `isrc`
+- `edition_id`, `edition_name`
+- `listened` (boolean), `rating` (integer, from user_track preference)
 
 Lookup controllers use `render json: { data: @model }` with the `{ data: ... }` envelope.
 
@@ -260,6 +283,38 @@ Reusable component at `app/view/common/StarRating.js`:
 - Works with `form.loadRecord()` and `form.reset()`
 - **Requires explicit `setValue` after `loadRecord`** — `form.loadRecord()` does not reliably set values on custom `Ext.form.field.Base` subclasses (same issue as tagfields with array values). After `loadRecord`, call `ratingField.setValue(record.get('rating'))` explicitly
 
+### DurationField Widget
+
+Reusable component at `app/view/common/DurationField.js`:
+- Custom text field that parses "m:ss" input to seconds and displays seconds as "m:ss"
+- Used in the Album Detail tracklist grid and Track Detail form
+- Handles conversion bidirectionally: user types "3:45" → stored as 225 seconds; display converts 225 → "3:45"
+
+### Album Detail Tracklist Grid
+
+The Album Detail form includes an inline tracklist grid for viewing and editing album tracks:
+- **CellEditing plugin** — enables inline editing of track fields (title, duration, ISRC, per-track artists for VA)
+- **Entry mode toggle** — "Enter Track Names" checkbox switches the grid into entry mode. New rows are added with `is_new: true` flag and are not saved until the album form is submitted
+- **Typeahead combobox** — Track title column uses a combobox that searches existing catalog tracks for linking
+- **Edition filter combobox** — Dropdown to filter tracklist by edition; visibility controlled by `consider_editions` checkbox
+- **Edition column** — Shows edition name per track; visibility also tied to `consider_editions`
+- **Per-track artist editing** — For VA albums (`various_artists: true`), each track row has an editable artist field; for non-VA albums, artists are inherited from the album
+
+### VA Album Pattern
+
+- "VA Collection" checkbox on the album form sets `various_artists: true` on the catalog record
+- When checked: artist tagfield is disabled/cleared (album has no single artist), per-track `artist_ids` are sent for inline-created tracks
+- When unchecked: album's `artist_ids` are inherited by all new inline tracks
+- In JSON output, `artist_name` returns `['Various Artists']` when `various_artists` is true
+
+### Edition UI Pattern
+
+- "Consider Editions" checkbox on the album form toggles `consider_editions` on the UserAlbum preference
+- When checked: edition filter dropdown, edition column, "Manage Editions" button, and "Default Edition" checkbox become visible in the tracklist grid
+- When unchecked: edition UI is hidden, all tracks shown regardless of edition
+- Edition is stored on `AlbumTrack` (not Album), so the same track can appear on different editions
+- **Default Edition:** Users can set a default edition per album via `default_edition_id` on `UserAlbum`. When loading an album with a default edition, the edition filter auto-selects it. The "Default Edition" checkbox in the tracklist tbar saves/clears this preference via PUT. A `_syncingDefaultEdition` guard flag prevents the checkbox change handler from re-saving when the checkbox is being programmatically synced (e.g., on album load or edition filter change)
+
 ### Existing File Modifications (per entity)
 
 - **Grid**: Add `tbar` with Add/Delete buttons. Add star `renderer` on rating column (width: 110)
@@ -283,3 +338,68 @@ The center panel in `Main.js` should NOT have a `reference` config. The `removeA
 
 - Controller must include ID fields in JSON responses (see `artist_json`/`album_json`/`track_json` helper pattern)
 - Controller `update` must call `save!` BEFORE genre/tag sync to prevent `pref.reload` data loss (all three catalog controllers now follow this pattern)
+
+## Testing Patterns
+
+### RSpec Controller Spec Pattern
+
+```ruby
+RSpec.describe SomeController, type: :controller do
+  let(:user) { create(:user) }
+  before { sign_in(user) }
+
+  describe 'GET #index' do
+    it 'returns records with user preferences' do
+      record = create(:some_model)
+      create(:user_some_model, user: user, some_model: record, rating: 5)
+
+      get :index, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json.first['rating']).to eq(5)
+    end
+  end
+end
+```
+
+Key conventions: `sign_in(user)` helper, `as: :json` format, parse from `['data']`, create join records explicitly for user preferences, test auth rejection separately.
+
+### RSpec Model Spec Pattern
+
+```ruby
+RSpec.describe SomeModel, type: :model do
+  it 'has a valid factory' do
+    expect(build(:some_model)).to be_valid
+  end
+
+  describe 'associations' do
+    it { is_expected.to have_many(:users).through(:user_some_models) }
+    it { is_expected.to belong_to(:lookup).optional }
+  end
+
+  describe 'validations' do
+    it { is_expected.to validate_presence_of(:name) }
+  end
+end
+```
+
+Key conventions: factory validation first, Shoulda Matchers for associations/validations, `.optional`/`.dependent(:destroy)` modifiers.
+
+### Playwright E2E Test Pattern
+
+```javascript
+const { waitForExtReady, navigateToView } = require('./helpers/extjs');
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/');
+  await waitForExtReady(page);
+  await navigateToView(page, 'Albums');
+});
+```
+
+Key conventions: wait for `Ext.isReady` via shared helper, navigate via tree nodes using `navigateToView()`, wait for grid via `getByRole('grid')`, use Ext.js CSS selectors (`.x-grid-row`, `.x-column-header-text`, `.x-form-item`, `.x-btn-inner`). Shared helpers in `e2e/helpers/extjs.js`.
+
+### Claude Code Test Sub-Agent Architecture
+
+Two specialized agents in separate repos, each with 3 slash commands (write/run/debug). Backend agent knows RSpec/FactoryBot/Shoulda. Frontend agent knows Playwright/Ext.js/MCP tools. Each agent references its repo's test patterns as templates.

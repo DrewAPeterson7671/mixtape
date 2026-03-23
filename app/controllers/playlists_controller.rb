@@ -7,8 +7,8 @@ class PlaylistsController < ApplicationController
     @playlists = current_user.playlists.includes(:genre)
 
     render json: { data: @playlists.as_json(
-      only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
-      methods: [:genre_name]
+      only: [ :id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at ],
+      methods: [ :genre_name ]
     ) }
   end
 
@@ -23,8 +23,8 @@ class PlaylistsController < ApplicationController
 
     if @playlist.save
       render json: { data: @playlist.as_json(
-        only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
-        methods: [:genre_name]
+        only: [ :id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at ],
+        methods: [ :genre_name ]
       ) }, status: :created, location: @playlist
     else
       render json: @playlist.errors, status: :unprocessable_entity
@@ -35,8 +35,8 @@ class PlaylistsController < ApplicationController
   def update
     if @playlist.update(playlist_params)
       render json: { data: @playlist.as_json(
-        only: [:id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at],
-        methods: [:genre_name]
+        only: [ :id, :sequence, :name, :platform, :comment, :year, :source, :created_at, :updated_at ],
+        methods: [ :genre_name ]
       ) }, status: :ok, location: @playlist
     else
       render json: @playlist.errors, status: :unprocessable_entity

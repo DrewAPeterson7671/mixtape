@@ -4,4 +4,3 @@ class AddCognitoSubToUsers < ActiveRecord::Migration[7.2]
     add_index  :users, :cognito_sub, unique: true
   end
 end
-

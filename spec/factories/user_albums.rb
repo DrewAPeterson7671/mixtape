@@ -4,5 +4,6 @@ FactoryBot.define do
     album
     rating { nil }
     listened { false }
+    consider_editions { false }
   end
 end

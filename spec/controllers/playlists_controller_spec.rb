@@ -14,7 +14,7 @@ RSpec.describe PlaylistsController, type: :controller do
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
-      expect(json.map { |p| p['id'] }).to eq([own.id])
+      expect(json.map { |p| p['id'] }).to eq([ own.id ])
     end
   end
 

@@ -8,7 +8,6 @@ RSpec.describe Album, type: :model do
   describe 'associations' do
     it { is_expected.to have_and_belong_to_many(:artists) }
     it { is_expected.to belong_to(:medium).optional }
-    it { is_expected.to belong_to(:edition).optional }
     it { is_expected.to belong_to(:release_type).optional }
     it { is_expected.to have_many(:user_albums).dependent(:destroy) }
     it { is_expected.to have_many(:users).through(:user_albums) }
@@ -19,12 +18,19 @@ RSpec.describe Album, type: :model do
     it { is_expected.to validate_numericality_of(:year).only_integer.is_greater_than_or_equal_to(1500).is_less_than_or_equal_to(Date.current.year).allow_nil }
   end
 
+  describe 'various_artists' do
+    it 'defaults to false' do
+      album = create(:album)
+      expect(album.various_artists).to be false
+    end
+  end
+
   describe '#artist_name' do
     it 'returns array of artist names' do
       album = create(:album)
       artist1 = create(:artist)
       artist2 = create(:artist)
-      album.artists << [artist1, artist2]
+      album.artists << [ artist1, artist2 ]
 
       expect(album.artist_name).to contain_exactly(artist1.name, artist2.name)
     end
@@ -53,19 +59,6 @@ RSpec.describe Album, type: :model do
     it 'returns nil when medium is absent' do
       album = build(:album, medium: nil)
       expect(album.medium_name).to be_nil
-    end
-  end
-
-  describe '#edition_name' do
-    it 'returns edition name when present' do
-      edition = create(:edition, name: 'Deluxe')
-      album = build(:album, edition: edition)
-      expect(album.edition_name).to eq('Deluxe')
-    end
-
-    it 'returns nil when edition is absent' do
-      album = build(:album, edition: nil)
-      expect(album.edition_name).to be_nil
     end
   end
 end
