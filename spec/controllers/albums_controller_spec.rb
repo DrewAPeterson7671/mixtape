@@ -46,6 +46,32 @@ RSpec.describe AlbumsController, type: :controller do
       expect(entry).not_to have_key('edition_id')
       expect(entry).not_to have_key('edition_name')
     end
+
+    it 'excludes albums not in user collection' do
+      in_collection = create(:album, title: 'In Collection')
+      create(:user_album, user: user, album: in_collection)
+      create(:album, title: 'Not In Collection')
+
+      get :index, as: :json
+      json = JSON.parse(response.body)['data']
+      titles = json.map { |a| a['title'] }
+      expect(titles).to include('In Collection')
+      expect(titles).not_to include('Not In Collection')
+    end
+
+    it 'excludes albums belonging to another user' do
+      other_user = create(:user)
+      my_album = create(:album, title: 'Mine')
+      other_album = create(:album, title: 'Theirs')
+      create(:user_album, user: user, album: my_album)
+      create(:user_album, user: other_user, album: other_album)
+
+      get :index, as: :json
+      json = JSON.parse(response.body)['data']
+      titles = json.map { |a| a['title'] }
+      expect(titles).to include('Mine')
+      expect(titles).not_to include('Theirs')
+    end
   end
 
   describe 'GET #show' do
@@ -359,6 +385,18 @@ RSpec.describe AlbumsController, type: :controller do
         delete :destroy, params: { id: album.id }, as: :json
       }.to change(UserAlbum, :count).by(-1).and change(Album, :count).by(0)
       expect(response).to have_http_status(:no_content)
+    end
+
+    it 'does not cascade to remove UserTrack records' do
+      album = create(:album)
+      track = create(:track)
+      create(:album_track, album: album, track: track, position: 1)
+      create(:user_album, user: user, album: album)
+      create(:user_track, user: user, track: track)
+
+      expect {
+        delete :destroy, params: { id: album.id }, as: :json
+      }.to change(UserAlbum, :count).by(-1).and change(UserTrack, :count).by(0)
     end
   end
 

@@ -4,7 +4,7 @@
 
 | Component | Version/Tool |
 |-----------|-------------|
-| Language | Ruby 3.4.2 |
+| Language | Ruby 3.4.2 (x86_64 via Rosetta) |
 | Framework | Rails 7.2.2 |
 | Database | PostgreSQL |
 | Web Server | Puma |
@@ -141,6 +141,10 @@ Triggers on pull requests and pushes to `main`. Four jobs:
 | `test` | Runs `bin/rails db:test:prepare test test:system` |
 
 Known issue: The test job runs `bin/rails test` (Minitest) rather than `bundle exec rspec`. It also installs `sqlite3` in the apt-get step, which is no longer needed since the project uses PostgreSQL.
+
+## Rosetta Requirement
+
+Ruby 3.4.2 and its native gem extensions are compiled for x86_64. On Apple Silicon Macs, all Ruby/Rails commands (`bundle exec rspec`, `bin/rails server`, etc.) must run in a Rosetta terminal: `arch -x86_64 /bin/zsh`. The rbenv installation lives at `~/.rbenv-intel` (x86_64); the default `~/.rbenv-arm` shim path points to an older ARM Ruby (2.7.8) that is not used by this project.
 
 ## Testing Setup
 
