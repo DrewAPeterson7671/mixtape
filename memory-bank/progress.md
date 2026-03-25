@@ -41,6 +41,8 @@
 - [x] Genre/tag sync (destroy-missing + find_or_create) on all three catalog controllers
 - [x] Preference pre-loading via `.index_by` on index actions
 - [x] Delete removes user preference only (not catalog record) on catalog controllers
+- [x] Index endpoints scoped to user's collection (only returns records user has preferences for)
+- [x] Artist delete cascades to remove user's UserAlbum and UserTrack for that artist's albums/tracks
 - [x] Playlist scoped through `current_user.playlists`
 - [x] ArtistsController `artist_json` helper with ID fields for form population
 - [x] ArtistsController saves preferences before genre/tag sync to avoid `pref.reload` data loss

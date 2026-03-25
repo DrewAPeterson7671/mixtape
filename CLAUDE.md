@@ -18,7 +18,7 @@ Catalog records (Artist, Album, Track) are shared across all users. User-specifi
 
 ## Ruby Environment
 
-Ruby 3.4.2 is managed via rbenv. The CLI agent's shell may not resolve rbenv correctly — if `bin/rails` or `bundle exec` fail with "version not installed", have the user run commands directly in their terminal.
+Ruby 3.4.2 is managed via rbenv (x86_64 build under Rosetta). The CLI agent's shell may not resolve rbenv correctly — if `bin/rails` or `bundle exec` fail with "version not installed" or native gem build errors, have the user run commands directly in a Rosetta terminal (`arch -x86_64 /bin/zsh`) first.
 
 ## Common Commands
 

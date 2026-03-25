@@ -6,7 +6,7 @@ class ArtistsController < ApplicationController
 
   # GET /artists
   def index
-    @artists = Artist.all
+    @artists = Artist.joins(:user_artists).where(user_artists: { user_id: current_user.id })
     @user_prefs = current_user.user_artists
       .includes(:priority, :phase, :genres, :tags)
       .index_by(&:artist_id)
@@ -64,7 +64,14 @@ class ArtistsController < ApplicationController
 
   # DELETE /artists/1
   def destroy
-    current_user.user_artists.where(artist: @artist).destroy_all
+    ActiveRecord::Base.transaction do
+      album_ids = @artist.album_ids
+      track_ids = @artist.track_ids
+
+      current_user.user_albums.where(album_id: album_ids).destroy_all if album_ids.any?
+      current_user.user_tracks.where(track_id: track_ids).destroy_all if track_ids.any?
+      current_user.user_artists.where(artist: @artist).destroy_all
+    end
 
     head :no_content
   end

@@ -6,7 +6,8 @@ class TracksController < ApplicationController
 
   # GET /tracks
   def index
-    @tracks = Track.includes(:artists, :albums, :medium).all
+    @tracks = Track.joins(:user_tracks).where(user_tracks: { user_id: current_user.id })
+      .includes(:artists, :albums, :medium)
     @user_prefs = current_user.user_tracks
       .includes(:genres, :tags)
       .index_by(&:track_id)
