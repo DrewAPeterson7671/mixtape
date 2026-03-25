@@ -2,8 +2,26 @@
 
 ## Current Branches
 
-- **Backend:** `mix-dev-tracks_controller2`
-- **Frontend:** `mixtape-dev-tracks-improve`
+- **Backend:** `mixtape-develop`
+- **Frontend:** `mixtape-dev-20260323-e2e-crud`
+
+## Recent Changes (Mar 24, 2026) — CRUD E2E Tests
+
+- **Artist and Track E2E specs** — New `e2e/artists.spec.js` and `e2e/tracks.spec.js` covering grid loading (columns, rows, detail panel) plus serial CRUD lifecycle tests (create, update, delete) for each entity.
+- **Album CRUD E2E tests** — Added `Album CRUD` serial block to `e2e/albums.spec.js` covering create (with year=2020 for form validation), update, and delete.
+- **New helpers in `e2e/helpers/extjs.js`:**
+  - `fillTextField` — Sets field values via ExtJS `field.setValue()` component API (avoids `pressSequentially` character-dropping under load)
+  - `clickButton` — Clicks ExtJS buttons by visible text
+  - `confirmDialog` — Clicks "Yes" on Ext.Msg.confirm dialogs
+  - `waitForToast` — Waits for Ext.toast messages
+  - `waitForStoreRecord` — Verifies records exist in ExtJS store data (not DOM)
+  - `selectGridRecord` — Finds record in store, scrolls into view with `ensureVisible`, then DOM-clicks the row (handles buffered/virtual rendering)
+- **Key implementation details:**
+  - Delete removes preferences (UserArtist/UserAlbum/UserTrack), not catalog records — row stays in grid
+  - Album `formBind: true` requires year to be set (minValue: 1500 validation)
+  - Store-based verification (`waitForStoreRecord`) avoids DOM rendering race conditions
+  - `selectGridRecord` uses `ensureVisible` + DOM click to handle grids with many rows (buffered rendering)
+- **Total E2E test count: 27** (4 smoke, 4 navigation, 3 albums view, 3 album CRUD, 3 artists view, 3 artist CRUD, 3 tracks view, 3 track CRUD, 1 auth setup)
 
 ## Recent Changes (Mar 22, 2026) — Test Orchestrator Commands
 
