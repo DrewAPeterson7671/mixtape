@@ -5,6 +5,12 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev-20260323-e2e-crud`
 
+## Recent Changes (Mar 25, 2026) — Collection-Scoped Index & Cascade Delete
+
+- **Index endpoints scoped to user collection** — `GET /artists`, `GET /albums`, and `GET /tracks` now only return records the current user has in their collection (via `joins(:user_artists)` / `joins(:user_albums)` / `joins(:user_tracks)` with `where(user_id: current_user.id)`). Previously returned all catalog records regardless of user membership.
+- **Artist delete cascades** — `ArtistsController#destroy` now removes the user's `UserAlbum` and `UserTrack` records for the deleted artist's albums and tracks (within a transaction). Uses `destroy_all` so dependent callbacks fire on sub-join models (genres, tags). Album and Track deletes do NOT cascade.
+- **New specs** — Collection-scoping tests for all three controllers (excluded-from-collection, other-user-excluded). Cascade delete tests for artist (albums, tracks, both, other-user-safe, catalog-records-preserved). No-cascade confirmation tests for album and track destroy.
+
 ## Recent Changes (Mar 24, 2026) — CRUD E2E Tests
 
 - **Artist and Track E2E specs** — New `e2e/artists.spec.js` and `e2e/tracks.spec.js` covering grid loading (columns, rows, detail panel) plus serial CRUD lifecycle tests (create, update, delete) for each entity.
@@ -17,7 +23,7 @@
   - `waitForStoreRecord` — Verifies records exist in ExtJS store data (not DOM)
   - `selectGridRecord` — Finds record in store, scrolls into view with `ensureVisible`, then DOM-clicks the row (handles buffered/virtual rendering)
 - **Key implementation details:**
-  - Delete removes preferences (UserArtist/UserAlbum/UserTrack), not catalog records — row stays in grid
+  - Delete removes preferences (UserArtist/UserAlbum/UserTrack), not catalog records — row disappears from grid (index is collection-scoped). Artist delete cascades to remove user's associated album/track preferences.
   - Album `formBind: true` requires year to be set (minValue: 1500 validation)
   - Store-based verification (`waitForStoreRecord`) avoids DOM rendering race conditions
   - `selectGridRecord` uses `ensureVisible` + DOM click to handle grids with many rows (buffered rendering)

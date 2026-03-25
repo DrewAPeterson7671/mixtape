@@ -124,10 +124,11 @@ Key details:
 
 ## JSON Response Shape
 
-Catalog controllers build JSON inline using `as_json` with merged preference fields:
+Catalog controllers build JSON inline using `as_json` with merged preference fields. Index endpoints are scoped to the current user's collection via `joins` + `where`:
 
 ```ruby
-# Index — pre-load preferences into a hash for O(1) lookup
+# Index — scope to user's collection, pre-load preferences into a hash for O(1) lookup
+@artists = Artist.joins(:user_artists).where(user_artists: { user_id: current_user.id })
 @user_prefs = current_user.user_artists.includes(:priority, :phase, :genres, :tags).index_by(&:artist_id)
 
 render json: @artists.map { |artist|
@@ -182,9 +183,8 @@ end
 Two different behaviors depending on controller type:
 
 - **Catalog controllers** (Artists, Albums, Tracks): Delete only removes the current user's preference record. The catalog record itself is preserved for other users.
-  ```ruby
-  current_user.user_artists.where(artist: @artist).destroy_all
-  ```
+  - **Artist delete cascades:** Removing a `UserArtist` also removes the user's `UserAlbum` and `UserTrack` records for that artist's albums and tracks (via `@artist.album_ids` / `@artist.track_ids`). Uses `destroy_all` within a transaction so dependent callbacks fire on sub-join models (user_album_genres, user_album_tags, user_track_genres, user_track_tags). Does not affect other users' records or catalog records.
+  - **Album and Track deletes do NOT cascade.** Deleting an album does not remove the user's track preferences, and vice versa.
 
 - **Lookup/Playlist controllers**: Delete destroys the actual record.
   ```ruby
