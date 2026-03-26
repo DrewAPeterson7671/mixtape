@@ -74,11 +74,11 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, and CRUD tests (27 total)
+- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, and delete/cascade tests (38 total)
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] Claude Code test sub-agents — backend RSpec agent and frontend E2E agent as slash commands in `.claude/commands/`
-- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, ComponentQuery wrappers)
+- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, ComponentQuery wrappers)
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)
 - [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
 
