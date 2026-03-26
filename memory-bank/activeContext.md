@@ -5,6 +5,15 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev-20260323-e2e-crud`
 
+## Recent Changes (Mar 25, 2026) — Delete & Cascade E2E Tests
+
+- **New E2E delete spec** — `e2e/delete.spec.js` with three `test.describe.serial` blocks covering:
+  1. **Artist cascade delete** — Creates artist + album + track via API, deletes artist through UI, verifies cascade warning dialog text, confirms album/track removed from their respective views
+  2. **Album non-cascade delete** — Creates artist + album + track, deletes album, verifies track and artist remain in their views
+  3. **Track non-cascade delete** — Creates artist + track, deletes track, verifies artist remains
+- **New E2E helpers** in `e2e/helpers/extjs.js`: `clickToolbarButton`, `confirmDialog`, `waitForStoreLoad`, `getGridRowCount`
+- **Test data isolation** — Each serial block creates uniquely-named records via backend API (`page.request.post`), avoiding collisions with dev data
+
 ## Recent Changes (Mar 25, 2026) — Collection-Scoped Index & Cascade Delete
 
 - **Index endpoints scoped to user collection** — `GET /artists`, `GET /albums`, and `GET /tracks` now only return records the current user has in their collection (via `joins(:user_artists)` / `joins(:user_albums)` / `joins(:user_tracks)` with `where(user_id: current_user.id)`). Previously returned all catalog records regardless of user membership.
