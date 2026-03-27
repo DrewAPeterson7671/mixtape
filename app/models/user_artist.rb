@@ -5,11 +5,11 @@ class UserArtist < ApplicationRecord
   belongs_to :phase, optional: true
 
   has_many :user_artist_genres, ->(ua) { where(user_id: ua.user_id) },
-           foreign_key: :artist_id, inverse_of: false, dependent: :destroy
+           foreign_key: :artist_id, primary_key: :artist_id, inverse_of: false, dependent: :destroy
   has_many :genres, through: :user_artist_genres
 
   has_many :user_artist_tags, ->(ua) { where(user_id: ua.user_id) },
-           foreign_key: :artist_id, inverse_of: false, dependent: :destroy
+           foreign_key: :artist_id, primary_key: :artist_id, inverse_of: false, dependent: :destroy
   has_many :tags, through: :user_artist_tags
 
   before_validation { self.rating = nil if rating_before_type_cast.to_s == "0" }
