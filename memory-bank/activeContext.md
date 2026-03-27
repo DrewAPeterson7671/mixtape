@@ -3,7 +3,23 @@
 ## Current Branches
 
 - **Backend:** `mixtape-develop`
-- **Frontend:** `mixtape-dev-20260323-e2e-crud`
+- **Frontend:** `mixtape-dev`
+
+## Recent Changes (Mar 27, 2026) — Non-CRUD E2E Tests & Bug Fixes
+
+- **4 new E2E test files** (39 tests) covering non-CRUD functionality:
+  - `e2e/ratings.spec.js` — Inline star rating click-to-rate in artist/album/track grids with persistence verification
+  - `e2e/preferences.spec.js` — User preference fields (rating, priority, phase, release type, medium, listened/complete, year, duration) via detail panel with save + reload verification
+  - `e2e/associations.spec.js` — Genre/tag tagfield assignment on artists, multi-artist album association, and genre auto-population when selecting artists on new albums/tracks
+  - `e2e/tracklist.spec.js` — Add existing track via modal, inline track entry mode, remove track, and tracklist persistence after reload
+- **Backend bug fix: `primary_key` on UserArtist/UserTrack genre/tag associations** — `has_many :user_artist_genres` and `:user_artist_tags` were missing `primary_key: :artist_id`, causing Rails to join on `user_artists.id` instead of `user_artists.artist_id`. Same issue on UserTrack. This broke genre/tag assignment via API. `UserAlbum` already had the correct `primary_key: :album_id`.
+- **Frontend bug fix: Album model `year` field** — Added `allowNull: true` to prevent null→0 conversion. The Year form field has `minValue: 1500`, so year=0 made the form invalid and disabled the `formBind` Save button on any album without a year set.
+- **New E2E helpers in `e2e/helpers/extjs.js`:**
+  - `setFieldValue` — Sets field value waiting for combo/tag stores to load, then calls `form.isValid()` to re-evaluate `formBind` buttons
+  - `getFieldValue` — Gets current value of a form field by name
+  - `getRecordFieldValue` — Gets a field value from a store record by text search
+  - `ensureRecordVisible` — Scrolls a grid record into view without clicking (avoids triggering detail panel)
+- **Total E2E test count: 73** (was 34)
 
 ## Recent Changes (Mar 25, 2026) — Delete & Cascade E2E Tests
 
