@@ -5,6 +5,24 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Mar 28, 2026) — Server-Side Grid Filtering & Search
+
+- **ExtJsFilterable concern** (`app/controllers/concerns/ext_js_filterable.rb`) — Shared concern providing `apply_ext_filters(scope)` that parses Ext JS `filter` param (JSON array from gridfilters plugin) and `search` param (plain string from toolbar search). Supports six filter kinds:
+  - `:string` — ILIKE substring match (case-insensitive)
+  - `:number` — gt/lt/eq comparison operators
+  - `:boolean` — true/false exact match
+  - `:list` — Names sent from client → lookup IDs via model → `IN (ids)` query
+  - `:habtm_string` — EXISTS subquery through join table with ILIKE on associated record
+  - `:habtm_list` — EXISTS subquery through user-scoped join table with `IN (names)` on associated record
+- **All three catalog controllers updated** — ArtistsController, AlbumsController, TracksController include `ExtJsFilterable`, define `FILTER_CONFIG` and `SEARCH_FIELDS` constants, and call `apply_ext_filters(@scope).distinct` in index actions
+- **Artist filters:** name (string), genre_name (habtm_list via user_artist_genres), priority_name (list → Priority), phase_name (list → Phase), complete (boolean), rating (number). Search: artist name + genre name.
+- **Album filters:** artist_name (habtm_string via albums_artists), title (string), rating (number), release_type_name (list → ReleaseType), medium_name (list → Medium), listened (boolean), year (number), genre_name (habtm_list via user_album_genres). Search: album title + artist name.
+- **Track filters:** artist_name (habtm_string via artists_tracks), title (string), album_title (habtm_string via album_tracks), rating (number), medium_name (list → Medium), listened (boolean), genre_name (habtm_list via user_track_genres). Search: track title + artist name + album title.
+- **Frontend stores** — Added `remoteFilter: true` to Artists, Albums, Tracks stores
+- **Frontend grids** — Added `plugins: 'gridfilters'` and column `filter` configs to ArtistGrid, AlbumGrid, TrackGrid. List filters use existing lookup stores (genres, priorities, phases, releaseTypes, media) with `idField: 'name'` / `labelField: 'name'`.
+- **Search toolbar** — Added search textfield with `buffer: 400` change listener and clear trigger to all three grids. Controllers (`onSearchChange`) set/remove `search` extraParam on the store proxy and reload.
+- **Filter specs** — Three new spec files covering all filter kinds, text search, combined filters, edge cases (malformed params, empty filters, unknown properties), no-duplicate guarantees for HABTM joins, and user-scoped genre isolation.
+
 ## Recent Changes (Mar 27, 2026) — Non-CRUD E2E Tests & Bug Fixes
 
 - **4 new E2E test files** (39 tests) covering non-CRUD functionality:
@@ -209,7 +227,7 @@
 - **CI installs sqlite3** — The `test` job in `ci.yml` runs `apt-get install sqlite3`, which is unnecessary since the project uses PostgreSQL. No PostgreSQL service is configured in CI either.
 - **Inconsistent JSON rendering** — Catalog controllers use inline `as_json(only: [...]).merge(...)`. Lookup controllers use `render json: { data: @model }`. No serializer layer.
 - **No pagination** — All list endpoints return every record. Will become a problem as the catalog grows.
-- **No backend filtering/search** — Index endpoints return all records; filtering happens client-side only.
+- ~~**No backend filtering/search**~~ — Done. ExtJsFilterable concern provides server-side column filters and text search on all three catalog index endpoints.
 - **Genre/tag sync duplication** — The `update_*_genres` and `update_*_tags` methods are copy-pasted across ArtistsController, AlbumsController, and TracksController with only model name differences.
 - **Dockerfile references sqlite3** — The production Dockerfile (if present) may install sqlite3, a leftover from the Rails scaffold before PostgreSQL migration.
 - **database.yml has stale SQLite comments** — The config file still contains commented-out SQLite configuration blocks.
