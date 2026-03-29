@@ -82,7 +82,8 @@
 - [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, setFieldValue, getFieldValue, getRecordFieldValue, ensureRecordVisible, ComponentQuery wrappers)
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)
 - [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
-- [x] Branch guard hook — PreToolUse hook blocks Edit/Write on protected branches, forces working branch creation (both repos)
+- [x] Branch guard hook — PreToolUse hook blocks Edit/Write on protected branches, forces working branch creation (both repos). Hook resolves branch from its own repo directory via `git -C` to work correctly across repos.
+- [x] Lookup table grids display alphabetically — all six lookup controllers use `.order(:name)` in index actions
 
 ### Documentation
 - [x] CLAUDE.md with project context
@@ -109,7 +110,7 @@
 - [x] Inline track entry (Phase 1) — checkbox toggle, artist inheritance, genre transfer, duration/ISRC, entry mode, album-save transaction, `handle_album_tracks`/`create_inline_track`/`copy_album_genres_to_track`/`resolve_duplicate_title` in AlbumsController
 - [x] Track CRUD frontend — TrackGrid, TrackDetail, TrackController with full CRUD following Artist/Album template pattern
 - [x] `consider_editions` toggle — backend boolean on UserAlbum + frontend checkbox with edition UI visibility
-- [x] DurationField custom widget — `app/view/common/DurationField.js`, m:ss parsing in tracklist grid and track detail
+- [x] DurationField custom widget — `app/view/common/DurationField.js`, m:ss parsing in tracklist grid, track detail form, and album detail tracklist editor
 - [x] `various_artists` boolean on Album — catalog-level flag, JSON artist_name override, frontend checkbox with artist field toggle
 - [x] Duplicate album title fix — `Track#album_title` uses `.distinct` for multi-edition tracks
 

@@ -5,6 +5,12 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Mar 29, 2026) — Alphabetical Lookup Grids, Track Duration Fix, Hook Fix
+
+- **Alphabetical ordering on lookup table grids** — Added `.order(:name)` to the `index` action of all six lookup controllers (EditionsController, GenresController, MediaController, PhasesController, PrioritiesController, ReleaseTypesController). Grids now always display in alphabetical order instead of database insertion order.
+- **Track form duration field fix** — Replaced `numberfield` with the existing custom `durationfield` component in `TrackDetail.js`. The Track form now accepts `m:ss` input (e.g., "3:34" → 214 seconds) and displays existing durations in `m:ss` format, matching the Album Details tracklist behavior. Added `mixtape.view.common.DurationField` to the `requires` array.
+- **Branch guard hook fix** — Both repos' `.claude/hooks/guard-branch.sh` now resolve the repo directory from the hook script's own location (`REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"`) and use `git -C "$REPO_DIR"` instead of bare `git`. This ensures the branch check targets the correct repo even when Claude Code's working directory is a different repo (e.g., backend CWD while editing frontend files).
+
 ## Recent Changes (Mar 29, 2026) — Branch Guard Hook
 
 - **PreToolUse hook** (`.claude/hooks/guard-branch.sh`) — Blocks `Edit` and `Write` tools when on protected branches (`mixtape-develop`/`main` on backend, `mixtape-dev`/`main` on frontend). Exits with code 2 and a stderr message showing the branch naming convention. The agent then uses `Bash` (not matched by the hook) to pull latest and create a working branch before retrying the edit.
