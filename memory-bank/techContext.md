@@ -218,3 +218,34 @@ Two specialized testing sub-agents implemented as Claude Code slash commands, on
 - `mcp__playwright__browser_type` — type into fields
 
 Shared E2E helpers in `mixtapeUI/mixtape/e2e/helpers/extjs.js` provide `waitForExtReady()`, `navigateToView()`, and ComponentQuery utilities.
+
+### Claude Code Hooks
+
+**Branch guard hook** (`.claude/hooks/guard-branch.sh`) configured as a `PreToolUse` hook in `.claude/settings.local.json`. Blocks `Edit` and `Write` tools on protected branches, forcing creation of a working branch first.
+
+**Configuration** (`.claude/settings.local.json`):
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-branch.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Hook behavior:**
+- Exit 0 = allow (non-protected branch)
+- Exit 2 = block with stderr message (protected branch)
+- Protected branches: `mixtape-develop|main` (backend), `mixtape-dev|main` (frontend)
+- `Bash` tool is not matched, so git commands work on any branch
+
+**Important:** Claude Code hooks cannot use interactive `/dev/tty` prompts. The process has a tty, so `/dev/tty` checks pass, but `read` blocks indefinitely waiting for input. Claude Code times out the hook and allows the action through. Always use exit-code-based blocking with stderr messages instead.

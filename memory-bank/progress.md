@@ -82,6 +82,7 @@
 - [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, setFieldValue, getFieldValue, getRecordFieldValue, ensureRecordVisible, ComponentQuery wrappers)
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)
 - [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
+- [x] Branch guard hook — PreToolUse hook blocks Edit/Write on protected branches, forces working branch creation (both repos)
 
 ### Documentation
 - [x] CLAUDE.md with project context
