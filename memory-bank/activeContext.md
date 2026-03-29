@@ -5,6 +5,13 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Mar 29, 2026) — Branch Guard Hook
+
+- **PreToolUse hook** (`.claude/hooks/guard-branch.sh`) — Blocks `Edit` and `Write` tools when on protected branches (`mixtape-develop`/`main` on backend, `mixtape-dev`/`main` on frontend). Exits with code 2 and a stderr message showing the branch naming convention. The agent then uses `Bash` (not matched by the hook) to pull latest and create a working branch before retrying the edit.
+- **Hook configuration** in `.claude/settings.local.json` — `PreToolUse` event with `Edit|Write` matcher. Settings file also contains MCP server enablement and permission rules.
+- **Key fix during implementation:** The original hook attempted interactive `/dev/tty` prompts to ask for a branch name. This hung in Claude Code's hook environment because `/dev/tty` is available (the process has a terminal) but `read` blocks waiting for keyboard input that can never arrive. Claude Code timed out the hook and allowed the edit through. Fixed by removing all `/dev/tty` logic and using only exit code 2 (block) with stderr messaging.
+- **Both repos updated** — Backend guards `mixtape-develop|main`, frontend guards `mixtape-dev|main`.
+
 ## Recent Changes (Mar 28, 2026) — Server-Side Grid Filtering & Search
 
 - **ExtJsFilterable concern** (`app/controllers/concerns/ext_js_filterable.rb`) — Shared concern providing `apply_ext_filters(scope)` that parses Ext JS `filter` param (JSON array from gridfilters plugin) and `search` param (plain string from toolbar search). Supports six filter kinds:
