@@ -39,7 +39,13 @@ User-scoped CRUD:
 - Destroy deletes the actual playlist record
 - No `UserPreferable` concern (playlists are inherently user-scoped)
 
-### 4. SessionsController
+### 4. Test Controllers (TestAuthController, TestCleanupController)
+
+Dev/test-only controllers gated by `Rails.env.development? || Rails.env.test?`:
+- **TestAuthController** — `POST /test/login` sets `session[:user_id]` directly, bypassing Cognito OAuth for E2E tests
+- **TestCleanupController** — `DELETE /test/cleanup` purges all records with "E2E " or "E2F " prefix from catalog tables (tracks → albums → artists, in FK-safe order) and settings tables (genres, tags, media, phases, priorities, release_types). Uses `destroy_all` so dependent callbacks fire. Both skip `verify_authenticity_token` and `require_login`.
+
+### 5. SessionsController
 
 Authentication handling:
 - Skips `require_login` on callback and status endpoints
@@ -427,6 +433,10 @@ test.beforeEach(async ({ page }) => {
 ```
 
 Key conventions: wait for `Ext.isReady` via shared helper, navigate via tree nodes using `navigateToView()`, wait for grid via `getByRole('grid')`, use Ext.js CSS selectors (`.x-grid-row`, `.x-column-header-text`, `.x-form-item`, `.x-btn-inner`). Shared helpers in `e2e/helpers/extjs.js`.
+
+### E2E Test Data Cleanup
+
+E2E tests create records with "E2E " or "E2F " name prefixes (e.g., `E2E Priority 1711648000000`). A Playwright `globalTeardown` script (`e2e/global-teardown.js`) runs after all specs and calls `DELETE /test/cleanup` on the backend to remove accumulated test data. The backend endpoint (`TestCleanupController#destroy`) deletes in FK-safe order: tracks → albums → artists → settings.
 
 ### Claude Code Test Sub-Agent Architecture
 

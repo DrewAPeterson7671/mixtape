@@ -78,6 +78,8 @@
 - [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, and tracklist tests (73 total)
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
+- [x] Test cleanup endpoint (`DELETE /test/cleanup`) for purging E2E test data from catalog and settings tables (dev/test only)
+- [x] Playwright `globalTeardown` — automatic cleanup after E2E runs via `e2e/global-teardown.js`
 - [x] Claude Code test sub-agents — backend RSpec agent and frontend E2E agent as slash commands in `.claude/commands/`
 - [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, setFieldValue, getFieldValue, getRecordFieldValue, ensureRecordVisible, ComponentQuery wrappers)
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)

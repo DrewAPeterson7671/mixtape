@@ -5,6 +5,15 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Mar 28, 2026) — E2E Test Cleanup Infrastructure
+
+- **`TestCleanupController`** (`app/controllers/test_cleanup_controller.rb`) — New dev/test-only endpoint `DELETE /test/cleanup` that purges all E2E test data from the database. Deletes catalog records (tracks → albums → artists) and settings records (genres, tags, media, phases, priorities, release_types) whose names start with "E2E " or "E2F " in FK-safe order. No authentication required (skips `require_login` and CSRF). Gated by `ensure_non_production` (`Rails.env.development? || Rails.env.test?`).
+- **Route:** `delete "/test/cleanup", to: "test_cleanup#destroy"` added alongside existing `post "/test/login"` in the dev/test route block.
+- **RSpec spec:** `spec/controllers/test_cleanup_controller_spec.rb` — 8 tests covering deletion of E2E artists/albums/tracks, all 6 settings types, correct JSON response with counts, cascading user preference destruction, and no-auth requirement.
+- **Playwright `globalTeardown`** (`mixtapeUI/mixtape/e2e/global-teardown.js`) — Runs after all E2E tests complete, calls `DELETE /test/cleanup` to automatically remove accumulated test data. Logs deleted record counts to console.
+- **Playwright config updated** — Added `globalTeardown: './e2e/global-teardown.js'` to `playwright.config.js`.
+- **Problem solved:** E2E tests were creating settings records (genres, tags, media, phases, priorities, release_types) and catalog records (artists, albums, tracks) with "E2E" prefix via API but had no teardown logic. Records accumulated across test runs, polluting settings grids and dropdowns.
+
 ## Recent Changes (Mar 28, 2026) — Server-Side Grid Filtering & Search
 
 - **ExtJsFilterable concern** (`app/controllers/concerns/ext_js_filterable.rb`) — Shared concern providing `apply_ext_filters(scope)` that parses Ext JS `filter` param (JSON array from gridfilters plugin) and `search` param (plain string from toolbar search). Supports six filter kinds:
