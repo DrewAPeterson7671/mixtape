@@ -158,6 +158,34 @@ The `album_json` response includes an `album_tracks` array sorted by `[disc_numb
 
 Lookup controllers use `render json: { data: @model }` with the `{ data: ... }` envelope.
 
+## ExtJsFilterable Concern
+
+Located at `app/controllers/concerns/ext_js_filterable.rb`. Provides `apply_ext_filters(scope)` for server-side filtering on index actions. Controllers define two constants:
+
+**`FILTER_CONFIG`** — Hash mapping Ext JS `property` names to filter configurations:
+```ruby
+FILTER_CONFIG = {
+  name:          { kind: :string,  column: "artists.name" },
+  rating:        { kind: :number,  column: "user_artists.rating" },
+  complete:      { kind: :boolean, column: "user_artists.complete" },
+  priority_name: { kind: :list, model: Priority, column: "user_artists.priority_id" },
+  artist_name:   { kind: :habtm_string, join_table: "albums_artists", join_fk: "album_id",
+                   base_key: "albums.id", assoc_table: "artists", assoc_fk: "artist_id", assoc_column: "name" },
+  genre_name:    { kind: :habtm_list, join_table: "user_artist_genres", join_fk: "artist_id",
+                   base_key: "artists.id", user_scope: "user_artist_genres.user_id = user_artists.user_id",
+                   assoc_table: "genres", assoc_fk: "genre_id", assoc_column: "name" }
+}.freeze
+```
+
+**`SEARCH_FIELDS`** — Hash with `:joins` (LEFT JOIN SQL for associated tables with aliased names) and `:fields` (array of columns to OR-match with ILIKE).
+
+Key design decisions:
+- **Column filters use EXISTS subqueries** — no duplicate rows from HABTM joins
+- **Text search uses LEFT JOINs** with aliased table names (`search_*`) to avoid conflicts with column filters
+- **`.distinct` applied in controllers** after `apply_ext_filters` to eliminate any duplicates from text search JOINs
+- **List filters receive names, not IDs** — the concern looks up IDs via the model
+- **Genre filters are user-scoped** — EXISTS subquery includes `user_id` condition matching the outer user join
+
 ## UserPreferable Concern
 
 Located at `app/controllers/concerns/user_preferable.rb`. Provides three helper methods:

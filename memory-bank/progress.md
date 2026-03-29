@@ -37,6 +37,7 @@
 
 ### Controller Patterns
 - [x] UserPreferable concern for find_or_initialize_by preference lookup
+- [x] ExtJsFilterable concern for server-side column filters and text search on index actions
 - [x] Transaction-wrapped create/update on catalog controllers
 - [x] Genre/tag sync (destroy-missing + find_or_create) on all three catalog controllers
 - [x] Preference pre-loading via `.index_by` on index actions
@@ -74,11 +75,11 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, and delete/cascade tests (38 total)
+- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, and tracklist tests (73 total)
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] Claude Code test sub-agents — backend RSpec agent and frontend E2E agent as slash commands in `.claude/commands/`
-- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, ComponentQuery wrappers)
+- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, setFieldValue, getFieldValue, getRecordFieldValue, ensureRecordVisible, ComponentQuery wrappers)
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)
 - [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
 
@@ -118,7 +119,7 @@
 - [ ] Smart playlists — dynamic playlist generation from combinations of attributes (e.g., least recently played tracks by artists starting with "B" in genre "Reggae" from phase "High School")
 - [ ] CSV import/export for artists, albums, tracks, playlists, etc.
 - [ ] Streaming platform integration — connect to Apple Music and Spotify to import artists/albums/tracks and export playlists
-- [ ] Search and filtering — extensive backend filtering/search on index actions
+- [x] Search and filtering — ExtJsFilterable concern with server-side column filters (string, number, boolean, list, habtm_string, habtm_list) and text search on all catalog index endpoints; Ext JS gridfilters plugin + toolbar search on all grids
 - [ ] Admin role/privileges — admin-level users who can delete catalog records (artists, albums, tracks) and manage lookup tables
 
 ### Frontend CRUD Rollout

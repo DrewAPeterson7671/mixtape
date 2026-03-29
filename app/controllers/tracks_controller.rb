@@ -1,12 +1,47 @@
 class TracksController < ApplicationController
   include UserPreferable
+  include ExtJsFilterable
 
   before_action :set_track, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
+  FILTER_CONFIG = {
+    artist_name: {
+      kind: :habtm_string,
+      join_table: "artists_tracks", join_fk: "track_id", base_key: "tracks.id",
+      assoc_table: "artists", assoc_fk: "artist_id", assoc_column: "name"
+    },
+    title: { kind: :string, column: "tracks.title" },
+    album_title: {
+      kind: :habtm_string,
+      join_table: "album_tracks", join_fk: "track_id", base_key: "tracks.id",
+      assoc_table: "albums", assoc_fk: "album_id", assoc_column: "title"
+    },
+    rating:      { kind: :number,  column: "user_tracks.rating" },
+    medium_name: { kind: :list, model: Medium, column: "tracks.medium_id" },
+    listened:    { kind: :boolean, column: "user_tracks.listened" },
+    genre_name: {
+      kind: :habtm_list,
+      join_table: "user_track_genres", join_fk: "track_id", base_key: "tracks.id",
+      user_scope: "user_track_genres.user_id = user_tracks.user_id",
+      assoc_table: "genres", assoc_fk: "genre_id", assoc_column: "name"
+    }
+  }.freeze
+
+  SEARCH_FIELDS = {
+    joins: [
+      "LEFT JOIN artists_tracks AS search_at ON search_at.track_id = tracks.id " \
+      "LEFT JOIN artists AS search_a ON search_a.id = search_at.artist_id",
+      "LEFT JOIN album_tracks AS search_abt ON search_abt.track_id = tracks.id " \
+      "LEFT JOIN albums AS search_ab ON search_ab.id = search_abt.album_id"
+    ],
+    fields: [ "tracks.title", "search_a.name", "search_ab.title" ]
+  }.freeze
+
   # GET /tracks
   def index
     @tracks = Track.joins(:user_tracks).where(user_tracks: { user_id: current_user.id })
+    @tracks = apply_ext_filters(@tracks).distinct
       .includes(:artists, :albums, :medium)
     @user_prefs = current_user.user_tracks
       .includes(:genres, :tags)

@@ -3,11 +3,11 @@ class UserTrack < ApplicationRecord
   belongs_to :track
 
   has_many :user_track_genres, ->(ut) { where(user_id: ut.user_id) },
-           foreign_key: :track_id, inverse_of: false, dependent: :destroy
+           foreign_key: :track_id, primary_key: :track_id, inverse_of: false, dependent: :destroy
   has_many :genres, through: :user_track_genres
 
   has_many :user_track_tags, ->(ut) { where(user_id: ut.user_id) },
-           foreign_key: :track_id, inverse_of: false, dependent: :destroy
+           foreign_key: :track_id, primary_key: :track_id, inverse_of: false, dependent: :destroy
   has_many :tags, through: :user_track_tags
 
   before_validation { self.rating = nil if rating_before_type_cast.to_s == "0" }
