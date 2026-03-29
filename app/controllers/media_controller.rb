@@ -4,7 +4,7 @@ class MediaController < ApplicationController
 
   # GET /media
   def index
-    @media = Medium.all
+    @media = Medium.all.order(:name)
 
     render json: { data: @media }
   end

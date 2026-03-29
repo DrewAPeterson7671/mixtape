@@ -4,7 +4,7 @@ class PhasesController < ApplicationController
 
   # GET /phases
   def index
-    @phases = Phase.all
+    @phases = Phase.all.order(:name)
 
     render json: { data: @phases }
   end

@@ -4,7 +4,7 @@ class ReleaseTypesController < ApplicationController
 
   # GET /release_types
   def index
-    @release_types = ReleaseType.all
+    @release_types = ReleaseType.all.order(:name)
 
     render json: { data: @release_types }
   end
