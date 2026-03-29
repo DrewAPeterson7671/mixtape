@@ -1,12 +1,36 @@
 class ArtistsController < ApplicationController
   include UserPreferable
+  include ExtJsFilterable
 
   before_action :set_artist, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
+  FILTER_CONFIG = {
+    name: { kind: :string, column: "artists.name" },
+    genre_name: {
+      kind: :habtm_list,
+      join_table: "user_artist_genres", join_fk: "artist_id", base_key: "artists.id",
+      user_scope: "user_artist_genres.user_id = user_artists.user_id",
+      assoc_table: "genres", assoc_fk: "genre_id", assoc_column: "name"
+    },
+    priority_name: { kind: :list, model: Priority, column: "user_artists.priority_id" },
+    phase_name:    { kind: :list, model: Phase,    column: "user_artists.phase_id" },
+    complete:      { kind: :boolean, column: "user_artists.complete" },
+    rating:        { kind: :number,  column: "user_artists.rating" }
+  }.freeze
+
+  SEARCH_FIELDS = {
+    joins: [
+      "LEFT JOIN user_artist_genres AS search_uag ON search_uag.artist_id = artists.id AND search_uag.user_id = user_artists.user_id " \
+      "LEFT JOIN genres AS search_g ON search_g.id = search_uag.genre_id"
+    ],
+    fields: [ "artists.name", "search_g.name" ]
+  }.freeze
+
   # GET /artists
   def index
     @artists = Artist.joins(:user_artists).where(user_artists: { user_id: current_user.id })
+    @artists = apply_ext_filters(@artists).distinct
     @user_prefs = current_user.user_artists
       .includes(:priority, :phase, :genres, :tags)
       .index_by(&:artist_id)
