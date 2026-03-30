@@ -5,6 +5,18 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Mar 29, 2026) — E2E Tests for Duration Field & Edition Filter
+
+- **New E2E spec: `e2e/duration-field.spec.js`** — Tests the custom `durationfield` on the Track form and TrackGrid column. Creates a track with `duration: 214` via API, creates another via UI typing "3:34", verifies `getRawValue()` returns "3:34" and `getValue()` returns 214 after reload, confirms the grid column renderer converts 214 → "3:34".
+- **New E2E spec: `e2e/edition-filter.spec.js`** — Tests the edition filter dropdown on Album Detail. Sets up 3 editions with only 2 assigned to album tracks, verifies the dropdown contains exactly the 2 populated editions (not the empty one), and confirms the dropdown hides when `consider_editions` is toggled off.
+- **DurationField double-conversion bug fix** — `DurationField.setValue(214)` was calling `this.callParent([this.valueToRaw(214)])` which passed `"3:34"` to `Text.setValue`. But `Text.setValue` internally calls `me.setRawValue(me.valueToRaw(value))` — calling DurationField's `valueToRaw` a SECOND time on the string `"3:34"`, where `parseInt("3:34", 10)` returns 3. Fixed by removing the pre-conversion in `setValue`: now passes the raw integer to parent, letting `Text.setValue` call `valueToRaw` exactly once. This bug caused all durations to display incorrectly when loading records via `form.loadRecord()`.
+
+## Recent Changes (Mar 29, 2026) — Alphabetical Lookup Grids, Track Duration Fix, Hook Fix
+
+- **Alphabetical ordering on lookup table grids** — Added `.order(:name)` to the `index` action of all six lookup controllers (EditionsController, GenresController, MediaController, PhasesController, PrioritiesController, ReleaseTypesController). Grids now always display in alphabetical order instead of database insertion order.
+- **Track form duration field fix** — Replaced `numberfield` with the existing custom `durationfield` component in `TrackDetail.js`. The Track form now accepts `m:ss` input (e.g., "3:34" → 214 seconds) and displays existing durations in `m:ss` format, matching the Album Details tracklist behavior. Added `mixtape.view.common.DurationField` to the `requires` array.
+- **Branch guard hook fix** — Both repos' `.claude/hooks/guard-branch.sh` now resolve the repo directory from the hook script's own location (`REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"`) and use `git -C "$REPO_DIR"` instead of bare `git`. This ensures the branch check targets the correct repo even when Claude Code's working directory is a different repo (e.g., backend CWD while editing frontend files).
+
 ## Recent Changes (Mar 29, 2026) — Branch Guard Hook
 
 - **PreToolUse hook** (`.claude/hooks/guard-branch.sh`) — Blocks `Edit` and `Write` tools when on protected branches (`mixtape-develop`/`main` on backend, `mixtape-dev`/`main` on frontend). Exits with code 2 and a stderr message showing the branch naming convention. The agent then uses `Bash` (not matched by the hook) to pull latest and create a working branch before retrying the edit.
