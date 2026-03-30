@@ -23,6 +23,7 @@ Simple CRUD for reference data:
 - No `UserPreferable` concern
 - No transactions needed
 - Delete destroys the actual record
+- Index action orders by `.order(:name)` for alphabetical display
 - Index/show render JSON directly (no `respond_to` block in some cases)
 
 Canonical example: `app/controllers/genres_controller.rb`

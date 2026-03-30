@@ -4,7 +4,8 @@
 # Claude Code will surface the stderr message — the agent should then
 # create a working branch via Bash before retrying the edit.
 
-BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+BRANCH=$(git -C "$REPO_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null)
 
 case "$BRANCH" in
   mixtape-develop|main)

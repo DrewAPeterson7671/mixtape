@@ -4,7 +4,7 @@ class PrioritiesController < ApplicationController
 
   # GET /priorities
   def index
-    @priorities = Priority.all
+    @priorities = Priority.all.order(:name)
 
     render json: { data: @priorities }
   end

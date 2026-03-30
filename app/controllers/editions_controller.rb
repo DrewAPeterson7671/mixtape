@@ -4,7 +4,7 @@ class EditionsController < ApplicationController
 
   # GET /editions
   def index
-    @editions = Edition.all
+    @editions = Edition.all.order(:name)
 
     render json: { data: @editions }
   end

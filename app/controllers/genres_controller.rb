@@ -4,7 +4,7 @@ class GenresController < ApplicationController
 
   # GET /genres
   def index
-    @genres = Genre.all
+    @genres = Genre.all.order(:name)
 
     render json: { data: @genres }
   end
