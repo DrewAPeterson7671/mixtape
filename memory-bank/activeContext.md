@@ -5,6 +5,22 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Mar 30, 2026) — Improve Add Track UX & album_ids Sync
+
+- **`title_with_artist` computed field on Track model** — New `persist: false` field in `app/model/Track.js` that formats as `"Track Title – Artist1, Artist2"` using an en-dash separator. Depends on `title` and `artist_name` fields. Used as `displayField` on all track-selection comboboxes to disambiguate tracks with the same title by different artists.
+- **Add Track modal improvements** (`AlbumController.js` → `openAddTrackModal`):
+  - `displayField` changed from `'title'` to `'title_with_artist'` so the dropdown shows "Title – Artist"
+  - Local store sorter added: `{ property: 'title', direction: 'ASC' }` for alphabetical ordering (local instance avoids affecting main Tracks grid sort)
+  - **Artist filtering for non-VA albums** — Reads the album's VA checkbox and `artist_ids`, then applies `filterBy` on the combobox store (in `afterrender` listener, with `isLoaded` check and `load` event fallback). Non-VA albums only show tracks by the album's artist(s). VA albums show all tracks unfiltered.
+- **Inline title editor improvements** (`AlbumDetail.js` title column editor) — Changed `displayField` to `'title_with_artist'` and added local store sorter for alphabetical ordering. Existing artist filtering in `onBeforeEdit` continues to work unchanged.
+- **Backend `album_ids` sync on Track save** (`TracksController`) — New `handle_album_ids_association` private method syncs `album_tracks` based on the `album_ids` array parameter. Removes albums no longer desired (via `destroy_all`), adds new ones as unsorted entries (no position, disc_number, or edition_id), reloads the track to refresh cached associations. Called from both `create` and `update` actions after existing `handle_album_association`. Guard clause: skips entirely when `album_ids` key is absent (won't interfere with other save contexts).
+- **Backend tests** — 3 new RSpec tests in `tracks_controller_spec.rb`: create with `album_ids`, update sync (add/remove/keep), update without `album_ids` leaves associations unchanged. Full suite: 307 examples, 0 failures.
+- **E2E tests** — New `e2e/add-track-ux.spec.js` with 3 serial test suites (10 tests total):
+  1. Non-VA album: verifies `title_with_artist` format, alphabetical sorting, and artist filtering (other artist's tracks excluded)
+  2. VA album: verifies all tracks shown unfiltered with `title_with_artist` display
+  3. Track detail `album_ids` sync: assigns albums via tagfield, saves, reloads, verifies persistence; removes an album, saves, verifies reduced associations
+- **Total E2E test count: 104** (was 73)
+
 ## Recent Changes (Mar 29, 2026) — E2E Tests for Duration Field & Edition Filter
 
 - **New E2E spec: `e2e/duration-field.spec.js`** — Tests the custom `durationfield` on the Track form and TrackGrid column. Creates a track with `duration: 214` via API, creates another via UI typing "3:34", verifies `getRawValue()` returns "3:34" and `getValue()` returns 214 after reload, confirms the grid column renderer converts 214 → "3:34".

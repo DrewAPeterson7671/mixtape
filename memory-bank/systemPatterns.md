@@ -268,7 +268,9 @@ def track_params
   params.require(:track).permit(:title, :duration, :isrc, :medium_id, artist_ids: [])
 end
 ```
-Album linking (`album_id`, `position`, `disc_number`) is processed by a `handle_album_association` method that creates/updates `AlbumTrack` records directly from `params[:track]`.
+Album linking has two methods:
+- `handle_album_association` — processes singular `album_id` (with `position`, `disc_number`) from Album Detail saves. Creates/updates a single `AlbumTrack` record.
+- `handle_album_ids_association` — processes `album_ids` array from Track Detail saves. Syncs the full set of album associations: removes albums no longer in the list (via `destroy_all`), adds new ones as unsorted entries (no position, disc_number, or edition_id), reloads the track. Guard clause skips when `album_ids` key is absent.
 
 ## Ext.js Frontend CRUD Pattern
 
@@ -324,7 +326,9 @@ Reusable component at `app/view/common/DurationField.js`:
 The Album Detail form includes an inline tracklist grid for viewing and editing album tracks:
 - **CellEditing plugin** — enables inline editing of track fields (title, duration, ISRC, per-track artists for VA)
 - **Entry mode toggle** — "Enter Track Names" checkbox switches the grid into entry mode. New rows are added with `is_new: true` flag and are not saved until the album form is submitted
-- **Typeahead combobox** — Track title column uses a combobox that searches existing catalog tracks for linking
+- **Typeahead combobox** — Track title column uses a combobox with `displayField: 'title_with_artist'` and local store sorter for alphabetical ordering. Artist filtering applied in `onBeforeEdit` for non-VA albums (same filter logic as Add Track modal)
+- **Add Track modal** — `openAddTrackModal` in `AlbumController.js` creates a modal with a track combobox using `displayField: 'title_with_artist'`, local alphabetical sorter, and artist filtering for non-VA albums (reads VA checkbox and `artist_ids` from album form, applies `filterBy` on combo store in `afterrender` listener). VA albums show all tracks unfiltered.
+- **`title_with_artist` computed field** — `persist: false` field on Track model (`app/model/Track.js`) that formats as `"Title – Artist1, Artist2"`. Used as `displayField` on all track-selection comboboxes to disambiguate same-title tracks by different artists.
 - **Edition filter combobox** — Dropdown to filter tracklist by edition; visibility controlled by `consider_editions` checkbox
 - **Edition column** — Shows edition name per track; visibility also tied to `consider_editions`
 - **Per-track artist editing** — For VA albums (`various_artists: true`), each track row has an editable artist field; for non-VA albums, artists are inherited from the album
