@@ -67,6 +67,7 @@ class TracksController < ApplicationController
 
       if @track.save
         handle_album_association
+        handle_album_ids_association
 
         @user_pref = current_user_track(@track)
         @user_pref.assign_attributes(preference_params)
@@ -88,6 +89,7 @@ class TracksController < ApplicationController
 
       if @track.save
         handle_album_association
+        handle_album_ids_association
 
         @user_pref = current_user_track(@track)
         @user_pref.assign_attributes(preference_params)
@@ -130,6 +132,22 @@ class TracksController < ApplicationController
     at.position = params[:track][:position]
     at.disc_number = params[:track][:disc_number]
     at.save!
+  end
+
+  def handle_album_ids_association
+    return unless params[:track].key?(:album_ids)
+
+    desired_album_ids = Array(params[:track][:album_ids]).map(&:to_i)
+    current_album_ids = @track.album_ids
+
+    albums_to_remove = current_album_ids - desired_album_ids
+    @track.album_tracks.where(album_id: albums_to_remove).destroy_all if albums_to_remove.any?
+
+    (desired_album_ids - current_album_ids).each do |album_id|
+      AlbumTrack.create!(album_id: album_id, track_id: @track.id)
+    end
+
+    @track.reload
   end
 
   def track_json(track, pref)

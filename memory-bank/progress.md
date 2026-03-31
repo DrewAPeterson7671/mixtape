@@ -52,6 +52,7 @@
 - [x] TracksController saves preferences before genre/tag sync to avoid `pref.reload` data loss
 - [x] TracksController `track_json` helper with ID arrays (artist_ids, album_ids) and preference data
 - [x] TracksController handles album association via AlbumTrack in create/update
+- [x] TracksController handles `album_ids` array sync via `handle_album_ids_association` (adds/removes AlbumTrack records as unsorted entries)
 
 ### Ext.js Frontend
 - [x] Artist CRUD: ArtistView (border layout), ArtistDetail (form panel), ArtistController (ViewController)
@@ -75,7 +76,7 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, and edition filter tests
+- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, and add-track-ux tests
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] Claude Code test sub-agents — backend RSpec agent and frontend E2E agent as slash commands in `.claude/commands/`
@@ -111,6 +112,7 @@
 - [x] Track CRUD frontend — TrackGrid, TrackDetail, TrackController with full CRUD following Artist/Album template pattern
 - [x] `consider_editions` toggle — backend boolean on UserAlbum + frontend checkbox with edition UI visibility
 - [x] DurationField custom widget — `app/view/common/DurationField.js`, m:ss parsing in tracklist grid, track detail form, and album detail tracklist editor
+- [x] Add Track UX improvements — `title_with_artist` computed field on Track model, Add Track modal with artist filtering/sorting/display, inline title editor with display/sorting, backend `album_ids` sync on Track save
 - [x] `various_artists` boolean on Album — catalog-level flag, JSON artist_name override, frontend checkbox with artist field toggle
 - [x] Duplicate album title fix — `Track#album_title` uses `.distinct` for multi-edition tracks
 
