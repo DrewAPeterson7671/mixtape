@@ -84,6 +84,18 @@ RSpec.describe TracksController, type: :controller do
       expect(at.disc_number).to eq(1)
     end
 
+    it 'creates AlbumTrack records when album_ids is provided' do
+      album1 = create(:album)
+      album2 = create(:album)
+      post :create, params: { track: { title: 'Multi Album Track', artist_ids: [artist.id], album_ids: [album1.id, album2.id] } }, format: :json
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      expect(json['album_ids']).to match_array([album1.id, album2.id])
+      track = Track.find(json['id'])
+      expect(track.album_tracks.count).to eq(2)
+      expect(track.album_tracks.pluck(:position)).to all(be_nil)
+    end
+
     it 'returns 422 with invalid params' do
       post :create, params: { track: { title: '' } }, format: :json
       expect(response).to have_http_status(:unprocessable_entity)
@@ -101,6 +113,35 @@ RSpec.describe TracksController, type: :controller do
       expect(json['title']).to eq('New Title')
       expect(json['rating']).to eq(5)
       expect(json['listened']).to eq(true)
+    end
+
+    it 'syncs album associations when album_ids is provided' do
+      track = create(:track, title: 'Sync Test')
+      track.artists << artist
+      create(:user_track, user: user, track: track)
+      album_keep = create(:album)
+      album_remove = create(:album)
+      album_add = create(:album)
+      AlbumTrack.create!(album: album_keep, track: track)
+      AlbumTrack.create!(album: album_remove, track: track)
+
+      patch :update, params: { id: track.id, track: { album_ids: [album_keep.id, album_add.id] } }, format: :json
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json['album_ids']).to match_array([album_keep.id, album_add.id])
+      expect(track.reload.album_ids).to match_array([album_keep.id, album_add.id])
+    end
+
+    it 'leaves album associations unchanged when album_ids key is absent' do
+      track = create(:track, title: 'No Change')
+      track.artists << artist
+      create(:user_track, user: user, track: track)
+      album = create(:album)
+      AlbumTrack.create!(album: album, track: track)
+
+      patch :update, params: { id: track.id, track: { title: 'Updated Title' } }, format: :json
+      expect(response).to have_http_status(:ok)
+      expect(track.reload.album_ids).to eq([album.id])
     end
   end
 
