@@ -25,6 +25,7 @@ Rails.application.routes.draw do
 
   if Rails.env.development? || Rails.env.test?
     post "/test/login", to: "test_auth#create"
+    delete "/test/cleanup", to: "test_cleanup#destroy"
   end
 
   root to: "home#index"

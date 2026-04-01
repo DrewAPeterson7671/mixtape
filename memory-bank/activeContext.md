@@ -5,6 +5,18 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Apr 1, 2026) — Safer E2E Test Cleanup Strategy
+
+- **User-scoped cleanup for catalog records** — `TestCleanupController#destroy` no longer uses SQL `LIKE 'E2E %'` prefix matching to find catalog records (Artist, Album, Track). Instead, it looks up the E2E user (`e2e@test.com`) and uses their join records (UserArtist, UserAlbum, UserTrack) to identify associated catalog data. This prevents accidental deletion of real records whose names happen to start with "E2E " or "E2F ".
+- **Orphan detection** — After removing the E2E user's join records, catalog records are only deleted if no other user still references them (orphan check via set subtraction: `e2e_ids - Model.where(id: e2e_ids).distinct.pluck(:id)`).
+- **Playlist cleanup** — E2E user's playlists are now cleaned up (previously missed entirely).
+- **Lookup tables unchanged** — Tags, Genres, Editions, Media, Phases, Priorities, ReleaseTypes still use prefix matching (`E2E %` / `E2F %`) since they have no user association. Risk is minimal since real lookup names won't start with these prefixes.
+- **Transaction wrapping** — Entire cleanup operation runs inside `ActiveRecord::Base.transaction` for atomicity.
+- **Deletion order** — FK-safe: user join records → playlists → orphan tracks → orphan albums → orphan artists.
+- **E2E user survives** — The user record itself is kept between runs; `TestAuthController#create` uses `find_or_create_by!`.
+- **New response keys** — JSON response now includes `user_artists`, `user_albums`, `user_tracks`, `playlists` counts in addition to `artists`, `albums`, `tracks` and lookup counts. Frontend `global-teardown.js` logs whatever keys come back, so no frontend changes needed.
+- **Spec rewrite** — 27 examples covering: user join removal, orphaned vs shared catalog records, playlist cleanup, sub-join cascade, lookup prefix deletion, no-E2E-user graceful handling, and response JSON counts. Full suite: 334 examples, 0 failures.
+
 ## Recent Changes (Mar 30, 2026) — Improve Add Track UX & album_ids Sync
 
 - **`title_with_artist` computed field on Track model** — New `persist: false` field in `app/model/Track.js` that formats as `"Track Title – Artist1, Artist2"` using an en-dash separator. Depends on `title` and `artist_name` fields. Used as `displayField` on all track-selection comboboxes to disambiguate tracks with the same title by different artists.
