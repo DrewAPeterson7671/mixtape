@@ -5,6 +5,18 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Apr 1, 2026) — Inline Track Genre Column & Medium Inheritance
+
+- **Backend: Inline tracks inherit `medium_id` from album** — `create_inline_track` in `AlbumsController` now passes `medium_id: @album.medium_id` to `Track.create!`, so tracks created via "Enter Track Names" entry mode automatically receive the album's medium type.
+- **Backend: Per-track `genre_ids` on inline tracks** — `create_inline_track` now checks for `at_params[:genre_ids]`. When present, creates `UserTrackGenre` records from the submitted IDs instead of copying from the album. Falls back to `copy_album_genres_to_track` when absent (preserving existing behavior).
+- **Frontend: Genre tagfield column in tracklist grid** — New `genre_ids` store field and hidden "Genres" column (with tagfield editor and genre name renderer) added to the Album Detail tracklist grid. Column visibility toggled alongside ISRC/Listened/Rating when "Enter Track Names" entry mode is enabled.
+- **Frontend: Genre editing gated to new rows** — `onBeforeEdit` allows `genre_ids` editing only on `is_new` rows when entry mode is on (same rule as duration/isrc).
+- **Frontend: Genre pre-population on new rows** — `addInlineTrackRow` reads the album's VA status and genre_ids field. Non-VA albums: new rows pre-populated with album genres. VA albums: new rows start with empty genres.
+- **Frontend: `genre_ids` in save payload** — The `onSaveClick` method includes `genre_ids` in the inline track entry object sent to the backend.
+- **Branches:** Backend `mixtape-develop-20260401_inline_track_genre_medium`, Frontend `mixtape-dev-20260401_inline_track_genre_column`
+- **Backend tests:** 348 examples, 0 failures (2 new: medium_id inheritance, per-track genre_ids override).
+- **E2E tests:** New `e2e/inline-track-genre-medium.spec.js` with 8 tests in 2 serial suites: (1) non-VA album — genre column visibility toggle, genre pre-population from album, per-track genre override + save, genre/medium_id persistence verified via API after reload; (2) VA album — genres start empty on new inline rows.
+
 ## Recent Changes (Apr 1, 2026) — Safer E2E Test Cleanup Strategy
 
 - **User-scoped cleanup for catalog records** — `TestCleanupController#destroy` no longer uses SQL `LIKE 'E2E %'` prefix matching to find catalog records (Artist, Album, Track). Instead, it looks up the E2E user (`e2e@test.com`) and uses their join records (UserArtist, UserAlbum, UserTrack) to identify associated catalog data. This prevents accidental deletion of real records whose names happen to start with "E2E " or "E2F ".
@@ -175,7 +187,7 @@
 
 1. **Checkbox toggle** ("Enter Track Names") switches the tracklist grid into entry mode — Title column becomes an editable typeahead combobox, new rows marked with `is_new` flag
 2. **Artist inheritance** — Non-VA albums: album's `artist_ids` copied to each new track's `artists_tracks`. VA albums: per-track artist editing in the grid
-3. **Genre transfer** — Album's user genres copied to new tracks at creation time only (one-time copy, no propagation) via `copy_album_genres_to_track`
+3. **Genre transfer** — Album's user genres copied to new tracks at creation time only (one-time copy, no propagation) via `copy_album_genres_to_track`. Per-track `genre_ids` can override this when provided (e.g., from the genre tagfield column in entry mode)
 4. **Rating + Listened** — Per-track star rating and listened checkbox in the grid (user_track preferences)
 5. **Duration + ISRC** — Editable columns in the grid (catalog-level fields on tracks); DurationField widget parses "m:ss" to seconds
 6. **Save timing** — All new tracks created on album save (single transactional request) via `handle_album_tracks`
@@ -183,7 +195,7 @@
 
 **Backend implementation (AlbumsController):**
 - `handle_album_tracks(album)` — orchestrates album_track sync: splits submitted entries into existing (has `track_id`) vs new (has `title`, no `track_id`), removes album_tracks not in submitted list, syncs existing, creates new via `create_inline_track`
-- `create_inline_track(at_params, existing_titles)` — creates Track + UserTrack, handles duplicate title resolution, inherits artist_ids from album (unless per-track for VA), copies album genres to track
+- `create_inline_track(at_params, existing_titles)` — creates Track + UserTrack (with `medium_id` from album), handles duplicate title resolution, inherits artist_ids from album (unless per-track for VA), uses per-track `genre_ids` if provided or falls back to copying album genres
 - `copy_album_genres_to_track(user_track)` — propagates current album's user genres to newly created track
 - `resolve_duplicate_title(title, existing_titles)` — appends `(n)` suffix for same-title tracks on same album
 
@@ -194,6 +206,7 @@
 - DurationField widget (`app/view/common/DurationField.js`) for m:ss parsing
 - Per-track artist editing for VA albums
 - Edition filter combobox and edition column (visibility tied to `consider_editions` checkbox)
+- Genre tagfield column (hidden by default, shown in entry mode) — pre-populated from album genres for non-VA, empty for VA; editable on `is_new` rows only; `genre_ids` included in save payload
 
 ### Phase 2: Edition Management Modal (Complete)
 

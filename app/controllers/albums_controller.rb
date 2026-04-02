@@ -240,7 +240,8 @@ class AlbumsController < ApplicationController
     track = Track.create!(
       title: title,
       duration: at_params[:duration].present? ? at_params[:duration].to_i : nil,
-      isrc: at_params[:isrc]
+      isrc: at_params[:isrc],
+      medium_id: @album.medium_id
     )
 
     # Artist assignment: per-track artist_ids for VA, otherwise inherit from album
@@ -258,7 +259,13 @@ class AlbumsController < ApplicationController
       rating: at_params[:rating].present? ? at_params[:rating].to_i : nil
     )
 
-    copy_album_genres_to_track(user_track)
+    if at_params[:genre_ids].present?
+      Array(at_params[:genre_ids]).map(&:to_i).each do |gid|
+        UserTrackGenre.find_or_create_by!(user: current_user, track: track, genre_id: gid)
+      end
+    else
+      copy_album_genres_to_track(user_track)
+    end
 
     track
   end
