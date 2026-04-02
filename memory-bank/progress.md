@@ -109,7 +109,7 @@
 ### Completed Recently
 - [x] Default edition per album — `default_edition_id` on UserAlbum (nullable FK to editions), auto-selects in edition filter on album load, "Default Edition" checkbox in tracklist tbar with save/clear via PUT, sync with edition filter changes
 - [x] Edition management modal (Phase 2) — Backend `PUT /albums/:id/edition_tracks` endpoint with disc_number validation and transaction logic. Frontend `EditionManagerModal` + `EditionManagerController` with edition selector, dual grids (edition tracks + available tracks), add/remove/reorder, save via API, dirty tracking, and edition operations (Create New, Copy To, Move To, Clear). "Manage Editions" button in AlbumDetail tracklist tbar, visibility toggled by `consider_editions`.
-- [x] Inline track entry (Phase 1) — checkbox toggle, artist inheritance, genre transfer, duration/ISRC, entry mode, album-save transaction, `handle_album_tracks`/`create_inline_track`/`copy_album_genres_to_track`/`resolve_duplicate_title` in AlbumsController
+- [x] Inline track entry (Phase 1) — checkbox toggle, artist inheritance, genre transfer (with per-track override), medium_id inheritance, duration/ISRC, genre tagfield column, entry mode, album-save transaction, `handle_album_tracks`/`create_inline_track`/`copy_album_genres_to_track`/`resolve_duplicate_title` in AlbumsController
 - [x] Track CRUD frontend — TrackGrid, TrackDetail, TrackController with full CRUD following Artist/Album template pattern
 - [x] `consider_editions` toggle — backend boolean on UserAlbum + frontend checkbox with edition UI visibility
 - [x] DurationField custom widget — `app/view/common/DurationField.js`, m:ss parsing in tracklist grid, track detail form, and album detail tracklist editor

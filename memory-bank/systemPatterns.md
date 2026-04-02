@@ -88,10 +88,10 @@ When `params[:album][:album_tracks]` is present, `handle_album_tracks` orchestra
 3. **Sync existing entries** — `find_or_initialize_by(track_id, edition_id)` then update position/disc_number
 4. **Create new inline tracks** — Each new entry calls `create_inline_track`:
    - `resolve_duplicate_title(title, existing_titles)` — appends `(n)` suffix for same-title tracks on the same album
-   - Creates `Track` record with title, duration, isrc
+   - Creates `Track` record with title, duration, isrc, `medium_id` (inherited from album)
    - **Artist assignment:** uses per-track `artist_ids` if provided (VA albums), otherwise inherits from album's `artist_ids`
    - Creates `UserTrack` preference for current user (with optional listened/rating)
-   - `copy_album_genres_to_track(user_track)` — copies the album's user genres to the new track (one-time copy, no ongoing propagation)
+   - **Genre assignment:** if per-track `genre_ids` are provided, creates `UserTrackGenre` records from those IDs; otherwise falls back to `copy_album_genres_to_track(user_track)` which copies the album's user genres (one-time copy, no ongoing propagation)
    - Creates `AlbumTrack` with position, disc_number, edition_id
 
 This runs inside the same `ActiveRecord::Base.transaction` as the album create/update, so all tracks are committed atomically.
@@ -332,6 +332,7 @@ The Album Detail form includes an inline tracklist grid for viewing and editing 
 - **Edition filter combobox** — Dropdown to filter tracklist by edition; visibility controlled by `consider_editions` checkbox
 - **Edition column** — Shows edition name per track; visibility also tied to `consider_editions`
 - **Per-track artist editing** — For VA albums (`various_artists: true`), each track row has an editable artist field; for non-VA albums, artists are inherited from the album
+- **Genre tagfield column** — Hidden by default, shown in entry mode. Uses tagfield editor with genres store. Pre-populated from album genres for non-VA albums, empty for VA albums. Editable only on `is_new` rows. Genre IDs included in save payload; backend uses them to create `UserTrackGenre` records (or falls back to copying album genres if absent)
 
 ### VA Album Pattern
 
