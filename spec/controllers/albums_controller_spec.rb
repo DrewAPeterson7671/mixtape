@@ -254,6 +254,55 @@ RSpec.describe AlbumsController, type: :controller do
       expect(titles).to contain_exactly('Existing Song', 'New Song')
     end
 
+    it 'inherits medium_id from album for inline tracks' do
+      medium = create(:medium, name: 'Vinyl')
+
+      post :create, params: {
+        album: {
+          title: 'Medium Inherit Album',
+          medium_id: medium.id,
+          album_tracks: [
+            { title: 'Vinyl Track', position: 1, disc_number: 1 }
+          ]
+        }
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      track_id = json['album_tracks'].first['track_id']
+      expect(Track.find(track_id).medium_id).to eq(medium.id)
+    end
+
+    it 'uses per-track genre_ids instead of copying album genres when provided' do
+      album_genre = create(:genre, name: 'Rock')
+      track_genre = create(:genre, name: 'Jazz')
+
+      post :create, params: {
+        album: {
+          title: 'Genre Override Album',
+          genre_ids: [album_genre.id],
+          album_tracks: [
+            { title: 'Custom Genre Track', position: 1, disc_number: 1, genre_ids: [track_genre.id] },
+            { title: 'Default Genre Track', position: 2, disc_number: 1 }
+          ]
+        }
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+
+      custom_track_id = json['album_tracks'].find { |at| at['track_title'] == 'Custom Genre Track' }['track_id']
+      default_track_id = json['album_tracks'].find { |at| at['track_title'] == 'Default Genre Track' }['track_id']
+
+      custom_genres = UserTrackGenre.where(user: user, track_id: custom_track_id).pluck(:genre_id)
+      expect(custom_genres).to eq([track_genre.id])
+      expect(custom_genres).not_to include(album_genre.id)
+
+      default_genres = UserTrackGenre.where(user: user, track_id: default_track_id).pluck(:genre_id)
+      expect(default_genres).to eq([album_genre.id])
+      expect(default_genres).not_to include(track_genre.id)
+    end
+
     it 'creates UserTrack with listened and rating for inline tracks' do
       expect {
         post :create, params: {
