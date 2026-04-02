@@ -14,7 +14,8 @@
 - **Frontend: Genre pre-population on new rows** — `addInlineTrackRow` reads the album's VA status and genre_ids field. Non-VA albums: new rows pre-populated with album genres. VA albums: new rows start with empty genres.
 - **Frontend: `genre_ids` in save payload** — The `onSaveClick` method includes `genre_ids` in the inline track entry object sent to the backend.
 - **Branches:** Backend `mixtape-develop-20260401_inline_track_genre_medium`, Frontend `mixtape-dev-20260401_inline_track_genre_column`
-- **Tests:** 346 backend examples, 0 failures.
+- **Backend tests:** 348 examples, 0 failures (2 new: medium_id inheritance, per-track genre_ids override).
+- **E2E tests:** New `e2e/inline-track-genre-medium.spec.js` with 8 tests in 2 serial suites: (1) non-VA album — genre column visibility toggle, genre pre-population from album, per-track genre override + save, genre/medium_id persistence verified via API after reload; (2) VA album — genres start empty on new inline rows.
 
 ## Recent Changes (Apr 1, 2026) — Safer E2E Test Cleanup Strategy
 

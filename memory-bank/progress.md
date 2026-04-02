@@ -76,7 +76,7 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, and add-track-ux tests
+- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, and inline-track-genre-medium tests
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] E2E cleanup endpoint (`DELETE /test/cleanup`) — user-scoped catalog cleanup via e2e@test.com join records + orphan detection, prefix matching only for lookups, transaction-wrapped, playlist cleanup included
