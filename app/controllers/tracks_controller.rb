@@ -43,6 +43,7 @@ class TracksController < ApplicationController
     @tracks = Track.joins(:user_tracks).where(user_tracks: { user_id: current_user.id })
     @tracks = apply_ext_filters(@tracks).distinct
       .includes(:artists, :albums, :medium)
+      .sort_by { |track| [track.artists.map(&:name).min.to_s.downcase, track.albums.map(&:title).min.to_s.downcase, track.title.to_s.downcase] }
     @user_prefs = current_user.user_tracks
       .includes(:genres, :tags)
       .index_by(&:track_id)
