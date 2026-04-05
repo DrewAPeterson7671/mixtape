@@ -63,11 +63,15 @@
 
 ### Testing
 - [x] RSpec configured with FactoryBot and Shoulda Matchers
-- [x] Model specs for all 21 models
-- [x] Controller specs for all 13 controllers (including sessions)
+- [x] Model specs for all 21 models (including uniqueness validations on all lookup models)
+- [x] Controller specs for all 14 controllers (including sessions, test_auth, application_controller)
 - [x] Factories for all 21 models
 - [x] Auth helper (`sign_in`) for controller specs
 - [x] Transactional fixtures enabled
+- [x] Sorting verification specs for artists, albums, tracks, genres index actions
+- [x] 404 (RecordNotFound) specs for show/update/destroy on artists, albums, tracks, genres
+- [x] Validation error (422) specs: invalid album year, duplicate genre name, duplicate scoped playlist name
+- [x] ExtJsFilterable edge case specs: LIKE wildcard escaping, unknown operator fallthrough, empty list filter
 
 ### Infrastructure
 - [x] PostgreSQL on port 5433 for development
