@@ -288,6 +288,46 @@ RSpec.describe ArtistsController, type: :controller do
         json = JSON.parse(response.body)['data']
         expect(json).to be_empty
       end
+
+      it 'escapes LIKE wildcards in search terms' do
+        a1 = create(:artist, name: '100% Pure')
+        a2 = create(:artist, name: '100 Proof')
+        [a1, a2].each { |a| create(:user_artist, user: user, artist: a) }
+
+        get :index, params: { search: '100%' }, format: :json
+        names = JSON.parse(response.body)['data'].map { |a| a['name'] }
+        expect(names).to eq(['100% Pure'])
+      end
+
+      it 'escapes LIKE wildcards in column filter values' do
+        a1 = create(:artist, name: '100% Pure')
+        a2 = create(:artist, name: '100 Proof')
+        [a1, a2].each { |a| create(:user_artist, user: user, artist: a) }
+
+        get :index, params: { filter: [{ property: 'name', value: '100%' }].to_json }, format: :json
+        names = JSON.parse(response.body)['data'].map { |a| a['name'] }
+        expect(names).to eq(['100% Pure'])
+      end
+
+      it 'returns all results when number filter has unknown operator' do
+        a1 = create(:artist, name: 'One')
+        a2 = create(:artist, name: 'Two')
+        create(:user_artist, user: user, artist: a1, rating: 3)
+        create(:user_artist, user: user, artist: a2, rating: 5)
+
+        get :index, params: { filter: [{ property: 'rating', value: 3, operator: 'bogus' }].to_json }, format: :json
+        names = JSON.parse(response.body)['data'].map { |a| a['name'] }
+        expect(names).to contain_exactly('One', 'Two')
+      end
+
+      it 'returns no results when list filter values match no lookup records' do
+        a = create(:artist, name: 'Radiohead')
+        create(:user_artist, user: user, artist: a)
+
+        get :index, params: { filter: [{ property: 'priority_name', value: ['Nonexistent'] }].to_json }, format: :json
+        json = JSON.parse(response.body)['data']
+        expect(json).to be_empty
+      end
     end
   end
 end
