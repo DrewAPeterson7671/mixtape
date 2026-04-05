@@ -188,7 +188,7 @@ Playwright is installed in the **frontend repo** (`mixtapeUI/mixtape/`) for full
 
 - **Config:** `playwright.config.js` — baseURL `http://localhost:1841`, testDir `./e2e`, auth setup project + chromium project with saved `storageState`
 - **Auth bypass:** `TestAuthController` in the backend (`POST /test/login`, dev/test only) sets `session[:user_id]` directly, bypassing Cognito OAuth for E2E tests
-- **Test files:** `e2e/auth.setup.js` (auth), `e2e/smoke.spec.js`, `e2e/navigation.spec.js`, `e2e/albums.spec.js`
+- **Test files:** `e2e/auth.setup.js` (auth) plus spec files in `e2e/` covering smoke, navigation, albums, artists, tracks, delete/cascade, ratings, preferences, associations, tracklist, duration-field, edition-filter, add-track-ux, and inline-track-genre-medium (104+ tests total)
 - **Prerequisites:** Both servers must be running (Rails on 3000, Sencha on 1841)
 
 ### MCP Server

@@ -26,7 +26,7 @@ The backend is the system of record for all data. The frontend is a consumer of 
 - There are **no background jobs** (no Sidekiq, no Active Job queues).
 - The app does **not store or stream audio files**. It is purely a metadata catalog.
 - **Authentication is delegated to AWS Cognito** via OmniAuth OIDC. The backend does not manage passwords or tokens directly — it receives an auth callback and stores a session cookie.
-- There is currently **no pagination or server-side filtering** on list endpoints.
+- There is currently **no pagination** on list endpoints. Server-side column filtering and text search are implemented via the `ExtJsFilterable` concern.
 
 ## Frontend Relationship
 
