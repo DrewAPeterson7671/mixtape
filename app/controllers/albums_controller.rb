@@ -38,7 +38,7 @@ class AlbumsController < ApplicationController
     @albums = Album.joins(:user_albums).where(user_albums: { user_id: current_user.id })
     @albums = apply_ext_filters(@albums).distinct
       .includes(:artists, :medium, :release_type, album_tracks: { track: :artists, edition: {} })
-      .sort_by { |album| [album.artists.map { |a| a.name.sub(/^(The|A|An)\s+/i, "") }.min.to_s.downcase, album.title.to_s.downcase] }
+      .sort_by { |album| [(album.various_artists? ? "various artists" : album.artists.map { |a| a.name.sub(/^(The|A|An)\s+/i, "") }.min.to_s.downcase), album.title.to_s.downcase] }
     @user_prefs = current_user.user_albums
       .includes(:genres, :tags)
       .index_by(&:album_id)
