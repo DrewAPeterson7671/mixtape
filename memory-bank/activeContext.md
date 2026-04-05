@@ -7,6 +7,13 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
+## Recent Changes (Apr 5, 2026) — Track Genre/Tag Names in Album Detail
+
+- **Backend: `album_json` now includes genre and tag data per track** — The `album_tracks` array in the album detail response was missing `genre_ids`, `genre_name`, `tag_ids`, and `tag_name` for each track. Added these fields from `user_track_pref` and added `.includes(:genres, :tags)` to eager-load the associations (avoiding N+1 queries).
+- **Frontend: Genre column renderer fixed** — The tracklist genre column renderer was calling `Ext.getStore('genres')` to look up a global store that didn't exist, causing raw IDs to fall through. Changed to read `genre_name` directly from the record (matching how `AlbumGrid` and `TrackGrid` already work). Added `genre_name` to the tracklist store fields.
+- **Frontend: Genre name sync on edit and new rows** — `onCellEdit` now syncs `genre_name` when `genre_ids` is changed via the tagfield editor. `addInlineTrackRow` now populates `genre_name` alongside `genre_ids` when inheriting from album genres.
+- **Branches:** Backend `mixtape-develop-20260405_track_genre_names`, Frontend `mixtape-dev-20260405_track_genre_names`
+
 ## Recent Changes (Apr 4, 2026) — anyMatch on Artist & Track Typeaheads
 
 - **Frontend: `anyMatch: true` on all artist/track typeahead components** — Users can now type any part of an artist or track name to find a match (e.g., "Smashing" finds "The Smashing Pumpkins"). Applied to 5 components:
@@ -27,18 +34,6 @@ Working branches are created off these for each feature (e.g., `mixtape-develop-
 - **Removed `.order(:name)` from lookup table controllers** — Editions, Phases, Priorities, and Release Types index actions no longer sort alphabetically. They return in default database order (primary key / insertion order). Genres and Media were not changed.
 - **Branch:** `mixtape-develop-20260403_default_listing_order`
 - **Tests:** 348 examples, 0 failures (no changes to test suite).
-
-## Recent Changes (Apr 1, 2026) — Inline Track Genre Column & Medium Inheritance
-
-- **Backend: Inline tracks inherit `medium_id` from album** — `create_inline_track` in `AlbumsController` now passes `medium_id: @album.medium_id` to `Track.create!`, so tracks created via "Enter Track Names" entry mode automatically receive the album's medium type.
-- **Backend: Per-track `genre_ids` on inline tracks** — `create_inline_track` now checks for `at_params[:genre_ids]`. When present, creates `UserTrackGenre` records from the submitted IDs instead of copying from the album. Falls back to `copy_album_genres_to_track` when absent (preserving existing behavior).
-- **Frontend: Genre tagfield column in tracklist grid** — New `genre_ids` store field and hidden "Genres" column (with tagfield editor and genre name renderer) added to the Album Detail tracklist grid. Column visibility toggled alongside ISRC/Listened/Rating when "Enter Track Names" entry mode is enabled.
-- **Frontend: Genre editing gated to new rows** — `onBeforeEdit` allows `genre_ids` editing only on `is_new` rows when entry mode is on (same rule as duration/isrc).
-- **Frontend: Genre pre-population on new rows** — `addInlineTrackRow` reads the album's VA status and genre_ids field. Non-VA albums: new rows pre-populated with album genres. VA albums: new rows start with empty genres.
-- **Frontend: `genre_ids` in save payload** — The `onSaveClick` method includes `genre_ids` in the inline track entry object sent to the backend.
-- **Branches:** Backend `mixtape-develop-20260401_inline_track_genre_medium`, Frontend `mixtape-dev-20260401_inline_track_genre_column`
-- **Backend tests:** 348 examples, 0 failures (2 new: medium_id inheritance, per-track genre_ids override).
-- **E2E tests:** New `e2e/inline-track-genre-medium.spec.js` with 8 tests in 2 serial suites.
 
 ## Summary of Earlier Work
 

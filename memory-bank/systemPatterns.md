@@ -160,6 +160,7 @@ The `album_json` response includes an `album_tracks` array sorted by `[disc_numb
 - `position`, `disc_number`, `duration`, `isrc`
 - `edition_id`, `edition_name`
 - `listened` (boolean), `rating` (integer, from user_track preference)
+- `genre_ids` (array), `genre_name` (array), `tag_ids` (array), `tag_name` (array) — from user_track preference, eager-loaded via `.includes(:genres, :tags)`
 
 Lookup controllers use `render json: { data: @model }` with the `{ data: ... }` envelope.
 
