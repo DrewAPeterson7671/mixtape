@@ -10,7 +10,7 @@ Single-user in practice (the developer), but architected for multi-user from the
 
 ## What Users Do
 
-Users will curate their music.  They will be able to tailor dynmamic playlists that can be exported to their streaming platforms.
+Users will curate their music. They will be able to tailor dynamic playlists that can be exported to their streaming platforms.
 
 ### Core Workflows
 
@@ -50,9 +50,9 @@ Deleting an artist, album, or track from the UI removes only the user's preferen
 | Per-user isolation | Each user has independent preferences | Single account | Single account |
 | Audio playback | None — metadata only | Core feature | Limited |
 | Data portability | Direct database access | API-dependent | Export tools |
-| Smart playlists | Export of playlists to CSV | Import of playlists to CSV |
-| API connection to streaming services| Importing artist, albums and tracks from streaming services |
-| Exporting playlists to streaming services|
+| Smart playlists | Dynamic rule-based generation | Platform-specific | Not available |
+| Streaming sync | Import catalog + export playlists | N/A (native) | Limited import |
+| CSV import/export | Full catalog and playlist support | Not available | Export only |
 
 ## Product Boundaries
 
