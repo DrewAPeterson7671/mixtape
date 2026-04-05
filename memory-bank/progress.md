@@ -85,7 +85,7 @@
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)
 - [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
 - [x] Branch guard hook — PreToolUse hook blocks Edit/Write on protected branches, forces working branch creation (both repos). Hook resolves branch from its own repo directory via `git -C` to work correctly across repos.
-- [x] Lookup table grids display alphabetically — all six lookup controllers use `.order(:name)` in index actions
+- [x] Lookup table grids — Genres and Media display alphabetically via `.order(:name)` in index actions; Editions, Phases, Priorities, and Release Types return in default database order
 
 ### Documentation
 - [x] CLAUDE.md with project context
@@ -105,17 +105,6 @@
 - [ ] Orphaned jbuilder view files — 32 `.json.jbuilder` files exist under `app/views/` but are unused since all controllers render JSON directly
 
 ## What's Not Built Yet (Pending)
-
-### Completed Recently
-- [x] Default edition per album — `default_edition_id` on UserAlbum (nullable FK to editions), auto-selects in edition filter on album load, "Default Edition" checkbox in tracklist tbar with save/clear via PUT, sync with edition filter changes
-- [x] Edition management modal (Phase 2) — Backend `PUT /albums/:id/edition_tracks` endpoint with disc_number validation and transaction logic. Frontend `EditionManagerModal` + `EditionManagerController` with edition selector, dual grids (edition tracks + available tracks), add/remove/reorder, save via API, dirty tracking, and edition operations (Create New, Copy To, Move To, Clear). "Manage Editions" button in AlbumDetail tracklist tbar, visibility toggled by `consider_editions`.
-- [x] Inline track entry (Phase 1) — checkbox toggle, artist inheritance, genre transfer (with per-track override), medium_id inheritance, duration/ISRC, genre tagfield column, entry mode, album-save transaction, `handle_album_tracks`/`create_inline_track`/`copy_album_genres_to_track`/`resolve_duplicate_title` in AlbumsController
-- [x] Track CRUD frontend — TrackGrid, TrackDetail, TrackController with full CRUD following Artist/Album template pattern
-- [x] `consider_editions` toggle — backend boolean on UserAlbum + frontend checkbox with edition UI visibility
-- [x] DurationField custom widget — `app/view/common/DurationField.js`, m:ss parsing in tracklist grid, track detail form, and album detail tracklist editor
-- [x] Add Track UX improvements — `title_with_artist` computed field on Track model, Add Track modal with artist filtering/sorting/display, inline title editor with display/sorting, backend `album_ids` sync on Track save
-- [x] `various_artists` boolean on Album — catalog-level flag, JSON artist_name override, frontend checkbox with artist field toggle
-- [x] Duplicate album title fix — `Track#album_title` uses `.distinct` for multi-edition tracks
 
 ### Core New Features
 - [x] **Inline track entry (Phase 1)** — Checkbox toggle in tracklist grid for bulk track name entry, artist inheritance, album-save transaction

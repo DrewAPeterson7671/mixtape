@@ -13,6 +13,10 @@ These manage shared catalog records and per-user preferences together. All three
 - Split params into catalog params and preference params
 - Sync genres and tags via private helper methods
 - Delete only the user preference on destroy, not the catalog record
+- Index actions return records in alphabetical order with article prefix stripping (`/^(The|A|An)\s+/i` removed from artist names for sort purposes):
+  - **Artists:** Ruby-level `.sort_by` with article stripping (e.g., "The Beatles" sorts under B)
+  - **Albums:** Ruby-level `.sort_by` on `[artist name, album title]` after eager-loading (HABTM artist relationship makes SQL aggregation complex). VA albums use "various artists" as sort key. Unsorted album tracks (no position/disc_number) sort after positioned tracks, alphabetically by title.
+  - **Tracks:** Ruby-level `.sort_by` on `[artist name, album title, track title]` after eager-loading (same HABTM reasoning)
 
 Canonical example: `app/controllers/artists_controller.rb`
 
@@ -23,7 +27,7 @@ Simple CRUD for reference data:
 - No `UserPreferable` concern
 - No transactions needed
 - Delete destroys the actual record
-- Index action orders by `.order(:name)` for alphabetical display
+- Index action returns in default database order (no explicit ordering) for Editions, Phases, Priorities, and Release Types. Genres and Media retain `.order(:name)` for alphabetical display.
 - Index/show render JSON directly (no `respond_to` block in some cases)
 
 Canonical example: `app/controllers/genres_controller.rb`
@@ -288,6 +292,7 @@ Artist is the template entity. Each entity needs 3 new files + modifications to 
 - Requires `mixtape.view.common.StarRating` for the rating field
 - Fields for catalog data (textfields) and preference data (starrating, checkbox, comboboxes, tagfields)
 - Comboboxes use `queryMode: 'local'` with lookup stores (`{ type: 'priorities' }`, etc.)
+- Artist and track tagfields/comboboxes use `anyMatch: true` so users can type any part of a name to find a match (e.g., "Smashing" finds "The Smashing Pumpkins")
 - Save button with `formBind: true` and Cancel button
 
 **3. `{Entity}Controller.js`** — ViewController (`Ext.app.ViewController`)

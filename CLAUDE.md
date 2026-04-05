@@ -6,11 +6,13 @@ Rails JSON API backend for a music catalog app. The frontend is a separate proje
 
 For detailed documentation, see the `memory-bank/` directory.
 
-The Memory Bank files are a living document that summarizes this project and it's many aspects.  It is a knowledge base for both the frontend and backend apps.
+The Memory Bank files are a living document that summarizes this project and its many aspects. It is a knowledge base for both the frontend and backend apps.
 
 Review it when planning for this app.
 
-Upon a commit, please update the memory bank with an relevant changes.
+Upon a commit, please update the memory bank with any relevant changes.
+
+**Pruning protocol:** `activeContext.md` should only hold the last 2-3 changes in detail. Older entries should be removed — git history serves as the archive. Permanent reference material (patterns, architecture decisions) belongs in `systemPatterns.md`, not activeContext. Known issues and open questions live in `progress.md` only.
 
 ## Architecture
 
