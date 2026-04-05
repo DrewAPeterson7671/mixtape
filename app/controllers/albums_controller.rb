@@ -51,7 +51,7 @@ class AlbumsController < ApplicationController
   # GET /albums/1
   def show
     @user_pref = current_user_album(@album)
-    @user_track_prefs = current_user.user_tracks.where(track_id: @album.track_ids).index_by(&:track_id)
+    @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
 
     render json: { data: album_json(@album, @user_pref, @user_track_prefs) }
   end
@@ -70,7 +70,7 @@ class AlbumsController < ApplicationController
 
         handle_album_tracks
 
-        @user_track_prefs = current_user.user_tracks.where(track_id: @album.track_ids).index_by(&:track_id)
+        @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
         render json: { data: album_json(@album, @user_pref, @user_track_prefs) }, status: :created, location: @album
       else
         render json: @album.errors, status: :unprocessable_entity
@@ -92,7 +92,7 @@ class AlbumsController < ApplicationController
 
         handle_album_tracks
 
-        @user_track_prefs = current_user.user_tracks.where(track_id: @album.track_ids).index_by(&:track_id)
+        @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
         render json: { data: album_json(@album, @user_pref, @user_track_prefs) }, status: :ok, location: @album
       else
         render json: @album.errors, status: :unprocessable_entity
@@ -157,7 +157,7 @@ class AlbumsController < ApplicationController
 
     @album.reload
     @user_pref = current_user_album(@album)
-    @user_track_prefs = current_user.user_tracks.where(track_id: @album.track_ids).index_by(&:track_id)
+    @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
 
     render json: { data: album_json(@album, @user_pref, @user_track_prefs) }
   end
@@ -352,7 +352,11 @@ class AlbumsController < ApplicationController
           edition_id: at.edition_id,
           edition_name: at.edition&.name,
           listened: user_track_pref&.listened || false,
-          rating: user_track_pref&.rating
+          rating: user_track_pref&.rating,
+          genre_ids: user_track_pref&.genres&.map(&:id) || [],
+          genre_name: user_track_pref&.genre_name || [],
+          tag_ids: user_track_pref&.tags&.map(&:id) || [],
+          tag_name: user_track_pref&.tags&.map(&:name) || []
         }
       }
     )
