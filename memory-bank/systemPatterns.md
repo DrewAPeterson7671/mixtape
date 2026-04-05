@@ -338,7 +338,9 @@ The Album Detail form includes an inline tracklist grid for viewing and editing 
 - **Edition filter combobox** — Dropdown to filter tracklist by edition; visibility controlled by `consider_editions` checkbox
 - **Edition column** — Shows edition name per track; visibility also tied to `consider_editions`
 - **Per-track artist editing** — For VA albums (`various_artists: true`), each track row has an editable artist field; for non-VA albums, artists are inherited from the album
-- **Genre tagfield column** — Hidden by default, shown in entry mode. Uses tagfield editor with genres store. Pre-populated from album genres for non-VA albums, empty for VA albums. Editable only on `is_new` rows. Genre IDs included in save payload; backend uses them to create `UserTrackGenre` records (or falls back to copying album genres if absent)
+- **ISRC, Listened, Rating, Genres columns** — Visible by default. Editable only on `is_new` rows in entry mode (except Listened/Rating which are editable on all rows in entry mode). Genre column uses tagfield editor with genres store; pre-populated from album genres for non-VA albums, empty for VA albums. Genre IDs included in save payload; backend uses them to create `UserTrackGenre` records (or falls back to copying album genres if absent)
+- **Edition column** — Hidden by default; visibility toggled by `updateEditionVisibility` based on `consider_editions`
+- **Tracklist data fetched from show endpoint** — `onGridCellClick` makes a `GET /albums/:id` request to populate the tracklist with full user track preferences (listened, rating, genres, tags). The index endpoint passes `{}` for user_track_prefs to keep it lightweight, so track-level user data is only loaded on detail view. Fresh `album_tracks` are written back to the grid record for use by `onConsiderEditionsChange` and other handlers
 
 ### VA Album Pattern
 

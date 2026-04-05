@@ -7,11 +7,13 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 5, 2026) — Track Genre/Tag Names in Album Detail
+## Recent Changes (Apr 5, 2026) — Tracklist Column Visibility & Track Data from Show Endpoint
 
-- **Backend: `album_json` now includes genre and tag data per track** — The `album_tracks` array in the album detail response was missing `genre_ids`, `genre_name`, `tag_ids`, and `tag_name` for each track. Added these fields from `user_track_pref` and added `.includes(:genres, :tags)` to eager-load the associations (avoiding N+1 queries).
-- **Frontend: Genre column renderer fixed** — The tracklist genre column renderer was calling `Ext.getStore('genres')` to look up a global store that didn't exist, causing raw IDs to fall through. Changed to read `genre_name` directly from the record (matching how `AlbumGrid` and `TrackGrid` already work). Added `genre_name` to the tracklist store fields.
-- **Frontend: Genre name sync on edit and new rows** — `onCellEdit` now syncs `genre_name` when `genre_ids` is changed via the tagfield editor. `addInlineTrackRow` now populates `genre_name` alongside `genre_ids` when inheriting from album genres.
+- **Frontend: ISRC, Listened, Rating, Genres columns now visible by default** — Removed `hidden: true` from these four tracklist columns. Edition column set to `hidden: true` by default (still toggled by `consider_editions` via `updateEditionVisibility`).
+- **Frontend: Tracklist fetches from show endpoint** — `onGridCellClick` now makes a `GET /albums/:id` request to populate the tracklist instead of using `record.get('album_tracks')` from the index response. The index passes `{}` for user track prefs, so listened/rating/genres were always blank. The show endpoint loads full `UserTrack` records with genres/tags. Fresh data is written back to the grid record for use by `onConsiderEditionsChange` and other handlers.
+- **Frontend: Entry mode no longer toggles column visibility** — `onEntryModeChange` just sets the `entryMode` flag; editability is already gated by `onBeforeEdit`.
+- **Backend: `album_json` includes genre/tag data per track** — Added `genre_ids`, `genre_name`, `tag_ids`, `tag_name` to the per-track hash and `.includes(:genres, :tags)` on user_tracks queries.
+- **Frontend: Genre column renderer fixed** — Changed from failed `Ext.getStore('genres')` lookup to reading `genre_name` directly from the record. Added `genre_name` to store fields. `onCellEdit` syncs `genre_name` when genres edited. `addInlineTrackRow` populates `genre_name` alongside `genre_ids`.
 - **Branches:** Backend `mixtape-develop-20260405_track_genre_names`, Frontend `mixtape-dev-20260405_track_genre_names`
 
 ## Recent Changes (Apr 4, 2026) — anyMatch on Artist & Track Typeaheads
@@ -23,17 +25,6 @@ Working branches are created off these for each feature (e.g., `mixtape-develop-
   4. Inline tracklist artist column combobox (`AlbumDetail.js`)
   5. Add Track modal track combobox (`AlbumController.js`)
 - **Branch:** `mixtape-dev-20260404_anyMatch_artist_typeahead`
-
-## Recent Changes (Apr 3–4, 2026) — Default Listing Order for Index Endpoints
-
-- **Artists index ordered alphabetically** — Ruby-level `.sort_by` in `ArtistsController#index` with article stripping (`/^(The|A|An)\s+/i`), so "The Beatles" sorts under B.
-- **Albums index ordered by artist then title** — Ruby-level `.sort_by` after eager-loading in `AlbumsController#index`. Sorts by first artist name (with article stripping), then album title. VA albums use "various artists" as sort key so they sort under V instead of floating to top. Ruby sorting used because albums have a many-to-many (HABTM) relationship with artists, making SQL-level ordering with aggregation complex alongside the existing `.distinct` and filter joins.
-- **Tracks index ordered by artist, album, track** — Ruby-level `.sort_by` after eager-loading in `TracksController#index`. Sorts by first artist name (with article stripping), then first album title, then track title. Same HABTM reasoning as albums.
-- **Article prefix stripping** — Artist names starting with "The", "A", or "An" (case-insensitive) are sorted by the remainder of the name. Applied consistently to the artist name component of sorting in all three catalog controllers.
-- **Unsorted album tracks sort last** — Tracks with no position or disc_number now sort after positioned tracks (alphabetically by title), instead of floating to the top as `[0, 0]`.
-- **Removed `.order(:name)` from lookup table controllers** — Editions, Phases, Priorities, and Release Types index actions no longer sort alphabetically. They return in default database order (primary key / insertion order). Genres and Media were not changed.
-- **Branch:** `mixtape-develop-20260403_default_listing_order`
-- **Tests:** 348 examples, 0 failures (no changes to test suite).
 
 ## Summary of Earlier Work
 
