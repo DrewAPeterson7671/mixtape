@@ -335,7 +335,10 @@ class AlbumsController < ApplicationController
       tag_ids: pref&.tags&.map(&:id) || [],
       genre_name: pref&.genre_name || [],
       tag_name: pref&.tags&.map(&:name) || [],
-      album_tracks: album.album_tracks.sort_by { |at| [ at.disc_number || 0, at.position || 0 ] }.map { |at|
+      album_tracks: album.album_tracks.sort_by { |at|
+        sorted = at.position.present? || at.disc_number.present?
+        [sorted ? 0 : 1, at.disc_number || 0, at.position || 0, sorted ? "" : at.track.title.to_s.downcase]
+      }.map { |at|
         user_track_pref = user_track_prefs[at.track_id]
         {
           track_id: at.track_id,
