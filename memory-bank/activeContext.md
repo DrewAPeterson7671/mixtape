@@ -5,11 +5,23 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
-## Recent Changes (Apr 3, 2026) — Default Listing Order for Index Endpoints
+## Recent Changes (Apr 4, 2026) — anyMatch on Artist & Track Typeaheads
 
-- **Artists index ordered alphabetically** — Added `.order(:name)` to `ArtistsController#index` so artists return sorted by name (SQL-level).
-- **Albums index ordered by artist then title** — Added Ruby-level `.sort_by` after eager-loading in `AlbumsController#index`. Sorts by first artist name (alphabetical), then album title. Ruby sorting used because albums have a many-to-many (HABTM) relationship with artists, making SQL-level ordering with aggregation complex alongside the existing `.distinct` and filter joins.
-- **Tracks index ordered by artist, album, track** — Added Ruby-level `.sort_by` after eager-loading in `TracksController#index`. Sorts by first artist name, then first album title, then track title. Same HABTM reasoning as albums.
+- **Frontend: `anyMatch: true` on all artist/track typeahead components** — Users can now type any part of an artist or track name to find a match (e.g., "Smashing" finds "The Smashing Pumpkins"). Applied to 5 components:
+  1. Album Detail artist tagfield (`AlbumDetail.js`)
+  2. Track Detail artist tagfield (`TrackDetail.js`)
+  3. Inline tracklist title typeahead combobox (`AlbumDetail.js`)
+  4. Inline tracklist artist column combobox (`AlbumDetail.js`)
+  5. Add Track modal track combobox (`AlbumController.js`)
+- **Branch:** `mixtape-dev-20260404_anyMatch_artist_typeahead`
+
+## Recent Changes (Apr 3–4, 2026) — Default Listing Order for Index Endpoints
+
+- **Artists index ordered alphabetically** — Ruby-level `.sort_by` in `ArtistsController#index` with article stripping (`/^(The|A|An)\s+/i`), so "The Beatles" sorts under B.
+- **Albums index ordered by artist then title** — Ruby-level `.sort_by` after eager-loading in `AlbumsController#index`. Sorts by first artist name (with article stripping), then album title. VA albums use "various artists" as sort key so they sort under V instead of floating to top. Ruby sorting used because albums have a many-to-many (HABTM) relationship with artists, making SQL-level ordering with aggregation complex alongside the existing `.distinct` and filter joins.
+- **Tracks index ordered by artist, album, track** — Ruby-level `.sort_by` after eager-loading in `TracksController#index`. Sorts by first artist name (with article stripping), then first album title, then track title. Same HABTM reasoning as albums.
+- **Article prefix stripping** — Artist names starting with "The", "A", or "An" (case-insensitive) are sorted by the remainder of the name. Applied consistently to the artist name component of sorting in all three catalog controllers.
+- **Unsorted album tracks sort last** — Tracks with no position or disc_number now sort after positioned tracks (alphabetically by title), instead of floating to the top as `[0, 0]`.
 - **Removed `.order(:name)` from lookup table controllers** — Editions, Phases, Priorities, and Release Types index actions no longer sort alphabetically. They return in default database order (primary key / insertion order). Genres and Media were not changed.
 - **Branch:** `mixtape-develop-20260403_default_listing_order`
 - **Tests:** 348 examples, 0 failures (no changes to test suite).
