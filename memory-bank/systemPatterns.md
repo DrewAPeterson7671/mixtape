@@ -13,6 +13,10 @@ These manage shared catalog records and per-user preferences together. All three
 - Split params into catalog params and preference params
 - Sync genres and tags via private helper methods
 - Delete only the user preference on destroy, not the catalog record
+- Index actions return records in alphabetical order:
+  - **Artists:** SQL-level `.order(:name)` (simple — querying the artists table directly)
+  - **Albums:** Ruby-level `.sort_by` on `[artist name, album title]` after eager-loading (HABTM artist relationship makes SQL aggregation complex)
+  - **Tracks:** Ruby-level `.sort_by` on `[artist name, album title, track title]` after eager-loading (same HABTM reasoning)
 
 Canonical example: `app/controllers/artists_controller.rb`
 
@@ -23,7 +27,7 @@ Simple CRUD for reference data:
 - No `UserPreferable` concern
 - No transactions needed
 - Delete destroys the actual record
-- Index action orders by `.order(:name)` for alphabetical display
+- Index action returns in default database order (no explicit ordering) for Editions, Phases, Priorities, and Release Types. Genres and Media retain `.order(:name)` for alphabetical display.
 - Index/show render JSON directly (no `respond_to` block in some cases)
 
 Canonical example: `app/controllers/genres_controller.rb`

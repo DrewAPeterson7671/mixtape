@@ -30,7 +30,8 @@ class ArtistsController < ApplicationController
   # GET /artists
   def index
     @artists = Artist.joins(:user_artists).where(user_artists: { user_id: current_user.id })
-    @artists = apply_ext_filters(@artists).distinct.order(:name)
+    @artists = apply_ext_filters(@artists).distinct
+      .sort_by { |artist| artist.name.sub(/^(The|A|An)\s+/i, "").downcase }
     @user_prefs = current_user.user_artists
       .includes(:priority, :phase, :genres, :tags)
       .index_by(&:artist_id)

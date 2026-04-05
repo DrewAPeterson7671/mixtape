@@ -5,6 +5,15 @@
 - **Backend:** `mixtape-develop`
 - **Frontend:** `mixtape-dev`
 
+## Recent Changes (Apr 3, 2026) — Default Listing Order for Index Endpoints
+
+- **Artists index ordered alphabetically** — Added `.order(:name)` to `ArtistsController#index` so artists return sorted by name (SQL-level).
+- **Albums index ordered by artist then title** — Added Ruby-level `.sort_by` after eager-loading in `AlbumsController#index`. Sorts by first artist name (alphabetical), then album title. Ruby sorting used because albums have a many-to-many (HABTM) relationship with artists, making SQL-level ordering with aggregation complex alongside the existing `.distinct` and filter joins.
+- **Tracks index ordered by artist, album, track** — Added Ruby-level `.sort_by` after eager-loading in `TracksController#index`. Sorts by first artist name, then first album title, then track title. Same HABTM reasoning as albums.
+- **Removed `.order(:name)` from lookup table controllers** — Editions, Phases, Priorities, and Release Types index actions no longer sort alphabetically. They return in default database order (primary key / insertion order). Genres and Media were not changed.
+- **Branch:** `mixtape-develop-20260403_default_listing_order`
+- **Tests:** 348 examples, 0 failures (no changes to test suite).
+
 ## Recent Changes (Apr 1, 2026) — Inline Track Genre Column & Medium Inheritance
 
 - **Backend: Inline tracks inherit `medium_id` from album** — `create_inline_track` in `AlbumsController` now passes `medium_id: @album.medium_id` to `Track.create!`, so tracks created via "Enter Track Names" entry mode automatically receive the album's medium type.
@@ -53,7 +62,7 @@
 
 ## Recent Changes (Mar 29, 2026) — Alphabetical Lookup Grids, Track Duration Fix, Hook Fix
 
-- **Alphabetical ordering on lookup table grids** — Added `.order(:name)` to the `index` action of all six lookup controllers (EditionsController, GenresController, MediaController, PhasesController, PrioritiesController, ReleaseTypesController). Grids now always display in alphabetical order instead of database insertion order.
+- **Alphabetical ordering on lookup table grids** — Added `.order(:name)` to the `index` action of all six lookup controllers (EditionsController, GenresController, MediaController, PhasesController, PrioritiesController, ReleaseTypesController). Grids now always display in alphabetical order instead of database insertion order. *(Note: Editions, Phases, Priorities, and Release Types later reverted to default database order on Apr 3.)*
 - **Track form duration field fix** — Replaced `numberfield` with the existing custom `durationfield` component in `TrackDetail.js`. The Track form now accepts `m:ss` input (e.g., "3:34" → 214 seconds) and displays existing durations in `m:ss` format, matching the Album Details tracklist behavior. Added `mixtape.view.common.DurationField` to the `requires` array.
 - **Branch guard hook fix** — Both repos' `.claude/hooks/guard-branch.sh` now resolve the repo directory from the hook script's own location (`REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"`) and use `git -C "$REPO_DIR"` instead of bare `git`. This ensures the branch check targets the correct repo even when Claude Code's working directory is a different repo (e.g., backend CWD while editing frontend files).
 
