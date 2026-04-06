@@ -80,12 +80,12 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, and inline-track-genre-medium tests
+- [x] E2E testing infrastructure (Playwright in frontend repo, 180+ tests across 31 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, and tagfield interactions
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] E2E cleanup endpoint (`DELETE /test/cleanup`) — user-scoped catalog cleanup via e2e@test.com join records + orphan detection, prefix matching only for lookups, transaction-wrapped, playlist cleanup included
 - [x] Claude Code test sub-agents — backend RSpec agent and frontend E2E agent as slash commands in `.claude/commands/`
-- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, setFieldValue, getFieldValue, getRecordFieldValue, ensureRecordVisible, ComponentQuery wrappers)
+- [x] E2E test helpers — shared `extjs.js` utility module (waitForExtReady, navigateToView, navigateToSettingsView, fillTextField, clickButton, confirmDialog, waitForToast, waitForStoreRecord, selectGridRecord, clickToolbarButton, waitForStoreLoad, getGridRowCount, setFieldValue, getFieldValue, getRecordFieldValue, ensureRecordVisible, ComponentQuery wrappers)
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)
 - [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
 - [x] Branch guard hook — PreToolUse hook blocks Edit/Write on protected branches, forces working branch creation (both repos). Hook resolves branch from its own repo directory via `git -C` to work correctly across repos.
