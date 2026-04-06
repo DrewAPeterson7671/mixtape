@@ -81,7 +81,7 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo, 180+ tests across 31 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, and tagfield interactions
+- [x] E2E testing infrastructure (Playwright in frontend repo, 225 tests across 31 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, tagfield interactions, cell-edit-gating, cancel-button, va-album-toggle, edition-management, and filtering
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] E2E cleanup endpoint (`DELETE /test/cleanup`) — user-scoped catalog cleanup via e2e@test.com join records + orphan detection, prefix matching only for lookups, transaction-wrapped, playlist cleanup included
@@ -103,6 +103,7 @@
 - [ ] CI test job runs `bin/rails test` (Minitest) instead of `bundle exec rspec`
 - [ ] CI test job installs sqlite3 instead of configuring PostgreSQL service
 - [ ] CI has no PostgreSQL service container for the test job
+- [ ] Flaky E2E test: `cancel-button.spec.js` — detail panel collapse assertion intermittently fails (timing/race condition, not a code bug). Fails on different cancel-button tests across runs.
 - [ ] Inconsistent JSON rendering (inline `as_json` vs `render json:` vs jbuilder views)
 - [ ] Genre/tag sync logic duplicated across 3 controllers — not extracted to shared module
 - [ ] `database.yml` contains stale commented-out SQLite configuration

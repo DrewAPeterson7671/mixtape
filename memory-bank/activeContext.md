@@ -7,40 +7,34 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 5, 2026) — Frontend E2E Test Coverage Expansion
+## Recent Changes (Apr 6, 2026) — No-Var Code Style Enforcement
 
-Comprehensive E2E audit and test writing across three priority tiers (~80 new tests, bringing total from ~104 to ~180+):
+Eliminated all `var` declarations across the entire frontend codebase (906 total across 48 files). All JavaScript now uses `const` (preferred) or `let`.
 
-### P0: Lookup Entity CRUD & Complex UI
-- **5 lookup entity specs** (Genres, Media, Phases, Priorities, Release Types) — Each has 3 grid tests + 3 serial CRUD tests. Uses `navigateToSettingsView` helper (new) for Settings tree expansion.
-- **Edition Manager Modal spec** (15 tests) — Most complex spec: edition selector, dual-grid track management, add/remove/reorder/save/dirty-checking/create/clear/copy-to, disc number validation. Custom modal helpers.
-- **Editions settings CRUD** — Same lookup entity pattern for Editions view.
-- **Playlists grid spec** — Grid columns + data display. Creates genre first (required `belongs_to :genre`).
-- **Tags grid spec** — Grid columns + data display.
+### App Source Files (19 files, commit `4f531d0`)
+- **AlbumController.js** (972 lines, 104 vars) — Largest file. Fixed a hoisting bug where `isNew` was used before its declaration. Renamed inner `albumTracks` → `refreshedTracks` to eliminate variable shadowing. Block scoping allowed removing `defaultEditionCheckbox2` workaround.
+- **EditionManagerController.js** (84 vars), **TrackController.js** (36 vars), **ArtistController.js** (30 vars) — Large controller files analyzed by planner agent for `let` identification.
+- **6 lookup controllers** (Genre, Medium, ReleaseType, Edition, Phase, Priority) — 18 vars each, identical patterns.
+- **9 small files** (Track.js, EditionManagerModal.js, AlbumGrid.js, ArtistGrid.js, StarRating.js, MainController.js, AlbumDetail.js, TrackGrid.js, DurationField.js) — Straightforward conversions.
 
-### P1: Form Behavior & Backend Gaps
-- **Genre auto-populate spec** (4 tests) — Verifies `onArtistChange` copies artist genres to album/track genre tagfield on new records, does NOT fire on existing records.
-- **Form validation spec** (3 tests) — Tests `formBind` Save button disabled/enabled state. Custom `setFieldAndValidate` helper forces `checkValidity()` to bypass ExtJS async monitor.
-- **UserAlbum model spec** (backend, 9 new tests) — `default_edition` association, `genre_name` method, genre/tag HABTM associations.
+### E2E Test Files (29 files, commit `0d67c8a`)
+- 424 vars bulk-converted (422 to const, 2 to let for reassigned `colIndex` variables).
+- Loop iterators in `for` loops use `let`.
+- Full code review confirmed zero false-passing-test risks from the conversion.
+- **225 E2E tests: 223 pass, 1 flaky** (cancel-button detail-collapse timing, pre-existing).
 
-### P2: Grid Sorting & Tagfield Interactions
-- **Grid sorting spec** (8 tests) — Tests column header click toggling ASC/DESC across Artists (Name, string), Albums (Year, numeric), Tracks (Title, string). Verifies sort indicator via `store.getSorters()` and data order. Also tests switching sort column replaces active sort.
-- **Tagfield interactions spec** (10 tests) — Add multiple genres/tags, verify persistence after reload, remove/add values, clear all, verify empty. Typeahead filtering via `doRawQuery()` + picker verification. Select from filtered pick list.
+### Conversion Rules Applied
+- `const` when never reassigned (array mutations and object property assignments are not reassignments)
+- `let` when genuinely reassigned (`url`, `method`, `errors`, `genreIds`, loop counters, etc.)
+- `me = this` pattern (common in ExtJS) → always `const`
 
-- **Branches:** Frontend `mixtape-dev-20260405_lookup_entity_e2e_specs`, Backend `mixtape-develop-20260405_backend_spec_gaps`
-
-## Recent Changes (Apr 5, 2026) — Backend RSpec Coverage Gaps
-
-- **New spec: TestAuthController** (6 tests), **ApplicationController** (7 tests), **lookup model validations** (uniqueness on all 6 lookup models), **sorting verification** (4 tests), **error/edge case specs** (17 tests), **ExtJsFilterable edge cases** (4 tests)
-- **Dedicated concern specs** (21 tests) — `UserPreferable` (9 tests: find-or-initialize behavior for artist/album/track, user isolation) and `ExtJsFilterable` helpers (12 tests: `parse_filters` JSON/array/malformed, `sanitize_like` escaping, unknown filter kind fallthrough). Integration tests for ExtJsFilterable already existed in 3 per-controller `*_filters_spec.rb` files (883+ lines).
-- **Full suite: 420 tests passing**
-- **Branch:** `mixtape-develop-20260405_backend_spec_gaps`
+**Branch:** Frontend `mixtape-dev-20260406_no_var_code_style`
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
-- **Apr 5:** Tracklist column visibility (ISRC, Listened, Rating, Genres visible by default), tracklist fetches from show endpoint for full user track data, `album_json` includes genre/tag data per track
+- **Apr 5:** E2E test coverage expansion (~80 new tests), backend RSpec coverage gaps (420 tests passing), tracklist column visibility, show endpoint for full user track data
 - **Apr 4:** `anyMatch: true` on all artist/track typeahead components (5 comboboxes)
 - **Apr 1:** Safer E2E test cleanup strategy (user-scoped catalog record cleanup, orphan detection, transaction wrapping)
 - **Mar 28-30:** Server-side grid filtering & search, Add Track UX, DurationField bug fix, E2E tests
