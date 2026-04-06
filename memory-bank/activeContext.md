@@ -32,6 +32,8 @@ Comprehensive E2E audit and test writing across three priority tiers (~80 new te
 ## Recent Changes (Apr 5, 2026) — Backend RSpec Coverage Gaps
 
 - **New spec: TestAuthController** (6 tests), **ApplicationController** (7 tests), **lookup model validations** (uniqueness on all 6 lookup models), **sorting verification** (4 tests), **error/edge case specs** (17 tests), **ExtJsFilterable edge cases** (4 tests)
+- **Dedicated concern specs** (21 tests) — `UserPreferable` (9 tests: find-or-initialize behavior for artist/album/track, user isolation) and `ExtJsFilterable` helpers (12 tests: `parse_filters` JSON/array/malformed, `sanitize_like` escaping, unknown filter kind fallthrough). Integration tests for ExtJsFilterable already existed in 3 per-controller `*_filters_spec.rb` files (883+ lines).
+- **Full suite: 420 tests passing**
 - **Branch:** `mixtape-develop-20260405_backend_spec_gaps`
 
 ## Summary of Earlier Work

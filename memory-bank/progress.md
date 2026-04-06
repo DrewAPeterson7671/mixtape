@@ -72,6 +72,7 @@
 - [x] 404 (RecordNotFound) specs for show/update/destroy on artists, albums, tracks, genres
 - [x] Validation error (422) specs: invalid album year, duplicate genre name, duplicate scoped playlist name
 - [x] ExtJsFilterable edge case specs: LIKE wildcard escaping, unknown operator fallthrough, empty list filter
+- [x] Dedicated concern specs: UserPreferable (find-or-initialize, user isolation) and ExtJsFilterable helpers (parse_filters, sanitize_like, unknown kind fallthrough) in `spec/controllers/concerns/`
 
 ### Infrastructure
 - [x] PostgreSQL on port 5433 for development
