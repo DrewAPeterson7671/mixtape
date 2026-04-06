@@ -277,6 +277,10 @@ Album linking has two methods:
 - `handle_album_association` — processes singular `album_id` (with `position`, `disc_number`) from Album Detail saves. Creates/updates a single `AlbumTrack` record.
 - `handle_album_ids_association` — processes `album_ids` array from Track Detail saves. Syncs the full set of album associations: removes albums no longer in the list (via `destroy_all`), adds new ones as unsorted entries (no position, disc_number, or edition_id), reloads the track. Guard clause skips when `album_ids` key is absent.
 
+## JavaScript Code Style
+
+- **No `var` declarations.** Always use `const` (preferred) or `let`. This applies to all JavaScript: Ext JS app source, E2E specs, helpers, and `page.evaluate()` callbacks.
+
 ## Ext.js Frontend CRUD Pattern
 
 Artist is the template entity. Each entity needs 3 new files + modifications to 3 existing files.
