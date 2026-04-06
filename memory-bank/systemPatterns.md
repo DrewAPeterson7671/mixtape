@@ -442,6 +442,55 @@ test.beforeEach(async ({ page }) => {
 
 Key conventions: wait for `Ext.isReady` via shared helper, navigate via tree nodes using `navigateToView()`, wait for grid via `getByRole('grid')`, use Ext.js CSS selectors (`.x-grid-row`, `.x-column-header-text`, `.x-form-item`, `.x-btn-inner`). Shared helpers in `e2e/helpers/extjs.js`.
 
+### Lookup Entity E2E Pattern
+
+All lookup/settings entities (Genres, Media, Phases, Priorities, Release Types, Editions) follow an identical spec structure:
+- **Grid tests (3):** grid loads with expected columns, grid has rows, grid has Name column
+- **CRUD tests (3, serial):** create via detail form + Save + toast, update name + Save + toast, delete via Delete button + confirm dialog + toast
+- **Settings navigation:** Uses `navigateToSettingsView(page, 'Genres')` helper which expands the Settings tree node via ExtJS API before clicking the child node. Lookup entities live under the Settings parent node (`expanded: false` by default).
+- **No Add button:** Detail form is always visible (`collapsed: false`), so creating is done by clearing the form and typing a new name.
+
+### Grid Sorting E2E Pattern
+
+Tests column header sort toggling by:
+1. Creating test data with known sort values via API
+2. Clicking column headers via ExtJS ComponentQuery (finds column element ID by `dataIndex`)
+3. Verifying sort state via `store.getSorters()` (property + direction)
+4. Verifying data order by reading store field values
+
+```javascript
+// Click column header by dataIndex (reliable across grids)
+async function clickColumnHeader(page, gridXtype, dataIndex) {
+  const headerId = await page.evaluate(({ xtype, di }) => {
+    var grid = Ext.ComponentQuery.query(xtype)[0];
+    var columns = grid.getColumns();
+    for (var i = 0; i < columns.length; i++) {
+      if (columns[i].dataIndex === di) return columns[i].el.id;
+    }
+    return null;
+  }, { xtype: gridXtype, di: dataIndex });
+  await page.locator('#' + headerId).click();
+}
+```
+
+Sorting is client-side (local) — stores have `remoteFilter: true` but not `remoteSort: true`.
+
+### Tagfield E2E Pattern
+
+Two testing approaches for ExtJS tagfields:
+
+**Programmatic (add/remove/persist):** Use `setFieldValue(page, 'genre_ids', [id1, id2])` and `getFieldValue(page, 'genre_ids')` helpers. Save via clicking Save button, verify persistence by re-navigating and re-selecting the record.
+
+**Typeahead filtering:** Cannot click the tagfield input directly (placeholder label intercepts). Instead use ExtJS API to trigger the query:
+```javascript
+await page.evaluate(() => {
+  var field = Ext.ComponentQuery.query('tagfield[name="genre_ids"]').pop();
+  field.inputEl.dom.value = 'SearchText';
+  field.doRawQuery(); // triggers local store filter + opens picker
+});
+```
+Then verify picker is visible and store is filtered to matching items.
+
 ### Claude Code Test Sub-Agent Architecture
 
 Two specialized agents in separate repos, each with 3 slash commands (write/run/debug). Backend agent knows RSpec/FactoryBot/Shoulda. Frontend agent knows Playwright/Ext.js/MCP tools. Each agent references its repo's test patterns as templates.

@@ -38,6 +38,17 @@ RSpec.describe ArtistsController, type: :controller do
       expect(names).not_to include('Not In Collection')
     end
 
+    it 'sorts by name, stripping leading articles' do
+      %w[The\ Beatles Arcade\ Fire A\ Perfect\ Circle Radiohead].each do |name|
+        artist = create(:artist, name: name)
+        create(:user_artist, user: user, artist: artist)
+      end
+
+      get :index, format: :json
+      names = JSON.parse(response.body)['data'].map { |a| a['name'] }
+      expect(names).to eq(['Arcade Fire', 'The Beatles', 'A Perfect Circle', 'Radiohead'])
+    end
+
     it 'excludes artists belonging to another user' do
       other_user = create(:user)
       my_artist = create(:artist, name: 'Mine')
@@ -186,6 +197,26 @@ RSpec.describe ArtistsController, type: :controller do
       }.to change(Artist, :count).by(0)
         .and change(Album, :count).by(0)
         .and change(Track, :count).by(0)
+    end
+  end
+
+  describe 'record not found' do
+    it 'returns 404 for show with non-existent id' do
+      expect {
+        get :show, params: { id: -1 }, format: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'returns 404 for update with non-existent id' do
+      expect {
+        patch :update, params: { id: -1, artist: { name: 'X' } }, format: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'returns 404 for destroy with non-existent id' do
+      expect {
+        delete :destroy, params: { id: -1 }, format: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 

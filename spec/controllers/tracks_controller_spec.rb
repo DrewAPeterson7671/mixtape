@@ -24,6 +24,34 @@ RSpec.describe TracksController, type: :controller do
       expect(entry['album_ids']).to be_an(Array)
     end
 
+    it 'sorts by artist name, album title, then track title' do
+      beatles = create(:artist, name: 'The Beatles')
+      arcade  = create(:artist, name: 'Arcade Fire')
+      abbey   = create(:album, title: 'Abbey Road')
+      funeral = create(:album, title: 'Funeral')
+
+      # Beatles - Abbey Road tracks
+      come = create(:track, title: 'Come Together')
+      come.artists << beatles
+      come.albums << abbey
+      create(:user_track, user: user, track: come)
+
+      something = create(:track, title: 'Something')
+      something.artists << beatles
+      something.albums << abbey
+      create(:user_track, user: user, track: something)
+
+      # Arcade Fire - Funeral track
+      wake = create(:track, title: 'Wake Up')
+      wake.artists << arcade
+      wake.albums << funeral
+      create(:user_track, user: user, track: wake)
+
+      get :index, format: :json
+      titles = JSON.parse(response.body)['data'].map { |t| t['title'] }
+      expect(titles).to eq(['Wake Up', 'Come Together', 'Something'])
+    end
+
     it 'excludes tracks not in user collection' do
       in_collection = create(:track, title: 'In Collection')
       create(:user_track, user: user, track: in_collection)
@@ -165,6 +193,26 @@ RSpec.describe TracksController, type: :controller do
       expect {
         delete :destroy, params: { id: track.id }, format: :json
       }.to change(UserTrack, :count).by(-1).and change(UserArtist, :count).by(0)
+    end
+  end
+
+  describe 'record not found' do
+    it 'raises RecordNotFound for show with non-existent id' do
+      expect {
+        get :show, params: { id: -1 }, format: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'raises RecordNotFound for update with non-existent id' do
+      expect {
+        patch :update, params: { id: -1, track: { title: 'X' } }, format: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'raises RecordNotFound for destroy with non-existent id' do
+      expect {
+        delete :destroy, params: { id: -1 }, format: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 
