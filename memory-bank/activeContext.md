@@ -7,39 +7,44 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 5, 2026) — Tracklist Column Visibility & Track Data from Show Endpoint
+## Recent Changes (Apr 5, 2026) — Frontend E2E Test Coverage Expansion
 
-- **Frontend: ISRC, Listened, Rating, Genres columns now visible by default** — Removed `hidden: true` from these four tracklist columns. Edition column set to `hidden: true` by default (still toggled by `consider_editions` via `updateEditionVisibility`).
-- **Frontend: Tracklist fetches from show endpoint** — `onGridCellClick` now makes a `GET /albums/:id` request to populate the tracklist instead of using `record.get('album_tracks')` from the index response. The index passes `{}` for user track prefs, so listened/rating/genres were always blank. The show endpoint loads full `UserTrack` records with genres/tags. Fresh data is written back to the grid record for use by `onConsiderEditionsChange` and other handlers.
-- **Frontend: Entry mode no longer toggles column visibility** — `onEntryModeChange` just sets the `entryMode` flag; editability is already gated by `onBeforeEdit`.
-- **Backend: `album_json` includes genre/tag data per track** — Added `genre_ids`, `genre_name`, `tag_ids`, `tag_name` to the per-track hash and `.includes(:genres, :tags)` on user_tracks queries.
-- **Frontend: Genre column renderer fixed** — Changed from failed `Ext.getStore('genres')` lookup to reading `genre_name` directly from the record. Added `genre_name` to store fields. `onCellEdit` syncs `genre_name` when genres edited. `addInlineTrackRow` populates `genre_name` alongside `genre_ids`.
-- **Branches:** Backend `mixtape-develop-20260405_track_genre_names`, Frontend `mixtape-dev-20260405_track_genre_names`
+Comprehensive E2E audit and test writing across three priority tiers (~80 new tests, bringing total from ~104 to ~180+):
 
-## Recent Changes (Apr 4, 2026) — anyMatch on Artist & Track Typeaheads
+### P0: Lookup Entity CRUD & Complex UI
+- **5 lookup entity specs** (Genres, Media, Phases, Priorities, Release Types) — Each has 3 grid tests + 3 serial CRUD tests. Uses `navigateToSettingsView` helper (new) for Settings tree expansion.
+- **Edition Manager Modal spec** (15 tests) — Most complex spec: edition selector, dual-grid track management, add/remove/reorder/save/dirty-checking/create/clear/copy-to, disc number validation. Custom modal helpers.
+- **Editions settings CRUD** — Same lookup entity pattern for Editions view.
+- **Playlists grid spec** — Grid columns + data display. Creates genre first (required `belongs_to :genre`).
+- **Tags grid spec** — Grid columns + data display.
 
-- **Frontend: `anyMatch: true` on all artist/track typeahead components** — Users can now type any part of an artist or track name to find a match (e.g., "Smashing" finds "The Smashing Pumpkins"). Applied to 5 components:
-  1. Album Detail artist tagfield (`AlbumDetail.js`)
-  2. Track Detail artist tagfield (`TrackDetail.js`)
-  3. Inline tracklist title typeahead combobox (`AlbumDetail.js`)
-  4. Inline tracklist artist column combobox (`AlbumDetail.js`)
-  5. Add Track modal track combobox (`AlbumController.js`)
-- **Branch:** `mixtape-dev-20260404_anyMatch_artist_typeahead`
+### P1: Form Behavior & Backend Gaps
+- **Genre auto-populate spec** (4 tests) — Verifies `onArtistChange` copies artist genres to album/track genre tagfield on new records, does NOT fire on existing records.
+- **Form validation spec** (3 tests) — Tests `formBind` Save button disabled/enabled state. Custom `setFieldAndValidate` helper forces `checkValidity()` to bypass ExtJS async monitor.
+- **UserAlbum model spec** (backend, 9 new tests) — `default_edition` association, `genre_name` method, genre/tag HABTM associations.
+
+### P2: Grid Sorting & Tagfield Interactions
+- **Grid sorting spec** (8 tests) — Tests column header click toggling ASC/DESC across Artists (Name, string), Albums (Year, numeric), Tracks (Title, string). Verifies sort indicator via `store.getSorters()` and data order. Also tests switching sort column replaces active sort.
+- **Tagfield interactions spec** (10 tests) — Add multiple genres/tags, verify persistence after reload, remove/add values, clear all, verify empty. Typeahead filtering via `doRawQuery()` + picker verification. Select from filtered pick list.
+
+- **Branches:** Frontend `mixtape-dev-20260405_lookup_entity_e2e_specs`, Backend `mixtape-develop-20260405_backend_spec_gaps`
+
+## Recent Changes (Apr 5, 2026) — Backend RSpec Coverage Gaps
+
+- **New spec: TestAuthController** (6 tests), **ApplicationController** (7 tests), **lookup model validations** (uniqueness on all 6 lookup models), **sorting verification** (4 tests), **error/edge case specs** (17 tests), **ExtJsFilterable edge cases** (4 tests)
+- **Dedicated concern specs** (21 tests) — `UserPreferable` (9 tests: find-or-initialize behavior for artist/album/track, user isolation) and `ExtJsFilterable` helpers (12 tests: `parse_filters` JSON/array/malformed, `sanitize_like` escaping, unknown filter kind fallthrough). Integration tests for ExtJsFilterable already existed in 3 per-controller `*_filters_spec.rb` files (883+ lines).
+- **Full suite: 420 tests passing**
+- **Branch:** `mixtape-develop-20260405_backend_spec_gaps`
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
+- **Apr 5:** Tracklist column visibility (ISRC, Listened, Rating, Genres visible by default), tracklist fetches from show endpoint for full user track data, `album_json` includes genre/tag data per track
+- **Apr 4:** `anyMatch: true` on all artist/track typeahead components (5 comboboxes)
 - **Apr 1:** Safer E2E test cleanup strategy (user-scoped catalog record cleanup, orphan detection, transaction wrapping)
-- **Mar 30:** Add Track UX improvements (`title_with_artist` display, artist filtering, `album_ids` sync)
-- **Mar 29:** E2E tests for duration field & edition filter, DurationField double-conversion bug fix, branch guard hook fix
-- **Mar 28:** Server-side grid filtering & search via `ExtJsFilterable` concern (6 filter kinds, text search, all 3 catalog controllers)
-- **Mar 27:** Non-CRUD E2E tests (ratings, preferences, associations, tracklist), `primary_key` bug fix on UserArtist/UserTrack
-- **Mar 25:** Collection-scoped index endpoints, artist cascade delete, delete & cascade E2E tests
-- **Mar 24:** CRUD E2E tests for artists, albums, tracks
+- **Mar 28-30:** Server-side grid filtering & search, Add Track UX, DurationField bug fix, E2E tests
+- **Mar 24-27:** CRUD & non-CRUD E2E tests, collection-scoped endpoints, artist cascade delete
 - **Mar 22:** Playwright E2E infrastructure, test sub-agents, test orchestrator commands
-- **Mar 13:** Default edition per album (`default_edition_id` on UserAlbum)
-- **Mar 12:** Edition management modal (Phase 2)
-- **Mar 10-11:** Inline track creation (Phase 1), Track CRUD frontend, `consider_editions` toggle, DurationField, `various_artists` boolean
-- **Earlier Mar:** Track data model refactor (HABTM artists, AlbumTrack join model), Album CRUD frontend, genre auto-populate
-- **Feb:** Artist CRUD frontend, star rating widget, JSON-only controllers, user preference refactor, Cognito auth, RSpec migration
+- **Mar 10-13:** Inline track creation, edition management, DurationField, `various_artists` boolean
+- **Earlier:** Track data model refactor, Album/Artist CRUD frontend, star rating, Cognito auth, RSpec migration

@@ -5,6 +5,12 @@ RSpec.describe Genre, type: :model do
     expect(build(:genre)).to be_valid
   end
 
+  describe 'validations' do
+    subject { create(:genre) }
+
+    it { is_expected.to validate_uniqueness_of(:name) }
+  end
+
   describe 'associations' do
     it { is_expected.to have_many(:user_artist_genres).dependent(:destroy) }
     it { is_expected.to have_many(:user_album_genres).dependent(:destroy) }

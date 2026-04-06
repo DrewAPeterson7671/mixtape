@@ -59,6 +59,41 @@ RSpec.describe AlbumsController, type: :controller do
       expect(titles).not_to include('Not In Collection')
     end
 
+    it 'sorts by artist name then album title, stripping articles' do
+      beatles = create(:artist, name: 'The Beatles')
+      arcade  = create(:artist, name: 'Arcade Fire')
+
+      abbey = create(:album, title: 'Abbey Road')
+      abbey.artists << beatles
+      create(:user_album, user: user, album: abbey)
+
+      funeral = create(:album, title: 'Funeral')
+      funeral.artists << arcade
+      create(:user_album, user: user, album: funeral)
+
+      let_it = create(:album, title: 'Let It Be')
+      let_it.artists << beatles
+      create(:user_album, user: user, album: let_it)
+
+      get :index, as: :json
+      titles = JSON.parse(response.body)['data'].map { |a| a['title'] }
+      expect(titles).to eq(['Funeral', 'Abbey Road', 'Let It Be'])
+    end
+
+    it 'sorts VA albums under "various artists"' do
+      artist = create(:artist, name: 'Aardvark')
+      normal = create(:album, title: 'Normal Album')
+      normal.artists << artist
+      create(:user_album, user: user, album: normal)
+
+      va = create(:album, title: 'VA Compilation', various_artists: true)
+      create(:user_album, user: user, album: va)
+
+      get :index, as: :json
+      titles = JSON.parse(response.body)['data'].map { |a| a['title'] }
+      expect(titles).to eq(['Normal Album', 'VA Compilation'])
+    end
+
     it 'excludes albums belonging to another user' do
       other_user = create(:user)
       my_album = create(:album, title: 'Mine')
@@ -446,6 +481,40 @@ RSpec.describe AlbumsController, type: :controller do
       expect {
         delete :destroy, params: { id: album.id }, as: :json
       }.to change(UserAlbum, :count).by(-1).and change(UserTrack, :count).by(0)
+    end
+  end
+
+  describe 'record not found' do
+    it 'raises RecordNotFound for show with non-existent id' do
+      expect {
+        get :show, params: { id: -1 }, as: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'raises RecordNotFound for update with non-existent id' do
+      expect {
+        patch :update, params: { id: -1, album: { title: 'X' } }, as: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'raises RecordNotFound for destroy with non-existent id' do
+      expect {
+        delete :destroy, params: { id: -1 }, as: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe 'validation errors' do
+    it 'returns 422 when creating an album with an invalid year' do
+      post :create, params: { album: { title: 'Future Album', year: 3000 } }, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'returns 422 when updating an album with an invalid year' do
+      album = create(:album, title: 'Valid Album')
+      create(:user_album, user: user, album: album)
+      patch :update, params: { id: album.id, album: { year: 3000 } }, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
     end
   end
 

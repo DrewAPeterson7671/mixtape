@@ -49,6 +49,22 @@ RSpec.describe PlaylistsController, type: :controller do
       post :create, params: { playlist: { name: '', platform: '' } }, format: :json
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it 'returns 422 when creating a playlist with a duplicate name for the same user' do
+      create(:playlist, user: user, name: 'My Playlist', platform: 'Spotify', genre: genre)
+      post :create, params: { playlist: { name: 'My Playlist', platform: 'Spotify', genre_id: genre.id } }, format: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'allows duplicate playlist names for different users' do
+      other_user = create(:user)
+      create(:playlist, user: other_user, name: 'My Playlist', platform: 'Spotify', genre: genre)
+
+      expect {
+        post :create, params: { playlist: { name: 'My Playlist', platform: 'Spotify', genre_id: genre.id } }, format: :json
+      }.to change(Playlist, :count).by(1)
+      expect(response).to have_http_status(:created)
+    end
   end
 
   describe 'PATCH #update' do
