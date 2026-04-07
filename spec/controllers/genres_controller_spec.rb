@@ -5,9 +5,11 @@ RSpec.describe GenresController, type: :controller do
 
   before { sign_in(user) }
 
+  it_behaves_like 'PerUserLookup', :genre, :genre
+
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:genre, name: 'Rock')
+      create(:genre, name: 'Rock', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -16,7 +18,7 @@ RSpec.describe GenresController, type: :controller do
     end
 
     it 'returns genres sorted alphabetically by name' do
-      %w[Rock Blues Jazz].each { |n| create(:genre, name: n) }
+      %w[Rock Blues Jazz].each { |n| create(:genre, name: n, user: user) }
       get :index, format: :json
       names = JSON.parse(response.body)['data'].map { |g| g['name'] }
       expect(names).to eq(%w[Blues Jazz Rock])
@@ -25,7 +27,7 @@ RSpec.describe GenresController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      genre = create(:genre, name: 'Jazz')
+      genre = create(:genre, name: 'Jazz', user: user)
       get :show, params: { id: genre.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -44,7 +46,7 @@ RSpec.describe GenresController, type: :controller do
 
   describe 'PATCH #update' do
     it 'updates the genre' do
-      genre = create(:genre, name: 'Old')
+      genre = create(:genre, name: 'Old', user: user)
       patch :update, params: { id: genre.id, genre: { name: 'New' } }, format: :json
       expect(response).to have_http_status(:ok)
       expect(genre.reload.name).to eq('New')
@@ -53,7 +55,7 @@ RSpec.describe GenresController, type: :controller do
 
   describe 'DELETE #destroy' do
     it 'deletes the genre' do
-      genre = create(:genre)
+      genre = create(:genre, user: user)
       expect {
         delete :destroy, params: { id: genre.id }, format: :json
       }.to change(Genre, :count).by(-1)
@@ -63,14 +65,14 @@ RSpec.describe GenresController, type: :controller do
 
   describe 'validation errors' do
     it 'returns 422 when creating with a duplicate name' do
-      create(:genre, name: 'Rock')
+      create(:genre, name: 'Rock', user: user)
       post :create, params: { genre: { name: 'Rock' } }, format: :json
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
     it 'returns 422 when updating to a duplicate name' do
-      create(:genre, name: 'Rock')
-      genre = create(:genre, name: 'Jazz')
+      create(:genre, name: 'Rock', user: user)
+      genre = create(:genre, name: 'Jazz', user: user)
       patch :update, params: { id: genre.id, genre: { name: 'Rock' } }, format: :json
       expect(response).to have_http_status(:unprocessable_entity)
     end

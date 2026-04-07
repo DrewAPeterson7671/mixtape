@@ -4,7 +4,7 @@ class ReleaseTypesController < ApplicationController
 
   # GET /release_types
   def index
-    @release_types = ReleaseType.all
+    @release_types = current_user.release_types.order(:name)
 
     render json: { data: @release_types }
   end
@@ -16,7 +16,7 @@ class ReleaseTypesController < ApplicationController
 
   # POST /release_types
   def create
-    @release_type = ReleaseType.new(release_type_params)
+    @release_type = current_user.release_types.build(release_type_params)
 
     if @release_type.save
       render json: { data: @release_type }, status: :created, location: @release_type
@@ -44,7 +44,7 @@ class ReleaseTypesController < ApplicationController
   private
 
   def set_release_type
-    @release_type = ReleaseType.find(params[:id])
+    @release_type = current_user.release_types.find(params[:id])
   end
 
   def release_type_params

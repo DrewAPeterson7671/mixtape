@@ -4,7 +4,7 @@ class TagsController < ApplicationController
 
   # GET /tags
   def index
-    @tags = Tag.all
+    @tags = current_user.tags.order(:name)
 
     render json: { data: @tags }
   end
@@ -16,7 +16,7 @@ class TagsController < ApplicationController
 
   # POST /tags
   def create
-    @tag = Tag.new(tag_params)
+    @tag = current_user.tags.build(tag_params)
 
     if @tag.save
       render json: { data: @tag }, status: :created, location: @tag
@@ -44,7 +44,7 @@ class TagsController < ApplicationController
   private
 
   def set_tag
-    @tag = Tag.find(params[:id])
+    @tag = current_user.tags.find(params[:id])
   end
 
   def tag_params

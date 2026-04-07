@@ -1,3 +1,3 @@
 class Priority < ApplicationRecord
-    validates :name, uniqueness: true
+  include UserOwnable
 end

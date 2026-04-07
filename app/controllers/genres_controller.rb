@@ -4,7 +4,7 @@ class GenresController < ApplicationController
 
   # GET /genres
   def index
-    @genres = Genre.all.order(:name)
+    @genres = current_user.genres.order(:name)
 
     render json: { data: @genres }
   end
@@ -16,7 +16,7 @@ class GenresController < ApplicationController
 
   # POST /genres
   def create
-    @genre = Genre.new(genre_params)
+    @genre = current_user.genres.build(genre_params)
 
     if @genre.save
       render json: { data: @genre }, status: :created, location: @genre
@@ -44,7 +44,7 @@ class GenresController < ApplicationController
   private
 
   def set_genre
-    @genre = Genre.find(params[:id])
+    @genre = current_user.genres.find(params[:id])
   end
 
   def genre_params

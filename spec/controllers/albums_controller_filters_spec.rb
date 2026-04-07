@@ -122,8 +122,8 @@ RSpec.describe AlbumsController, type: :controller do
 
     context 'with release_type_name list filter' do
       it 'filters by release type names' do
-        lp = create(:release_type, name: 'LP')
-        ep = create(:release_type, name: 'EP')
+        lp = create(:release_type, name: 'LP', user: user)
+        ep = create(:release_type, name: 'EP', user: user)
         ab1 = create(:album, title: 'Full Length', release_type: lp)
         ab2 = create(:album, title: 'Short', release_type: ep)
         [ab1, ab2].each { |a| create(:user_album, user: user, album: a) }
@@ -136,8 +136,8 @@ RSpec.describe AlbumsController, type: :controller do
 
     context 'with medium_name list filter' do
       it 'filters by medium names' do
-        vinyl = create(:medium, name: 'Vinyl')
-        cd    = create(:medium, name: 'CD')
+        vinyl = create(:medium, name: 'Vinyl', user: user)
+        cd    = create(:medium, name: 'CD', user: user)
         ab1 = create(:album, title: 'Analog', medium: vinyl)
         ab2 = create(:album, title: 'Digital', medium: cd)
         [ab1, ab2].each { |a| create(:user_album, user: user, album: a) }
@@ -152,8 +152,8 @@ RSpec.describe AlbumsController, type: :controller do
 
     context 'with genre_name habtm list filter' do
       it 'filters by genre name' do
-        rock = create(:genre, name: 'Rock')
-        jazz = create(:genre, name: 'Jazz')
+        rock = create(:genre, name: 'Rock', user: user)
+        jazz = create(:genre, name: 'Jazz', user: user)
         ab1 = create(:album, title: 'Rock Album')
         ab2 = create(:album, title: 'Jazz Album')
         create(:user_album, user: user, album: ab1)
@@ -167,7 +167,7 @@ RSpec.describe AlbumsController, type: :controller do
       end
 
       it 'scopes genres to the current user' do
-        rock = create(:genre, name: 'Rock')
+        rock = create(:genre, name: 'Rock', user: user)
         other_user = create(:user)
         ab = create(:album, title: 'Shared Album')
         create(:user_album, user: user, album: ab)
@@ -222,7 +222,7 @@ RSpec.describe AlbumsController, type: :controller do
 
     context 'with combined filters and search' do
       it 'combines column filter with text search using AND' do
-        lp = create(:release_type, name: 'LP')
+        lp = create(:release_type, name: 'LP', user: user)
         artist = create(:artist, name: 'Radiohead')
 
         ab1 = create(:album, title: 'OK Computer', release_type: lp)

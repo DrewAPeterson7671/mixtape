@@ -5,9 +5,11 @@ RSpec.describe PrioritiesController, type: :controller do
 
   before { sign_in(user) }
 
+  it_behaves_like 'PerUserLookup', :priority, :priority
+
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:priority, name: 'High')
+      create(:priority, name: 'High', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -18,7 +20,7 @@ RSpec.describe PrioritiesController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      priority = create(:priority, name: 'Low')
+      priority = create(:priority, name: 'Low', user: user)
       get :show, params: { id: priority.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -37,7 +39,7 @@ RSpec.describe PrioritiesController, type: :controller do
 
   describe 'PATCH #update' do
     it 'updates the priority' do
-      priority = create(:priority, name: 'Old')
+      priority = create(:priority, name: 'Old', user: user)
       patch :update, params: { id: priority.id, priority: { name: 'New' } }, format: :json
       expect(response).to have_http_status(:ok)
       expect(priority.reload.name).to eq('New')
@@ -46,7 +48,7 @@ RSpec.describe PrioritiesController, type: :controller do
 
   describe 'DELETE #destroy' do
     it 'deletes the priority' do
-      priority = create(:priority)
+      priority = create(:priority, user: user)
       expect {
         delete :destroy, params: { id: priority.id }, format: :json
       }.to change(Priority, :count).by(-1)

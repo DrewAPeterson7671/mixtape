@@ -110,8 +110,8 @@ RSpec.describe TracksController, type: :controller do
 
     context 'with medium_name list filter' do
       it 'filters by medium names' do
-        vinyl = create(:medium, name: 'Vinyl')
-        cd    = create(:medium, name: 'CD')
+        vinyl = create(:medium, name: 'Vinyl', user: user)
+        cd    = create(:medium, name: 'CD', user: user)
         t1 = create(:track, title: 'Analog Track', medium: vinyl)
         t2 = create(:track, title: 'Digital Track', medium: cd)
         [t1, t2].each { |t| create(:user_track, user: user, track: t) }
@@ -126,8 +126,8 @@ RSpec.describe TracksController, type: :controller do
 
     context 'with genre_name habtm list filter' do
       it 'filters by genre name' do
-        rock = create(:genre, name: 'Rock')
-        jazz = create(:genre, name: 'Jazz')
+        rock = create(:genre, name: 'Rock', user: user)
+        jazz = create(:genre, name: 'Jazz', user: user)
         t1 = create(:track, title: 'Rock Song')
         t2 = create(:track, title: 'Jazz Song')
         create(:user_track, user: user, track: t1)
@@ -141,7 +141,7 @@ RSpec.describe TracksController, type: :controller do
       end
 
       it 'scopes genres to the current user' do
-        rock = create(:genre, name: 'Rock')
+        rock = create(:genre, name: 'Rock', user: user)
         other_user = create(:user)
         t = create(:track, title: 'Shared Track')
         create(:user_track, user: user, track: t)
@@ -224,7 +224,7 @@ RSpec.describe TracksController, type: :controller do
       end
 
       it 'combines multiple column filters with AND' do
-        vinyl = create(:medium, name: 'Vinyl')
+        vinyl = create(:medium, name: 'Vinyl', user: user)
         t1 = create(:track, title: 'Perfect', medium: vinyl)
         t2 = create(:track, title: 'Good', medium: vinyl)
         t3 = create(:track, title: 'OK')

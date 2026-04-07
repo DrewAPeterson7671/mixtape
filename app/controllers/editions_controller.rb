@@ -4,7 +4,7 @@ class EditionsController < ApplicationController
 
   # GET /editions
   def index
-    @editions = Edition.all
+    @editions = current_user.editions.order(:name)
 
     render json: { data: @editions }
   end
@@ -16,7 +16,7 @@ class EditionsController < ApplicationController
 
   # POST /editions
   def create
-    @edition = Edition.new(edition_params)
+    @edition = current_user.editions.build(edition_params)
 
     if @edition.save
       render json: { data: @edition }, status: :created, location: @edition
@@ -44,7 +44,7 @@ class EditionsController < ApplicationController
   private
 
   def set_edition
-    @edition = Edition.find(params[:id])
+    @edition = current_user.editions.find(params[:id])
   end
 
   def edition_params

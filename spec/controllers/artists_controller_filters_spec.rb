@@ -97,8 +97,8 @@ RSpec.describe ArtistsController, type: :controller do
 
     context 'with priority_name list filter' do
       it 'filters by priority names' do
-        high = create(:priority, name: 'High')
-        low  = create(:priority, name: 'Low')
+        high = create(:priority, name: 'High', user: user)
+        low  = create(:priority, name: 'Low', user: user)
         a1 = create(:artist, name: 'Urgent')
         a2 = create(:artist, name: 'Chill')
         a3 = create(:artist, name: 'None')
@@ -112,8 +112,8 @@ RSpec.describe ArtistsController, type: :controller do
       end
 
       it 'supports multiple selections' do
-        high = create(:priority, name: 'High')
-        low  = create(:priority, name: 'Low')
+        high = create(:priority, name: 'High', user: user)
+        low  = create(:priority, name: 'Low', user: user)
         a1 = create(:artist, name: 'Urgent')
         a2 = create(:artist, name: 'Chill')
         create(:user_artist, user: user, artist: a1, priority: high)
@@ -127,7 +127,7 @@ RSpec.describe ArtistsController, type: :controller do
 
     context 'with phase_name list filter' do
       it 'filters by phase names' do
-        phase = create(:phase, name: 'Exploring')
+        phase = create(:phase, name: 'Exploring', user: user)
         a1 = create(:artist, name: 'In Phase')
         a2 = create(:artist, name: 'No Phase')
         create(:user_artist, user: user, artist: a1, phase: phase)
@@ -143,8 +143,8 @@ RSpec.describe ArtistsController, type: :controller do
 
     context 'with genre_name habtm list filter' do
       it 'filters by genre name' do
-        rock = create(:genre, name: 'Rock')
-        jazz = create(:genre, name: 'Jazz')
+        rock = create(:genre, name: 'Rock', user: user)
+        jazz = create(:genre, name: 'Jazz', user: user)
         a1 = create(:artist, name: 'Rocker')
         a2 = create(:artist, name: 'Jazzer')
         ua1 = create(:user_artist, user: user, artist: a1)
@@ -158,7 +158,7 @@ RSpec.describe ArtistsController, type: :controller do
       end
 
       it 'scopes genres to the current user' do
-        rock = create(:genre, name: 'Rock')
+        rock = create(:genre, name: 'Rock', user: user)
         other_user = create(:user)
         a = create(:artist, name: 'Shared Artist')
         create(:user_artist, user: user, artist: a)
@@ -186,7 +186,7 @@ RSpec.describe ArtistsController, type: :controller do
       end
 
       it 'searches by genre name' do
-        rock = create(:genre, name: 'Progressive Rock')
+        rock = create(:genre, name: 'Progressive Rock', user: user)
         a = create(:artist, name: 'Dream Theater')
         create(:user_artist, user: user, artist: a)
         UserArtistGenre.create!(user: user, artist: a, genre: rock)
@@ -197,8 +197,8 @@ RSpec.describe ArtistsController, type: :controller do
       end
 
       it 'does not return duplicates for multi-genre artists' do
-        rock = create(:genre, name: 'Rock')
-        alt  = create(:genre, name: 'Alternative Rock')
+        rock = create(:genre, name: 'Rock', user: user)
+        alt  = create(:genre, name: 'Alternative Rock', user: user)
         a = create(:artist, name: 'Radiohead')
         create(:user_artist, user: user, artist: a)
         UserArtistGenre.create!(user: user, artist: a, genre: rock)
@@ -214,7 +214,7 @@ RSpec.describe ArtistsController, type: :controller do
 
     context 'with multiple filters combined' do
       it 'combines column filters with AND logic' do
-        high = create(:priority, name: 'High')
+        high = create(:priority, name: 'High', user: user)
         a1 = create(:artist, name: 'High Complete')
         a2 = create(:artist, name: 'High Incomplete')
         a3 = create(:artist, name: 'Low Complete')
@@ -233,7 +233,7 @@ RSpec.describe ArtistsController, type: :controller do
       end
 
       it 'combines column filter with text search' do
-        high = create(:priority, name: 'High')
+        high = create(:priority, name: 'High', user: user)
         a1 = create(:artist, name: 'Radiohead')
         a2 = create(:artist, name: 'Radio Birdman')
         a3 = create(:artist, name: 'Tool')

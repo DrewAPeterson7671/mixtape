@@ -22,13 +22,16 @@ Canonical example: `app/controllers/artists_controller.rb`
 
 ### 2. Lookup Controllers (Genres, Tags, Editions, Media, Phases, Priorities, ReleaseTypes)
 
-Simple CRUD for reference data:
+Per-user CRUD for reference data:
 - Use `skip_before_action :verify_authenticity_token`
-- No `UserPreferable` concern
-- No transactions needed
-- Delete destroys the actual record
-- Index action returns in default database order (no explicit ordering) for Editions, Phases, Priorities, and Release Types. Genres and Media retain `.order(:name)` for alphabetical display.
-- Index/show render JSON directly (no `respond_to` block in some cases)
+- No `UserPreferable` concern, no transactions needed
+- Models include `UserOwnable` concern (`belongs_to :user`, required)
+- Every record belongs to exactly one user — no system records, no sharing
+- All queries scoped through `current_user.{entity}` association (e.g., `current_user.genres`)
+- Index: `current_user.genres.order(:name)`, renders `{ data: @genres }`
+- Create: `current_user.genres.build(genre_params)`
+- `set_*` before_action finds within `current_user.{entity}` (returns 404 for other users' records)
+- New users get default lookup records seeded via `User#after_create :seed_default_lookups`
 
 Canonical example: `app/controllers/genres_controller.rb`
 
@@ -192,6 +195,26 @@ Key design decisions:
 - **List filters receive names, not IDs** — the concern looks up IDs via the model
 - **Genre filters are user-scoped** — EXISTS subquery includes `user_id` condition matching the outer user join
 
+## UserOwnable Concern
+
+Located at `app/models/concerns/user_ownable.rb`. Provides per-user ownership for lookup entities:
+
+```ruby
+module UserOwnable
+  extend ActiveSupport::Concern
+  included do
+    belongs_to :user
+    validates :name, uniqueness: { scope: :user_id }
+  end
+end
+```
+
+Key details:
+- Every record belongs to exactly one user (`user_id NOT NULL`)
+- Name must be unique per user (different users can have the same name)
+- Database enforced via unique index: `UNIQUE(name, user_id)`
+- New users get default records seeded via `User#after_create :seed_default_lookups`
+
 ## UserPreferable Concern
 
 Located at `app/controllers/concerns/user_preferable.rb`. Provides three helper methods:
@@ -276,6 +299,10 @@ end
 Album linking has two methods:
 - `handle_album_association` — processes singular `album_id` (with `position`, `disc_number`) from Album Detail saves. Creates/updates a single `AlbumTrack` record.
 - `handle_album_ids_association` — processes `album_ids` array from Track Detail saves. Syncs the full set of album associations: removes albums no longer in the list (via `destroy_all`), adds new ones as unsorted entries (no position, disc_number, or edition_id), reloads the track. Guard clause skips when `album_ids` key is absent.
+
+## JavaScript Code Style
+
+- **No `var` declarations.** Always use `const` (preferred) or `let`. This applies to all JavaScript: Ext JS app source, E2E specs, helpers, and `page.evaluate()` callbacks.
 
 ## Ext.js Frontend CRUD Pattern
 
