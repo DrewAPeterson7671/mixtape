@@ -5,11 +5,7 @@ RSpec.describe Genre, type: :model do
     expect(build(:genre)).to be_valid
   end
 
-  describe 'validations' do
-    subject { create(:genre) }
-
-    it { is_expected.to validate_uniqueness_of(:name) }
-  end
+  it_behaves_like 'UserOwnable'
 
   describe 'associations' do
     it { is_expected.to have_many(:user_artist_genres).dependent(:destroy) }

@@ -10,7 +10,7 @@
 - [x] Sub-join models for per-user genres: UserArtistGenre, UserAlbumGenre, UserTrackGenre
 - [x] Sub-join models for per-user tags: UserArtistTag, UserAlbumTag, UserTrackTag
 - [x] Scoped `has_many` lambda pattern on all preference models
-- [x] Lookup tables: Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType
+- [x] Lookup tables: Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType (with system/user ownership via `UserOwnable` concern)
 - [x] Playlist model with HABTM to artists, tracks, tags
 - [x] User model with `cognito_sub` unique identifier
 - [x] All HABTM join tables with dual unique indexes (albums_artists, artists_tracks, artists_playlists, playlists_tracks, playlists_tags)
@@ -31,7 +31,7 @@
 - [x] Full CRUD for Albums (JSON API)
 - [x] Full CRUD for Tracks (JSON API)
 - [x] Full CRUD for Playlists (user-scoped, JSON API)
-- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Media, Editions, ReleaseTypes)
+- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Media, Editions, ReleaseTypes) with system/user ownership (`LookupAuthorizable` concern, `visible_to` scoping, `authorize_ownership!` guards)
 - [x] CSRF skip on all JSON-serving controllers
 - [x] CORS configured for frontend at localhost:1841 with `credentials: true`
 
@@ -63,9 +63,9 @@
 
 ### Testing
 - [x] RSpec configured with FactoryBot and Shoulda Matchers
-- [x] Model specs for all 21 models (including uniqueness validations on all lookup models)
-- [x] Controller specs for all 14 controllers (including sessions, test_auth, application_controller)
-- [x] Factories for all 21 models
+- [x] Model specs for all 21 models (including uniqueness validations on all lookup models, `UserOwnable` shared examples for 7 lookup models)
+- [x] Controller specs for all 14 controllers (including sessions, test_auth, application_controller, `LookupAuthorizable` shared examples for 7 lookup controllers)
+- [x] Factories for all 21 models (lookup factories default to `user { nil }` for system records)
 - [x] Auth helper (`sign_in`) for controller specs
 - [x] Transactional fixtures enabled
 - [x] Sorting verification specs for artists, albums, tracks, genres index actions
@@ -127,11 +127,11 @@
 - [x] Album CRUD (grid + detail form + star rating + genre auto-populate from artists)
 - [x] Track CRUD (TrackGrid, TrackDetail, TrackController — full CRUD following Artist/Album pattern)
 - [ ] Playlist CRUD (copy Artist pattern, customize fields)
-- [x] Lookup table CRUD (simpler single-field forms — editions, genres, media, phases, priorities, release types)
+- [x] Lookup table CRUD (simpler single-field forms — editions, genres, media, phases, priorities, release types) with system/user ownership (Type column, lock icon, read-only system records, system guard on save/delete)
 
 ### Infrastructure & Cleanup
 - [ ] Pagination on list endpoints
 - [ ] Serializer layer (replace inline `as_json` / jbuilder mix)
 - [ ] Extract genre/tag sync into a shared concern or service
-- [ ] Lookup table access control (admin-only create/delete)
+- [x] Lookup table access control (system/user ownership model — system records read-only, user records private to creator)
 - [x] Remove HTML views and `format.html` blocks — controllers now render JSON directly

@@ -5,6 +5,8 @@ RSpec.describe Tag, type: :model do
     expect(build(:tag)).to be_valid
   end
 
+  it_behaves_like 'UserOwnable'
+
   describe 'associations' do
     it { is_expected.to have_and_belong_to_many(:playlists) }
     it { is_expected.to have_many(:user_artist_tags).dependent(:destroy) }

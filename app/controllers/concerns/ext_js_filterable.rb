@@ -80,11 +80,19 @@ module ExtJsFilterable
   end
 
   # List filter: client sends display names → we look up IDs via the model.
+  # Scopes through visible_to(current_user) for UserOwnable lookup models.
   def apply_list_filter(scope, config, filter)
     values = Array(filter["value"])
     return scope if values.empty?
 
-    ids = config[:model].where(name: values).pluck(:id)
+    model = config[:model]
+    lookup = if model.respond_to?(:visible_to) && respond_to?(:current_user, true)
+               model.visible_to(current_user)
+             else
+               model
+             end
+
+    ids = lookup.where(name: values).pluck(:id)
     return scope.none if ids.empty?
 
     scope.where("#{config[:column]} IN (?)", ids)

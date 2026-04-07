@@ -5,6 +5,8 @@ RSpec.describe TagsController, type: :controller do
 
   before { sign_in(user) }
 
+  it_behaves_like 'LookupAuthorizable', :tag, :tag
+
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
       create(:tag, name: 'Favorite')
@@ -37,7 +39,7 @@ RSpec.describe TagsController, type: :controller do
 
   describe 'PATCH #update' do
     it 'updates the tag' do
-      tag = create(:tag, name: 'Old')
+      tag = create(:tag, name: 'Old', user: user)
       patch :update, params: { id: tag.id, tag: { name: 'New' } }, format: :json
       expect(response).to have_http_status(:ok)
       expect(tag.reload.name).to eq('New')
@@ -46,7 +48,7 @@ RSpec.describe TagsController, type: :controller do
 
   describe 'DELETE #destroy' do
     it 'deletes the tag' do
-      tag = create(:tag)
+      tag = create(:tag, user: user)
       expect {
         delete :destroy, params: { id: tag.id }, format: :json
       }.to change(Tag, :count).by(-1)

@@ -5,6 +5,8 @@ RSpec.describe EditionsController, type: :controller do
 
   before { sign_in(user) }
 
+  it_behaves_like 'LookupAuthorizable', :edition, :edition
+
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
       create(:edition, name: 'Deluxe')
@@ -37,7 +39,7 @@ RSpec.describe EditionsController, type: :controller do
 
   describe 'PATCH #update' do
     it 'updates the edition' do
-      edition = create(:edition, name: 'Old')
+      edition = create(:edition, name: 'Old', user: user)
       patch :update, params: { id: edition.id, edition: { name: 'New' } }, format: :json
       expect(response).to have_http_status(:ok)
       expect(edition.reload.name).to eq('New')
@@ -46,7 +48,7 @@ RSpec.describe EditionsController, type: :controller do
 
   describe 'DELETE #destroy' do
     it 'deletes the edition' do
-      edition = create(:edition)
+      edition = create(:edition, user: user)
       expect {
         delete :destroy, params: { id: edition.id }, format: :json
       }.to change(Edition, :count).by(-1)

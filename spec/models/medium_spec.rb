@@ -5,9 +5,5 @@ RSpec.describe Medium, type: :model do
     expect(build(:medium)).to be_valid
   end
 
-  describe 'validations' do
-    subject { create(:medium) }
-
-    it { is_expected.to validate_uniqueness_of(:name) }
-  end
+  it_behaves_like 'UserOwnable'
 end

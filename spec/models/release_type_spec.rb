@@ -5,9 +5,5 @@ RSpec.describe ReleaseType, type: :model do
     expect(build(:release_type)).to be_valid
   end
 
-  describe 'validations' do
-    subject { create(:release_type) }
-
-    it { is_expected.to validate_uniqueness_of(:name) }
-  end
+  it_behaves_like 'UserOwnable'
 end

@@ -5,6 +5,8 @@ RSpec.describe GenresController, type: :controller do
 
   before { sign_in(user) }
 
+  it_behaves_like 'LookupAuthorizable', :genre, :genre
+
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
       create(:genre, name: 'Rock')
@@ -44,7 +46,7 @@ RSpec.describe GenresController, type: :controller do
 
   describe 'PATCH #update' do
     it 'updates the genre' do
-      genre = create(:genre, name: 'Old')
+      genre = create(:genre, name: 'Old', user: user)
       patch :update, params: { id: genre.id, genre: { name: 'New' } }, format: :json
       expect(response).to have_http_status(:ok)
       expect(genre.reload.name).to eq('New')
@@ -53,7 +55,7 @@ RSpec.describe GenresController, type: :controller do
 
   describe 'DELETE #destroy' do
     it 'deletes the genre' do
-      genre = create(:genre)
+      genre = create(:genre, user: user)
       expect {
         delete :destroy, params: { id: genre.id }, format: :json
       }.to change(Genre, :count).by(-1)
@@ -70,7 +72,7 @@ RSpec.describe GenresController, type: :controller do
 
     it 'returns 422 when updating to a duplicate name' do
       create(:genre, name: 'Rock')
-      genre = create(:genre, name: 'Jazz')
+      genre = create(:genre, name: 'Jazz', user: user)
       patch :update, params: { id: genre.id, genre: { name: 'Rock' } }, format: :json
       expect(response).to have_http_status(:unprocessable_entity)
     end

@@ -5,6 +5,8 @@ RSpec.describe ReleaseTypesController, type: :controller do
 
   before { sign_in(user) }
 
+  it_behaves_like 'LookupAuthorizable', :release_type, :release_type
+
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
       create(:release_type, name: 'LP')
@@ -37,7 +39,7 @@ RSpec.describe ReleaseTypesController, type: :controller do
 
   describe 'PATCH #update' do
     it 'updates the release type' do
-      release_type = create(:release_type, name: 'Old')
+      release_type = create(:release_type, name: 'Old', user: user)
       patch :update, params: { id: release_type.id, release_type: { name: 'New' } }, format: :json
       expect(response).to have_http_status(:ok)
       expect(release_type.reload.name).to eq('New')
@@ -46,7 +48,7 @@ RSpec.describe ReleaseTypesController, type: :controller do
 
   describe 'DELETE #destroy' do
     it 'deletes the release type' do
-      release_type = create(:release_type)
+      release_type = create(:release_type, user: user)
       expect {
         delete :destroy, params: { id: release_type.id }, format: :json
       }.to change(ReleaseType, :count).by(-1)

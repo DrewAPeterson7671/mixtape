@@ -22,13 +22,19 @@ Canonical example: `app/controllers/artists_controller.rb`
 
 ### 2. Lookup Controllers (Genres, Tags, Editions, Media, Phases, Priorities, ReleaseTypes)
 
-Simple CRUD for reference data:
+User-owned CRUD for reference data with system/user ownership:
+- Include `LookupAuthorizable` concern
 - Use `skip_before_action :verify_authenticity_token`
-- No `UserPreferable` concern
-- No transactions needed
-- Delete destroys the actual record
-- Index action returns in default database order (no explicit ordering) for Editions, Phases, Priorities, and Release Types. Genres and Media retain `.order(:name)` for alphabetical display.
-- Index/show render JSON directly (no `respond_to` block in some cases)
+- No `UserPreferable` concern, no transactions needed
+- Models include `UserOwnable` concern (`belongs_to :user, optional: true`)
+- **System records** (`user_id = NULL`): visible to all, read-only (403 on update/destroy)
+- **User records** (`user_id = N`): private to creator, fully editable/deletable
+- Index scoped via `Model.visible_to(current_user)` — returns system + own records
+- Create sets `user = current_user`
+- Update/destroy guarded by `authorize_ownership!` (returns 403 for system or other users' records)
+- JSON responses include `system: true/false` flag via `lookup_json`/`lookup_collection_json`
+- Index action orders by `.order(:name)` for all lookup entities
+- `set_*` before_action finds within `visible_to(current_user)` scope
 
 Canonical example: `app/controllers/genres_controller.rb`
 
@@ -191,6 +197,45 @@ Key design decisions:
 - **`.distinct` applied in controllers** after `apply_ext_filters` to eliminate any duplicates from text search JOINs
 - **List filters receive names, not IDs** — the concern looks up IDs via the model
 - **Genre filters are user-scoped** — EXISTS subquery includes `user_id` condition matching the outer user join
+
+## UserOwnable Concern
+
+Located at `app/models/concerns/user_ownable.rb`. Provides ownership semantics for lookup entities:
+
+```ruby
+module UserOwnable
+  extend ActiveSupport::Concern
+  included do
+    belongs_to :user, optional: true
+    scope :visible_to, ->(user) { where(user_id: [nil, user.id]) }
+    scope :system_records, -> { where(user_id: nil) }
+    scope :owned_by, ->(user) { where(user_id: user.id) }
+    validate :name_unique_within_visible_set
+  end
+  def system?; user_id.nil?; end
+  def owned_by?(user); user_id == user.id; end
+end
+```
+
+Key details:
+- **System records** have `user_id = NULL` — visible to everyone, read-only
+- **User records** have `user_id = N` — visible only to that user
+- **Custom uniqueness:** name must be unique within visible set (system + own records). A user cannot create "Rock" if system "Rock" exists. Different users CAN independently create the same name.
+- Database enforced via partial unique indexes: `UNIQUE (name) WHERE user_id IS NULL` and `UNIQUE (name, user_id) WHERE user_id IS NOT NULL`
+
+## LookupAuthorizable Concern
+
+Located at `app/controllers/concerns/lookup_authorizable.rb`. Provides authorization and JSON helpers for lookup controllers:
+
+```ruby
+def authorize_ownership!(record)
+  return true if record.user_id == current_user.id
+  head :forbidden
+  false
+end
+```
+
+**Critical:** Returns explicit `true`/`false` — controllers use `return unless authorize_ownership!(@record)`, so returning `nil` would cause premature return even on success.
 
 ## UserPreferable Concern
 
