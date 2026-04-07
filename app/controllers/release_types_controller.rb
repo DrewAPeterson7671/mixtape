@@ -4,7 +4,7 @@ class ReleaseTypesController < ApplicationController
 
   # GET /release_types
   def index
-    @release_types = current_user.release_types.order(:name)
+    @release_types = current_user.release_types.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @release_types }
   end
@@ -48,6 +48,6 @@ class ReleaseTypesController < ApplicationController
   end
 
   def release_type_params
-    params.require(:release_type).permit(:name)
+    params.require(:release_type).permit(:name, :sequence)
   end
 end

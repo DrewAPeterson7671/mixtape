@@ -4,7 +4,7 @@ class PhasesController < ApplicationController
 
   # GET /phases
   def index
-    @phases = current_user.phases.order(:name)
+    @phases = current_user.phases.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @phases }
   end
@@ -48,6 +48,6 @@ class PhasesController < ApplicationController
   end
 
   def phase_params
-    params.require(:phase).permit(:name)
+    params.require(:phase).permit(:name, :sequence, :definition)
   end
 end

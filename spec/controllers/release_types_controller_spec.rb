@@ -56,6 +56,34 @@ RSpec.describe ReleaseTypesController, type: :controller do
     end
   end
 
+  describe 'GET #index ordering' do
+    it 'returns records sorted by sequence ASC NULLS LAST, then name ASC' do
+      create(:release_type, name: 'Zebra', sequence: nil, user: user)
+      create(:release_type, name: 'Alpha', sequence: 2, user: user)
+      create(:release_type, name: 'Beta', sequence: 1, user: user)
+      create(:release_type, name: 'Apple', sequence: nil, user: user)
+      get :index, format: :json
+      names = JSON.parse(response.body)['data'].pluck('name')
+      expect(names).to eq(%w[Beta Alpha Apple Zebra])
+    end
+  end
+
+  describe 'sequence column' do
+    it 'accepts sequence on create' do
+      post :create, params: { release_type: { name: 'Test', sequence: 3 } }, format: :json
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      expect(json['sequence']).to eq(3)
+    end
+
+    it 'accepts sequence on update' do
+      release_type = create(:release_type, name: 'Test', user: user)
+      patch :update, params: { id: release_type.id, release_type: { sequence: 5 } }, format: :json
+      expect(response).to have_http_status(:ok)
+      expect(release_type.reload.sequence).to eq(5)
+    end
+  end
+
   describe 'unauthenticated' do
     it 'returns 401 when not logged in' do
       session.delete(:user_id)

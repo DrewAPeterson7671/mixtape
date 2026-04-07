@@ -7,35 +7,30 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 6, 2026) — Simplified Per-User Lookup Ownership
+## Recent Changes (Apr 7, 2026) — Sequence and Definition Columns on Lookup Entities
 
-Simplified lookup entity ownership from two-tier system/user model to pure per-user ownership. Every lookup record now belongs to exactly one user — no system records, no sharing, no read-only records. New users get seeded defaults on first login via `after_create` callback.
+Added `sequence` (integer, nullable) column to all 5 lookup entities (editions, media, phases, priorities, release_types) for user-controlled display ordering. Added `definition` (text, nullable) column to phases and priorities for documenting personal meaning.
 
 ### Backend
-- **Migration** (`20260407022002`): deletes all system records (`user_id IS NULL`), seeds per-user defaults for each existing user, reassigns FK references (user_artist_genres etc.) from system to matching user records, drops partial indexes, adds unconditional `UNIQUE(name, user_id)` indexes, makes `user_id NOT NULL`
-- **`UserOwnable` concern** simplified: `belongs_to :user` (required), `validates :name, uniqueness: { scope: :user_id }` — no scopes, no `system?`, no `visible_to`
-- **`LookupAuthorizable` concern** deleted — no longer needed
-- **User model** gains `after_create :seed_default_lookups` callback with default records: Genres (15), Media (5), Release Types (7), Editions (5), Phases (4), Priorities (4), Tags (none)
-- All 7 lookup controllers simplified: scope through `current_user.{entity}` associations, no authorization guards, plain `render json: { data: ... }`
-- **ExtJsFilterable** updated: uses `reflect_on_association(:user)` + `model.where(user_id: current_user.id)` instead of `visible_to`
-- **Tests**: shared examples `UserOwnable` (simplified) and `PerUserLookup` (replaces `LookupAuthorizable`); user factory suppresses seed callback by default, `:with_default_lookups` trait for explicit testing; 506 backend tests pass
+- **Migration** (`20260407223441`): adds `sequence` integer to 5 tables, `definition` text to phases and priorities
+- **Controllers** (5 files): index ordering changed from `.order(:name)` to `.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))` — sequenced records sort first, then alphabetical fallback
+- **Strong params**: editions/media/release_types permit `:sequence`; phases/priorities permit `:sequence, :definition`
+- **Tests**: ordering specs (Zebra/Alpha/Beta/Apple pattern), create/update specs for sequence (all 5) and definition (phases/priorities); 525 backend tests pass
 
-### Frontend
-- Removed `system` boolean field from all 7 Ext JS models
-- Removed "Type" column (lock icon) from all 7 grids
-- Removed `isSystem` from 6 ViewModels
-- Removed system guards from 6 controllers (all lookups are now freely editable/deletable)
+### Frontend (25 files)
+- **Models** (5): added `sequence` field (`type: 'int', allowNull: true`) to all 5; `definition` field (`type: 'string'`) to Phase and Priority
+- **Stores** (5): added custom `sorterFn` replicating NULLS LAST behavior for client-side sorting in combobox dropdowns
+- **Grids** (5): added `#` column (sequence, width 60, centered) before Name; added Definition column (flex 1) to Phase and Priority grids (Name reduced from flex 2 to flex 1)
+- **Detail forms** (5): added Sequence numberfield (minValue 1, no decimals) to all 5; added Definition textarea (grow 40-120) to Phase and Priority
+- **Controllers** (5): `onSaveClick` values include `sequence` (all 5) and `definition` (phases/priorities, with `|| null` for empty string)
 
-### E2E Tests
-- 219 of 225 pass; 1 pre-existing flaky failure (edition-manager-modal save persistence), 1 pre-existing failure in inline-track-genre-medium (cell editor visibility timing) — both unrelated to ownership changes
-
-**Branches:** Backend `mixtape-develop-20260406_no_var_code_style`, Frontend changes in `mixtapeUI/mixtape`
+**Branches:** Backend `mixtape-develop-20260407_add_sequence_definition_to_lookups`, Frontend `mixtape-dev-20260407_add_sequence_definition_to_lookups`
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
-- **Apr 6:** No-var code style enforcement across all 48 frontend JS files (906 var→const/let conversions)
+- **Apr 6:** Simplified per-user lookup ownership (pure per-user model, no system records), no-var code style enforcement
 - **Apr 5:** E2E test coverage expansion (~80 new tests), backend RSpec coverage gaps (420 tests passing), tracklist column visibility, show endpoint for full user track data
 - **Apr 4:** `anyMatch: true` on all artist/track typeahead components (5 comboboxes)
 - **Apr 1:** Safer E2E test cleanup strategy (user-scoped catalog record cleanup, orphan detection, transaction wrapping)

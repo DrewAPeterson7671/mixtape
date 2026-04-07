@@ -4,7 +4,7 @@ class PrioritiesController < ApplicationController
 
   # GET /priorities
   def index
-    @priorities = current_user.priorities.order(:name)
+    @priorities = current_user.priorities.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @priorities }
   end
@@ -48,6 +48,6 @@ class PrioritiesController < ApplicationController
   end
 
   def priority_params
-    params.require(:priority).permit(:name)
+    params.require(:priority).permit(:name, :sequence, :definition)
   end
 end

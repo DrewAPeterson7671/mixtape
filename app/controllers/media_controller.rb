@@ -4,7 +4,7 @@ class MediaController < ApplicationController
 
   # GET /media
   def index
-    @media = current_user.media.order(:name)
+    @media = current_user.media.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @media }
   end
@@ -48,6 +48,6 @@ class MediaController < ApplicationController
   end
 
   def medium_params
-    params.require(:medium).permit(:name)
+    params.require(:medium).permit(:name, :sequence)
   end
 end

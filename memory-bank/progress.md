@@ -90,7 +90,8 @@
 - [x] Playwright MCP config in frontend repo (`.mcp.json`)
 - [x] Test orchestrator slash commands — `test-full` (backend) and `e2e-full` (frontend) for single-invocation write/run/fix cycle
 - [x] Branch guard hook — PreToolUse hook blocks Edit/Write on protected branches, forces working branch creation (both repos). Hook resolves branch from its own repo directory via `git -C` to work correctly across repos.
-- [x] Lookup table grids — Genres and Media display alphabetically via `.order(:name)` in index actions; Editions, Phases, Priorities, and Release Types return in default database order
+- [x] Lookup table grids — All 5 non-genre lookups (editions, media, phases, priorities, release_types) sort by `sequence ASC NULLS LAST, name ASC` with user-controlled sequence column; genres sort by name
+- [x] Lookup sequence & definition — `sequence` integer on all 5 lookups for display ordering; `definition` text on phases/priorities for documenting meaning; frontend grids, forms, stores, and controllers all updated
 
 ### Documentation
 - [x] CLAUDE.md with project context

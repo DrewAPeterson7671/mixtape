@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_07_022002) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_07_223441) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -72,6 +72,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_022002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.integer "sequence"
     t.index ["name", "user_id"], name: "index_editions_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_editions_on_user_id"
   end
@@ -90,6 +91,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_022002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.integer "sequence"
     t.index ["name", "user_id"], name: "index_media_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_media_on_user_id"
   end
@@ -99,6 +101,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_022002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.integer "sequence"
+    t.text "definition"
     t.index ["name", "user_id"], name: "index_phases_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_phases_on_user_id"
   end
@@ -136,6 +140,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_022002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.integer "sequence"
+    t.text "definition"
     t.index ["name", "user_id"], name: "index_priorities_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_priorities_on_user_id"
   end
@@ -145,6 +151,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_022002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.integer "sequence"
     t.index ["name", "user_id"], name: "index_release_types_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_release_types_on_user_id"
   end
