@@ -1,28 +1,25 @@
 class GenresController < ApplicationController
-  include LookupAuthorizable
-
   before_action :set_genre, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
   # GET /genres
   def index
-    @genres = Genre.visible_to(current_user).order(:name)
+    @genres = current_user.genres.order(:name)
 
-    render json: { data: lookup_collection_json(@genres) }
+    render json: { data: @genres }
   end
 
   # GET /genres/1
   def show
-    render json: { data: lookup_json(@genre) }
+    render json: { data: @genre }
   end
 
   # POST /genres
   def create
-    @genre = Genre.new(genre_params)
-    @genre.user = current_user
+    @genre = current_user.genres.build(genre_params)
 
     if @genre.save
-      render json: { data: lookup_json(@genre) }, status: :created, location: @genre
+      render json: { data: @genre }, status: :created, location: @genre
     else
       render json: @genre.errors, status: :unprocessable_entity
     end
@@ -30,10 +27,8 @@ class GenresController < ApplicationController
 
   # PATCH/PUT /genres/1
   def update
-    return unless authorize_ownership!(@genre)
-
     if @genre.update(genre_params)
-      render json: { data: lookup_json(@genre) }, status: :ok, location: @genre
+      render json: { data: @genre }, status: :ok, location: @genre
     else
       render json: @genre.errors, status: :unprocessable_entity
     end
@@ -41,8 +36,6 @@ class GenresController < ApplicationController
 
   # DELETE /genres/1
   def destroy
-    return unless authorize_ownership!(@genre)
-
     @genre.destroy!
 
     head :no_content
@@ -51,7 +44,7 @@ class GenresController < ApplicationController
   private
 
   def set_genre
-    @genre = Genre.visible_to(current_user).find(params[:id])
+    @genre = current_user.genres.find(params[:id])
   end
 
   def genre_params

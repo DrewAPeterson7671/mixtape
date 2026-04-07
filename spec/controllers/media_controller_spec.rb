@@ -5,11 +5,11 @@ RSpec.describe MediaController, type: :controller do
 
   before { sign_in(user) }
 
-  it_behaves_like 'LookupAuthorizable', :medium, :medium
+  it_behaves_like 'PerUserLookup', :medium, :medium
 
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:medium, name: 'Vinyl')
+      create(:medium, name: 'Vinyl', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -20,7 +20,7 @@ RSpec.describe MediaController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      medium = create(:medium, name: 'CD')
+      medium = create(:medium, name: 'CD', user: user)
       get :show, params: { id: medium.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']

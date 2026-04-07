@@ -5,11 +5,11 @@ RSpec.describe EditionsController, type: :controller do
 
   before { sign_in(user) }
 
-  it_behaves_like 'LookupAuthorizable', :edition, :edition
+  it_behaves_like 'PerUserLookup', :edition, :edition
 
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:edition, name: 'Deluxe')
+      create(:edition, name: 'Deluxe', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -20,7 +20,7 @@ RSpec.describe EditionsController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      edition = create(:edition, name: 'Standard')
+      edition = create(:edition, name: 'Standard', user: user)
       get :show, params: { id: edition.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']

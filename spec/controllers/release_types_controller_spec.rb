@@ -5,11 +5,11 @@ RSpec.describe ReleaseTypesController, type: :controller do
 
   before { sign_in(user) }
 
-  it_behaves_like 'LookupAuthorizable', :release_type, :release_type
+  it_behaves_like 'PerUserLookup', :release_type, :release_type
 
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:release_type, name: 'LP')
+      create(:release_type, name: 'LP', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -20,7 +20,7 @@ RSpec.describe ReleaseTypesController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      release_type = create(:release_type, name: 'EP')
+      release_type = create(:release_type, name: 'EP', user: user)
       get :show, params: { id: release_type.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']

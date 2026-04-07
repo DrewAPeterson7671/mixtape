@@ -1,46 +1,23 @@
-RSpec.shared_examples 'LookupAuthorizable' do |factory_name, param_key|
+RSpec.shared_examples 'PerUserLookup' do |factory_name, param_key|
   let(:other_user) { create(:user) }
 
-  describe 'ownership - index' do
-    it 'returns system and own records, excludes other users' do
-      system_record = create(factory_name, name: 'System Rec')
+  describe 'per-user ownership - index' do
+    it 'returns only current user records' do
       own_record = create(factory_name, name: 'Own Rec', user: user)
       create(factory_name, name: 'Other Rec', user: other_user)
 
       get :index, format: :json
       names = JSON.parse(response.body)['data'].map { |r| r['name'] }
-      expect(names).to include('System Rec', 'Own Rec')
+      expect(names).to include('Own Rec')
       expect(names).not_to include('Other Rec')
-    end
-
-    it 'includes system flag in response' do
-      create(factory_name, name: 'System Rec')
-      create(factory_name, name: 'Own Rec', user: user)
-
-      get :index, format: :json
-      data = JSON.parse(response.body)['data']
-      system_rec = data.find { |r| r['name'] == 'System Rec' }
-      own_rec = data.find { |r| r['name'] == 'Own Rec' }
-      expect(system_rec['system']).to be true
-      expect(own_rec['system']).to be false
     end
   end
 
-  describe 'ownership - show' do
-    it 'shows a system record' do
-      record = create(factory_name, name: 'System Show')
-      get :show, params: { id: record.id }, format: :json
-      expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)['data']
-      expect(json['system']).to be true
-    end
-
+  describe 'per-user ownership - show' do
     it 'shows own record' do
       record = create(factory_name, name: 'Own Show', user: user)
       get :show, params: { id: record.id }, format: :json
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)['data']
-      expect(json['system']).to be false
     end
 
     it 'returns 404 for other user record' do
@@ -51,19 +28,12 @@ RSpec.shared_examples 'LookupAuthorizable' do |factory_name, param_key|
     end
   end
 
-  describe 'ownership - create' do
+  describe 'per-user ownership - create' do
     it 'assigns user_id to current user' do
       post :create, params: { param_key => { name: 'Created' } }, format: :json
       expect(response).to have_http_status(:created)
       json = JSON.parse(response.body)['data']
       expect(json['user_id']).to eq(user.id)
-      expect(json['system']).to be false
-    end
-
-    it 'rejects duplicates against system records' do
-      create(factory_name, name: 'Existing')
-      post :create, params: { param_key => { name: 'Existing' } }, format: :json
-      expect(response).to have_http_status(:unprocessable_entity)
     end
 
     it 'rejects duplicates against own records' do
@@ -73,19 +43,12 @@ RSpec.shared_examples 'LookupAuthorizable' do |factory_name, param_key|
     end
   end
 
-  describe 'ownership - update' do
+  describe 'per-user ownership - update' do
     it 'updates own record' do
       record = create(factory_name, name: 'Old', user: user)
       patch :update, params: { id: record.id, param_key => { name: 'New' } }, format: :json
       expect(response).to have_http_status(:ok)
       expect(record.reload.name).to eq('New')
-    end
-
-    it 'returns 403 for system record' do
-      record = create(factory_name, name: 'System')
-      patch :update, params: { id: record.id, param_key => { name: 'Hacked' } }, format: :json
-      expect(response).to have_http_status(:forbidden)
-      expect(record.reload.name).to eq('System')
     end
 
     it 'returns 404 for other user record' do
@@ -96,20 +59,13 @@ RSpec.shared_examples 'LookupAuthorizable' do |factory_name, param_key|
     end
   end
 
-  describe 'ownership - destroy' do
+  describe 'per-user ownership - destroy' do
     it 'deletes own record' do
       record = create(factory_name, name: 'Delete Me', user: user)
       expect {
         delete :destroy, params: { id: record.id }, format: :json
       }.to change(record.class, :count).by(-1)
       expect(response).to have_http_status(:no_content)
-    end
-
-    it 'returns 403 for system record' do
-      record = create(factory_name, name: 'System Del')
-      delete :destroy, params: { id: record.id }, format: :json
-      expect(response).to have_http_status(:forbidden)
-      expect(record.class.find_by(id: record.id)).to be_present
     end
 
     it 'returns 404 for other user record' do

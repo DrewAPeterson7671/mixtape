@@ -22,19 +22,16 @@ Canonical example: `app/controllers/artists_controller.rb`
 
 ### 2. Lookup Controllers (Genres, Tags, Editions, Media, Phases, Priorities, ReleaseTypes)
 
-User-owned CRUD for reference data with system/user ownership:
-- Include `LookupAuthorizable` concern
+Per-user CRUD for reference data:
 - Use `skip_before_action :verify_authenticity_token`
 - No `UserPreferable` concern, no transactions needed
-- Models include `UserOwnable` concern (`belongs_to :user, optional: true`)
-- **System records** (`user_id = NULL`): visible to all, read-only (403 on update/destroy)
-- **User records** (`user_id = N`): private to creator, fully editable/deletable
-- Index scoped via `Model.visible_to(current_user)` — returns system + own records
-- Create sets `user = current_user`
-- Update/destroy guarded by `authorize_ownership!` (returns 403 for system or other users' records)
-- JSON responses include `system: true/false` flag via `lookup_json`/`lookup_collection_json`
-- Index action orders by `.order(:name)` for all lookup entities
-- `set_*` before_action finds within `visible_to(current_user)` scope
+- Models include `UserOwnable` concern (`belongs_to :user`, required)
+- Every record belongs to exactly one user — no system records, no sharing
+- All queries scoped through `current_user.{entity}` association (e.g., `current_user.genres`)
+- Index: `current_user.genres.order(:name)`, renders `{ data: @genres }`
+- Create: `current_user.genres.build(genre_params)`
+- `set_*` before_action finds within `current_user.{entity}` (returns 404 for other users' records)
+- New users get default lookup records seeded via `User#after_create :seed_default_lookups`
 
 Canonical example: `app/controllers/genres_controller.rb`
 
@@ -200,42 +197,23 @@ Key design decisions:
 
 ## UserOwnable Concern
 
-Located at `app/models/concerns/user_ownable.rb`. Provides ownership semantics for lookup entities:
+Located at `app/models/concerns/user_ownable.rb`. Provides per-user ownership for lookup entities:
 
 ```ruby
 module UserOwnable
   extend ActiveSupport::Concern
   included do
-    belongs_to :user, optional: true
-    scope :visible_to, ->(user) { where(user_id: [nil, user.id]) }
-    scope :system_records, -> { where(user_id: nil) }
-    scope :owned_by, ->(user) { where(user_id: user.id) }
-    validate :name_unique_within_visible_set
+    belongs_to :user
+    validates :name, uniqueness: { scope: :user_id }
   end
-  def system?; user_id.nil?; end
-  def owned_by?(user); user_id == user.id; end
 end
 ```
 
 Key details:
-- **System records** have `user_id = NULL` — visible to everyone, read-only
-- **User records** have `user_id = N` — visible only to that user
-- **Custom uniqueness:** name must be unique within visible set (system + own records). A user cannot create "Rock" if system "Rock" exists. Different users CAN independently create the same name.
-- Database enforced via partial unique indexes: `UNIQUE (name) WHERE user_id IS NULL` and `UNIQUE (name, user_id) WHERE user_id IS NOT NULL`
-
-## LookupAuthorizable Concern
-
-Located at `app/controllers/concerns/lookup_authorizable.rb`. Provides authorization and JSON helpers for lookup controllers:
-
-```ruby
-def authorize_ownership!(record)
-  return true if record.user_id == current_user.id
-  head :forbidden
-  false
-end
-```
-
-**Critical:** Returns explicit `true`/`false` — controllers use `return unless authorize_ownership!(@record)`, so returning `nil` would cause premature return even on success.
+- Every record belongs to exactly one user (`user_id NOT NULL`)
+- Name must be unique per user (different users can have the same name)
+- Database enforced via unique index: `UNIQUE(name, user_id)`
+- New users get default records seeded via `User#after_create :seed_default_lookups`
 
 ## UserPreferable Concern
 

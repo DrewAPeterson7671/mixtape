@@ -1,28 +1,25 @@
 class TagsController < ApplicationController
-  include LookupAuthorizable
-
   before_action :set_tag, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
   # GET /tags
   def index
-    @tags = Tag.visible_to(current_user).order(:name)
+    @tags = current_user.tags.order(:name)
 
-    render json: { data: lookup_collection_json(@tags) }
+    render json: { data: @tags }
   end
 
   # GET /tags/1
   def show
-    render json: { data: lookup_json(@tag) }
+    render json: { data: @tag }
   end
 
   # POST /tags
   def create
-    @tag = Tag.new(tag_params)
-    @tag.user = current_user
+    @tag = current_user.tags.build(tag_params)
 
     if @tag.save
-      render json: { data: lookup_json(@tag) }, status: :created, location: @tag
+      render json: { data: @tag }, status: :created, location: @tag
     else
       render json: @tag.errors, status: :unprocessable_entity
     end
@@ -30,10 +27,8 @@ class TagsController < ApplicationController
 
   # PATCH/PUT /tags/1
   def update
-    return unless authorize_ownership!(@tag)
-
     if @tag.update(tag_params)
-      render json: { data: lookup_json(@tag) }, status: :ok, location: @tag
+      render json: { data: @tag }, status: :ok, location: @tag
     else
       render json: @tag.errors, status: :unprocessable_entity
     end
@@ -41,8 +36,6 @@ class TagsController < ApplicationController
 
   # DELETE /tags/1
   def destroy
-    return unless authorize_ownership!(@tag)
-
     @tag.destroy!
 
     head :no_content
@@ -51,7 +44,7 @@ class TagsController < ApplicationController
   private
 
   def set_tag
-    @tag = Tag.visible_to(current_user).find(params[:id])
+    @tag = current_user.tags.find(params[:id])
   end
 
   def tag_params

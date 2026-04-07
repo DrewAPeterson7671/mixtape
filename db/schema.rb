@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_07_022002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -71,9 +71,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["name", "user_id"], name: "index_editions_on_name_user", unique: true, where: "(user_id IS NOT NULL)"
-    t.index ["name"], name: "index_editions_on_name_system", unique: true, where: "(user_id IS NULL)"
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_editions_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_editions_on_user_id"
   end
 
@@ -81,9 +80,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["name", "user_id"], name: "index_genres_on_name_user", unique: true, where: "(user_id IS NOT NULL)"
-    t.index ["name"], name: "index_genres_on_name_system", unique: true, where: "(user_id IS NULL)"
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_genres_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_genres_on_user_id"
   end
 
@@ -91,9 +89,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["name", "user_id"], name: "index_media_on_name_user", unique: true, where: "(user_id IS NOT NULL)"
-    t.index ["name"], name: "index_media_on_name_system", unique: true, where: "(user_id IS NULL)"
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_media_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_media_on_user_id"
   end
 
@@ -101,9 +98,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["name", "user_id"], name: "index_phases_on_name_user", unique: true, where: "(user_id IS NOT NULL)"
-    t.index ["name"], name: "index_phases_on_name_system", unique: true, where: "(user_id IS NULL)"
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_phases_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_phases_on_user_id"
   end
 
@@ -139,9 +135,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["name", "user_id"], name: "index_priorities_on_name_user", unique: true, where: "(user_id IS NOT NULL)"
-    t.index ["name"], name: "index_priorities_on_name_system", unique: true, where: "(user_id IS NULL)"
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_priorities_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_priorities_on_user_id"
   end
 
@@ -149,9 +144,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["name", "user_id"], name: "index_release_types_on_name_user", unique: true, where: "(user_id IS NOT NULL)"
-    t.index ["name"], name: "index_release_types_on_name_system", unique: true, where: "(user_id IS NULL)"
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_release_types_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_release_types_on_user_id"
   end
 
@@ -160,9 +154,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_012505) do
     t.text "comment"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["name", "user_id"], name: "index_tags_on_name_user", unique: true, where: "(user_id IS NOT NULL)"
-    t.index ["name"], name: "index_tags_on_name_system", unique: true, where: "(user_id IS NULL)"
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_tags_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_tags_on_user_id"
   end
 

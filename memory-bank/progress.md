@@ -10,7 +10,7 @@
 - [x] Sub-join models for per-user genres: UserArtistGenre, UserAlbumGenre, UserTrackGenre
 - [x] Sub-join models for per-user tags: UserArtistTag, UserAlbumTag, UserTrackTag
 - [x] Scoped `has_many` lambda pattern on all preference models
-- [x] Lookup tables: Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType (with system/user ownership via `UserOwnable` concern)
+- [x] Lookup tables: Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType (per-user ownership via `UserOwnable` concern, `user_id NOT NULL`)
 - [x] Playlist model with HABTM to artists, tracks, tags
 - [x] User model with `cognito_sub` unique identifier
 - [x] All HABTM join tables with dual unique indexes (albums_artists, artists_tracks, artists_playlists, playlists_tracks, playlists_tags)
@@ -31,7 +31,7 @@
 - [x] Full CRUD for Albums (JSON API)
 - [x] Full CRUD for Tracks (JSON API)
 - [x] Full CRUD for Playlists (user-scoped, JSON API)
-- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Media, Editions, ReleaseTypes) with system/user ownership (`LookupAuthorizable` concern, `visible_to` scoping, `authorize_ownership!` guards)
+- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Media, Editions, ReleaseTypes) with per-user ownership (scoped through `current_user` associations)
 - [x] CSRF skip on all JSON-serving controllers
 - [x] CORS configured for frontend at localhost:1841 with `credentials: true`
 
@@ -64,8 +64,8 @@
 ### Testing
 - [x] RSpec configured with FactoryBot and Shoulda Matchers
 - [x] Model specs for all 21 models (including uniqueness validations on all lookup models, `UserOwnable` shared examples for 7 lookup models)
-- [x] Controller specs for all 14 controllers (including sessions, test_auth, application_controller, `LookupAuthorizable` shared examples for 7 lookup controllers)
-- [x] Factories for all 21 models (lookup factories default to `user { nil }` for system records)
+- [x] Controller specs for all 14 controllers (including sessions, test_auth, application_controller, `PerUserLookup` shared examples for 7 lookup controllers)
+- [x] Factories for all 21 models (user factory suppresses seed callback by default, `:with_default_lookups` trait for explicit testing)
 - [x] Auth helper (`sign_in`) for controller specs
 - [x] Transactional fixtures enabled
 - [x] Sorting verification specs for artists, albums, tracks, genres index actions
@@ -81,7 +81,7 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo, 225 tests across 31 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, tagfield interactions, cell-edit-gating, cancel-button, va-album-toggle, edition-management, and filtering
+- [x] E2E testing infrastructure (Playwright in frontend repo, 225 tests across 32 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, tagfield interactions, cell-edit-gating, cancel-button, va-album-toggle, edition-management, and filtering
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] E2E cleanup endpoint (`DELETE /test/cleanup`) — user-scoped catalog cleanup via e2e@test.com join records + orphan detection, prefix matching only for lookups, transaction-wrapped, playlist cleanup included
@@ -103,7 +103,8 @@
 - [ ] CI test job runs `bin/rails test` (Minitest) instead of `bundle exec rspec`
 - [ ] CI test job installs sqlite3 instead of configuring PostgreSQL service
 - [ ] CI has no PostgreSQL service container for the test job
-- [ ] Flaky E2E test: `cancel-button.spec.js` — detail panel collapse assertion intermittently fails (timing/race condition, not a code bug). Fails on different cancel-button tests across runs.
+- [ ] Flaky E2E test: `edition-manager-modal.spec.js` — "save persists edition track assignments" intermittently fails (timing/race condition)
+- [ ] Consistent E2E failure: `inline-track-genre-medium.spec.js` — "new inline row pre-populates genres" fails waiting for cell editor visibility (timing issue with Ext JS cell editor activation)
 - [ ] Inconsistent JSON rendering (inline `as_json` vs `render json:` vs jbuilder views)
 - [ ] Genre/tag sync logic duplicated across 3 controllers — not extracted to shared module
 - [ ] `database.yml` contains stale commented-out SQLite configuration
@@ -127,11 +128,11 @@
 - [x] Album CRUD (grid + detail form + star rating + genre auto-populate from artists)
 - [x] Track CRUD (TrackGrid, TrackDetail, TrackController — full CRUD following Artist/Album pattern)
 - [ ] Playlist CRUD (copy Artist pattern, customize fields)
-- [x] Lookup table CRUD (simpler single-field forms — editions, genres, media, phases, priorities, release types) with system/user ownership (Type column, lock icon, read-only system records, system guard on save/delete)
+- [x] Lookup table CRUD (simpler single-field forms — editions, genres, media, phases, priorities, release types) with per-user ownership (all records freely editable/deletable)
 
 ### Infrastructure & Cleanup
 - [ ] Pagination on list endpoints
 - [ ] Serializer layer (replace inline `as_json` / jbuilder mix)
 - [ ] Extract genre/tag sync into a shared concern or service
-- [x] Lookup table access control (system/user ownership model — system records read-only, user records private to creator)
+- [x] Lookup table access control (per-user ownership — every record belongs to one user, scoped through `current_user` associations)
 - [x] Remove HTML views and `format.html` blocks — controllers now render JSON directly

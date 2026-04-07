@@ -5,11 +5,11 @@ RSpec.describe TagsController, type: :controller do
 
   before { sign_in(user) }
 
-  it_behaves_like 'LookupAuthorizable', :tag, :tag
+  it_behaves_like 'PerUserLookup', :tag, :tag
 
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:tag, name: 'Favorite')
+      create(:tag, name: 'Favorite', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -20,7 +20,7 @@ RSpec.describe TagsController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      tag = create(:tag, name: 'Classic')
+      tag = create(:tag, name: 'Classic', user: user)
       get :show, params: { id: tag.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']

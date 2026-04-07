@@ -5,11 +5,11 @@ RSpec.describe PrioritiesController, type: :controller do
 
   before { sign_in(user) }
 
-  it_behaves_like 'LookupAuthorizable', :priority, :priority
+  it_behaves_like 'PerUserLookup', :priority, :priority
 
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:priority, name: 'High')
+      create(:priority, name: 'High', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -20,7 +20,7 @@ RSpec.describe PrioritiesController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      priority = create(:priority, name: 'Low')
+      priority = create(:priority, name: 'Low', user: user)
       get :show, params: { id: priority.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']

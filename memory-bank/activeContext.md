@@ -7,30 +7,27 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 6, 2026) — System + User Ownership for Lookup Entities
+## Recent Changes (Apr 6, 2026) — Simplified Per-User Lookup Ownership
 
-Implemented a two-tier ownership model for all 7 lookup entities (Genre, Tag, Edition, Medium, Phase, Priority, ReleaseType):
-- **System records** (`user_id = NULL`): visible to all users, read-only, seeded by developer
-- **User records** (`user_id = N`): private to the creating user, fully editable/deletable
+Simplified lookup entity ownership from two-tier system/user model to pure per-user ownership. Every lookup record now belongs to exactly one user — no system records, no sharing, no read-only records. New users get seeded defaults on first login via `after_create` callback.
 
-### Backend (migration, models, controllers, seeds, tests)
-- **Migration** (`20260407012505`): adds nullable `user_id` FK to all 7 tables with partial unique indexes (system name uniqueness + per-user name uniqueness)
-- **`UserOwnable` concern** (`app/models/concerns/user_ownable.rb`): `belongs_to :user, optional: true`, scopes (`visible_to`, `system_records`, `owned_by`), `system?`/`owned_by?` methods, custom uniqueness validation within visible set
-- **`LookupAuthorizable` concern** (`app/controllers/concerns/lookup_authorizable.rb`): `authorize_ownership!` returns `true` for own records or `head :forbidden` + `false` for system/others; `lookup_json`/`lookup_collection_json` add `system` flag to JSON
-- All 7 controllers updated: index scoped via `visible_to(current_user)`, create sets `user = current_user`, update/destroy guarded by `authorize_ownership!`
-- **ExtJsFilterable** updated: `apply_list_filter` scopes lookup through `visible_to(current_user)` for UserOwnable models
-- **Seed data**: system records for Genres (15), Media (5), Release Types (7), Editions (5), Phases (4), Priorities (4); Tags intentionally excluded
-- **Tests**: shared examples `UserOwnable` and `LookupAuthorizable`; all 7 model/controller specs updated; 596 backend tests pass
-- User model gains `has_many` for all 7 lookup entities with `dependent: :destroy`
+### Backend
+- **Migration** (`20260407022002`): deletes all system records (`user_id IS NULL`), seeds per-user defaults for each existing user, reassigns FK references (user_artist_genres etc.) from system to matching user records, drops partial indexes, adds unconditional `UNIQUE(name, user_id)` indexes, makes `user_id NOT NULL`
+- **`UserOwnable` concern** simplified: `belongs_to :user` (required), `validates :name, uniqueness: { scope: :user_id }` — no scopes, no `system?`, no `visible_to`
+- **`LookupAuthorizable` concern** deleted — no longer needed
+- **User model** gains `after_create :seed_default_lookups` callback with default records: Genres (15), Media (5), Release Types (7), Editions (5), Phases (4), Priorities (4), Tags (none)
+- All 7 lookup controllers simplified: scope through `current_user.{entity}` associations, no authorization guards, plain `render json: { data: ... }`
+- **ExtJsFilterable** updated: uses `reflect_on_association(:user)` + `model.where(user_id: current_user.id)` instead of `visible_to`
+- **Tests**: shared examples `UserOwnable` (simplified) and `PerUserLookup` (replaces `LookupAuthorizable`); user factory suppresses seed callback by default, `:with_default_lookups` trait for explicit testing; 506 backend tests pass
 
-### Frontend (models, grids, controllers)
-- All 7 Ext JS models gain `system` boolean field (`persist: false`)
-- All 7 grid files gain "Type" column with lock icon for system records (`<i class="fa fa-lock">`)
-- 6 lookup ViewModels gain `isSystem: false` data binding (Tag has no ViewModel)
-- 6 lookup controllers gain system guards: `onGridCellClick` sets name read-only + disables Save for system records; `onDeleteClick` blocks system record deletion; `onSaveClick` guards against `isSystem`
+### Frontend
+- Removed `system` boolean field from all 7 Ext JS models
+- Removed "Type" column (lock icon) from all 7 grids
+- Removed `isSystem` from 6 ViewModels
+- Removed system guards from 6 controllers (all lookups are now freely editable/deletable)
 
 ### E2E Tests
-- 221 of 225 pass; 2 pre-existing failures in Artist/Album views (cancel-button detail collapse, cell-edit-gating artist combo sync) — unrelated to ownership changes
+- 219 of 225 pass; 1 pre-existing flaky failure (edition-manager-modal save persistence), 1 pre-existing failure in inline-track-genre-medium (cell editor visibility timing) — both unrelated to ownership changes
 
 **Branches:** Backend `mixtape-develop-20260406_no_var_code_style`, Frontend changes in `mixtapeUI/mixtape`
 

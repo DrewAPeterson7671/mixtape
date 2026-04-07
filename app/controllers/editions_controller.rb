@@ -1,28 +1,25 @@
 class EditionsController < ApplicationController
-  include LookupAuthorizable
-
   before_action :set_edition, only: %i[show update destroy]
   skip_before_action :verify_authenticity_token
 
   # GET /editions
   def index
-    @editions = Edition.visible_to(current_user).order(:name)
+    @editions = current_user.editions.order(:name)
 
-    render json: { data: lookup_collection_json(@editions) }
+    render json: { data: @editions }
   end
 
   # GET /editions/1
   def show
-    render json: { data: lookup_json(@edition) }
+    render json: { data: @edition }
   end
 
   # POST /editions
   def create
-    @edition = Edition.new(edition_params)
-    @edition.user = current_user
+    @edition = current_user.editions.build(edition_params)
 
     if @edition.save
-      render json: { data: lookup_json(@edition) }, status: :created, location: @edition
+      render json: { data: @edition }, status: :created, location: @edition
     else
       render json: @edition.errors, status: :unprocessable_entity
     end
@@ -30,10 +27,8 @@ class EditionsController < ApplicationController
 
   # PATCH/PUT /editions/1
   def update
-    return unless authorize_ownership!(@edition)
-
     if @edition.update(edition_params)
-      render json: { data: lookup_json(@edition) }, status: :ok, location: @edition
+      render json: { data: @edition }, status: :ok, location: @edition
     else
       render json: @edition.errors, status: :unprocessable_entity
     end
@@ -41,8 +36,6 @@ class EditionsController < ApplicationController
 
   # DELETE /editions/1
   def destroy
-    return unless authorize_ownership!(@edition)
-
     @edition.destroy!
 
     head :no_content
@@ -51,7 +44,7 @@ class EditionsController < ApplicationController
   private
 
   def set_edition
-    @edition = Edition.visible_to(current_user).find(params[:id])
+    @edition = current_user.editions.find(params[:id])
   end
 
   def edition_params

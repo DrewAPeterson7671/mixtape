@@ -5,11 +5,11 @@ RSpec.describe PhasesController, type: :controller do
 
   before { sign_in(user) }
 
-  it_behaves_like 'LookupAuthorizable', :phase, :phase
+  it_behaves_like 'PerUserLookup', :phase, :phase
 
   describe 'GET #index' do
     it 'returns 200 and JSON array' do
-      create(:phase, name: 'Discovery')
+      create(:phase, name: 'Discovery', user: user)
       get :index, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
@@ -20,7 +20,7 @@ RSpec.describe PhasesController, type: :controller do
 
   describe 'GET #show' do
     it 'returns 200 and single record' do
-      phase = create(:phase, name: 'Exploration')
+      phase = create(:phase, name: 'Exploration', user: user)
       get :show, params: { id: phase.id }, format: :json
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
