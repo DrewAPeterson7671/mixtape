@@ -7,40 +7,28 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 5, 2026) — Frontend E2E Test Coverage Expansion
+## Recent Changes (Apr 8, 2026) — Restore Missing UserAlbum and UserTrack Join Records
 
-Comprehensive E2E audit and test writing across three priority tiers (~80 new tests, bringing total from ~104 to ~180+):
+The `make_lookup_user_id_not_null` migration (Apr 6) deleted UserAlbum rows when their `default_edition_id` pointed to a system edition that couldn't be reassigned, making those albums invisible in the UI. UserTracks may also have been missing.
 
-### P0: Lookup Entity CRUD & Complex UI
-- **5 lookup entity specs** (Genres, Media, Phases, Priorities, Release Types) — Each has 3 grid tests + 3 serial CRUD tests. Uses `navigateToSettingsView` helper (new) for Settings tree expansion.
-- **Edition Manager Modal spec** (15 tests) — Most complex spec: edition selector, dual-grid track management, add/remove/reorder/save/dirty-checking/create/clear/copy-to, disc number validation. Custom modal helpers.
-- **Editions settings CRUD** — Same lookup entity pattern for Editions view.
-- **Playlists grid spec** — Grid columns + data display. Creates genre first (required `belongs_to :genre`).
-- **Tags grid spec** — Grid columns + data display.
+- **Migration** (`20260408015602_restore_missing_user_albums_and_tracks.rb`): data-only migration that `INSERT ... SELECT` cross-joins users × albums and users × tracks, with `NOT EXISTS` + `ON CONFLICT DO NOTHING` for idempotent gap-filling
+- **Defaults**: `rating` NULL, `listened` false, `consider_editions` false, `default_edition_id` NULL
+- **Result**: all 36 UserAlbum records (3 users × 12 albums) and 330 UserTrack records (3 users × 110 tracks) confirmed present, zero gaps
+- **Tests**: 525 RSpec tests pass, no regressions
 
-### P1: Form Behavior & Backend Gaps
-- **Genre auto-populate spec** (4 tests) — Verifies `onArtistChange` copies artist genres to album/track genre tagfield on new records, does NOT fire on existing records.
-- **Form validation spec** (3 tests) — Tests `formBind` Save button disabled/enabled state. Custom `setFieldAndValidate` helper forces `checkValidity()` to bypass ExtJS async monitor.
-- **UserAlbum model spec** (backend, 9 new tests) — `default_edition` association, `genre_name` method, genre/tag HABTM associations.
+## Recent Changes (Apr 7, 2026) — Sequence and Definition Columns on Lookup Entities
 
-### P2: Grid Sorting & Tagfield Interactions
-- **Grid sorting spec** (8 tests) — Tests column header click toggling ASC/DESC across Artists (Name, string), Albums (Year, numeric), Tracks (Title, string). Verifies sort indicator via `store.getSorters()` and data order. Also tests switching sort column replaces active sort.
-- **Tagfield interactions spec** (10 tests) — Add multiple genres/tags, verify persistence after reload, remove/add values, clear all, verify empty. Typeahead filtering via `doRawQuery()` + picker verification. Select from filtered pick list.
+Added `sequence` (integer, nullable) column to all 5 lookup entities (editions, media, phases, priorities, release_types) for user-controlled display ordering. Added `definition` (text, nullable) column to phases and priorities for documenting personal meaning.
 
-- **Branches:** Frontend `mixtape-dev-20260405_lookup_entity_e2e_specs`, Backend `mixtape-develop-20260405_backend_spec_gaps`
-
-## Recent Changes (Apr 5, 2026) — Backend RSpec Coverage Gaps
-
-- **New spec: TestAuthController** (6 tests), **ApplicationController** (7 tests), **lookup model validations** (uniqueness on all 6 lookup models), **sorting verification** (4 tests), **error/edge case specs** (17 tests), **ExtJsFilterable edge cases** (4 tests)
-- **Dedicated concern specs** (21 tests) — `UserPreferable` (9 tests: find-or-initialize behavior for artist/album/track, user isolation) and `ExtJsFilterable` helpers (12 tests: `parse_filters` JSON/array/malformed, `sanitize_like` escaping, unknown filter kind fallthrough). Integration tests for ExtJsFilterable already existed in 3 per-controller `*_filters_spec.rb` files (883+ lines).
-- **Full suite: 420 tests passing**
-- **Branch:** `mixtape-develop-20260405_backend_spec_gaps`
+**Branches:** Backend `mixtape-develop-20260407_add_sequence_definition_to_lookups`, Frontend `mixtape-dev-20260407_add_sequence_definition_to_lookups`
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
-- **Apr 5:** Tracklist column visibility (ISRC, Listened, Rating, Genres visible by default), tracklist fetches from show endpoint for full user track data, `album_json` includes genre/tag data per track
+- **Apr 7:** Sequence and definition columns on all lookup entities (5 backend + 26 frontend files), `remoteSort: false` fix for Ext JS stores
+- **Apr 6:** Simplified per-user lookup ownership (pure per-user model, no system records), no-var code style enforcement
+- **Apr 5:** E2E test coverage expansion (~80 new tests), backend RSpec coverage gaps (420 tests passing), tracklist column visibility, show endpoint for full user track data
 - **Apr 4:** `anyMatch: true` on all artist/track typeahead components (5 comboboxes)
 - **Apr 1:** Safer E2E test cleanup strategy (user-scoped catalog record cleanup, orphan detection, transaction wrapping)
 - **Mar 28-30:** Server-side grid filtering & search, Add Track UX, DurationField bug fix, E2E tests

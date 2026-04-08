@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_13_021253) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -71,24 +71,40 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_13_021253) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "sequence"
+    t.index ["name", "user_id"], name: "index_editions_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_editions_on_user_id"
   end
 
   create_table "genres", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_genres_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_genres_on_user_id"
   end
 
   create_table "media", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "sequence"
+    t.index ["name", "user_id"], name: "index_media_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_media_on_user_id"
   end
 
   create_table "phases", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "sequence"
+    t.text "definition"
+    t.index ["name", "user_id"], name: "index_phases_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_phases_on_user_id"
   end
 
   create_table "playlists", force: :cascade do |t|
@@ -123,12 +139,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_13_021253) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "sequence"
+    t.text "definition"
+    t.index ["name", "user_id"], name: "index_priorities_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_priorities_on_user_id"
   end
 
   create_table "release_types", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "sequence"
+    t.index ["name", "user_id"], name: "index_release_types_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_release_types_on_user_id"
   end
 
   create_table "tags", force: :cascade do |t|
@@ -136,6 +161,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_13_021253) do
     t.text "comment"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_tags_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_tags_on_user_id"
   end
 
   create_table "tracks", force: :cascade do |t|
@@ -281,11 +309,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_13_021253) do
   add_foreign_key "artists_playlists", "playlists"
   add_foreign_key "artists_tracks", "artists"
   add_foreign_key "artists_tracks", "tracks"
+  add_foreign_key "editions", "users"
+  add_foreign_key "genres", "users"
+  add_foreign_key "media", "users"
+  add_foreign_key "phases", "users"
   add_foreign_key "playlists", "users"
   add_foreign_key "playlists_tags", "playlists"
   add_foreign_key "playlists_tags", "tags"
   add_foreign_key "playlists_tracks", "playlists"
   add_foreign_key "playlists_tracks", "tracks"
+  add_foreign_key "priorities", "users"
+  add_foreign_key "release_types", "users"
+  add_foreign_key "tags", "users"
   add_foreign_key "user_album_genres", "albums"
   add_foreign_key "user_album_genres", "genres"
   add_foreign_key "user_album_genres", "users"

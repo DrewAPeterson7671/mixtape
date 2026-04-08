@@ -4,7 +4,7 @@ class PhasesController < ApplicationController
 
   # GET /phases
   def index
-    @phases = Phase.all
+    @phases = current_user.phases.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @phases }
   end
@@ -16,7 +16,7 @@ class PhasesController < ApplicationController
 
   # POST /phases
   def create
-    @phase = Phase.new(phase_params)
+    @phase = current_user.phases.build(phase_params)
 
     if @phase.save
       render json: { data: @phase }, status: :created, location: @phase
@@ -44,10 +44,10 @@ class PhasesController < ApplicationController
   private
 
   def set_phase
-    @phase = Phase.find(params[:id])
+    @phase = current_user.phases.find(params[:id])
   end
 
   def phase_params
-    params.require(:phase).permit(:name)
+    params.require(:phase).permit(:name, :sequence, :definition)
   end
 end

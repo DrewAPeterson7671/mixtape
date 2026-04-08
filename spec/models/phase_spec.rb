@@ -5,9 +5,5 @@ RSpec.describe Phase, type: :model do
     expect(build(:phase)).to be_valid
   end
 
-  describe 'validations' do
-    subject { create(:phase) }
-
-    it { is_expected.to validate_uniqueness_of(:name) }
-  end
+  it_behaves_like 'UserOwnable'
 end

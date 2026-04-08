@@ -4,7 +4,7 @@ class MediaController < ApplicationController
 
   # GET /media
   def index
-    @media = Medium.all.order(:name)
+    @media = current_user.media.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @media }
   end
@@ -16,7 +16,7 @@ class MediaController < ApplicationController
 
   # POST /media
   def create
-    @medium = Medium.new(medium_params)
+    @medium = current_user.media.build(medium_params)
 
     if @medium.save
       render json: { data: @medium }, status: :created, location: @medium
@@ -44,10 +44,10 @@ class MediaController < ApplicationController
   private
 
   def set_medium
-    @medium = Medium.find(params[:id])
+    @medium = current_user.media.find(params[:id])
   end
 
   def medium_params
-    params.require(:medium).permit(:name)
+    params.require(:medium).permit(:name, :sequence)
   end
 end

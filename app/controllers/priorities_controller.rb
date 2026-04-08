@@ -4,7 +4,7 @@ class PrioritiesController < ApplicationController
 
   # GET /priorities
   def index
-    @priorities = Priority.all
+    @priorities = current_user.priorities.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @priorities }
   end
@@ -16,7 +16,7 @@ class PrioritiesController < ApplicationController
 
   # POST /priorities
   def create
-    @priority = Priority.new(priority_params)
+    @priority = current_user.priorities.build(priority_params)
 
     if @priority.save
       render json: { data: @priority }, status: :created, location: @priority
@@ -44,10 +44,10 @@ class PrioritiesController < ApplicationController
   private
 
   def set_priority
-    @priority = Priority.find(params[:id])
+    @priority = current_user.priorities.find(params[:id])
   end
 
   def priority_params
-    params.require(:priority).permit(:name)
+    params.require(:priority).permit(:name, :sequence, :definition)
   end
 end

@@ -1,9 +1,5 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
+# Default lookups are seeded automatically via User#after_create callback.
+# Creating a user triggers seed_default_lookups which populates genres,
+# media, release_types, editions, phases, and priorities.
 #
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# Tags are intentionally not seeded — they're too personal/subjective.
