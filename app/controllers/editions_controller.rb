@@ -4,7 +4,7 @@ class EditionsController < ApplicationController
 
   # GET /editions
   def index
-    @editions = current_user.editions.order(:name)
+    @editions = current_user.editions.order(Arel.sql('sequence ASC NULLS LAST, name ASC'))
 
     render json: { data: @editions }
   end
@@ -48,6 +48,6 @@ class EditionsController < ApplicationController
   end
 
   def edition_params
-    params.require(:edition).permit(:name)
+    params.require(:edition).permit(:name, :sequence)
   end
 end
