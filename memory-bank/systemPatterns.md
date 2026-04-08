@@ -37,6 +37,10 @@ Canonical example: `app/controllers/genres_controller.rb`
 
 All controllers now render JSON directly (no `respond_to` blocks or HTML views).
 
+### Lookup Store Sorting (Frontend)
+
+All 5 non-genre lookup stores (Editions, Media, Phases, Priorities, ReleaseTypes) have a custom `sorterFn` that replicates the backend's `sequence ASC NULLS LAST, name ASC` ordering for client-side sorting in combobox dropdowns. **Critical:** These stores must set `remoteSort: false` — without it, Ext JS interprets `sorters` config as requesting remote sort and appends `sort` query params to API requests. This breaks the stores when used as filter list stores in other grids (e.g., Priority/Phase columns in the ArtistGrid).
+
 ### 3. PlaylistsController
 
 User-scoped CRUD:
@@ -476,6 +480,7 @@ All lookup/settings entities (Genres, Media, Phases, Priorities, Release Types, 
 - **CRUD tests (3, serial):** create via detail form + Save + toast, update name + Save + toast, delete via Delete button + confirm dialog + toast
 - **Settings navigation:** Uses `navigateToSettingsView(page, 'Genres')` helper which expands the Settings tree node via ExtJS API before clicking the child node. Lookup entities live under the Settings parent node (`expanded: false` by default).
 - **No Add button:** Detail form is always visible (`collapsed: false`), so creating is done by clearing the form and typing a new name.
+- **Sequence/Definition tests (23):** Separate spec (`lookup-sequence-definition.spec.js`) covers `#` column header visibility (all 5), Definition column header (phases/priorities), CRUD with sequence/definition values, persistence after reload, and sequence-based sort ordering verification.
 
 ### Grid Sorting E2E Pattern
 
