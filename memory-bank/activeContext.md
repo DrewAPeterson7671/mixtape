@@ -7,25 +7,29 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 8, 2026) — Restore Missing UserAlbum and UserTrack Join Records
+## Recent Changes (Apr 8, 2026) — Pre-populate Empty Tracklist in Entry Mode
 
-The `make_lookup_user_id_not_null` migration (Apr 6) deleted UserAlbum rows when their `default_edition_id` pointed to a system edition that couldn't be reassigned, making those albums invisible in the UI. UserTracks may also have been missing.
+When toggling "Enter Track Names" on an album with no tracks, 8 empty rows are now auto-created to reduce friction for new album data entry.
 
-- **Migration** (`20260408015602_restore_missing_user_albums_and_tracks.rb`): data-only migration that `INSERT ... SELECT` cross-joins users × albums and users × tracks, with `NOT EXISTS` + `ON CONFLICT DO NOTHING` for idempotent gap-filling
-- **Defaults**: `rating` NULL, `listened` false, `consider_editions` false, `default_edition_id` NULL
-- **Result**: all 36 UserAlbum records (3 users × 12 albums) and 330 UserTrack records (3 users × 110 tracks) confirmed present, zero gaps
-- **Tests**: 525 RSpec tests pass, no regressions
+- **Frontend branch:** `mixtape-dev-20260408_prepopulate_tracklist_rows`
+- **File:** `AlbumController.js` — `onEntryModeChange` checks `if (checked && store.getCount() === 0)` and calls `addInlineTrackRow()` 8 times
+- **Bulk-add guard:** `this._bulkAdding` flag suppresses auto-edit focus during the loop; cleared after. `addInlineTrackRow` skips `startEditByPosition` when flag is set, preserving single-row auto-focus behavior for the "Add Track" button
 
-## Recent Changes (Apr 7, 2026) — Sequence and Definition Columns on Lookup Entities
+## Recent Changes (Apr 8, 2026) — Fix Edition Data on 3 Albums
 
-Added `sequence` (integer, nullable) column to all 5 lookup entities (editions, media, phases, priorities, release_types) for user-controlled display ordering. Added `definition` (text, nullable) column to phases and priorities for documenting personal meaning.
+Three albums had triplicated `album_track` rows with all `edition_id` values set to `nil` (leftover from the edition migration refactor). Fixed via `rails runner` script — data-only change, no source files modified.
 
-**Branches:** Backend `mixtape-develop-20260407_add_sequence_definition_to_lookups`, Frontend `mixtape-dev-20260407_add_sequence_definition_to_lookups`
+- **Ride The Lightning:** Original Release (8 tracks) + Ultimate Edition (10 tracks, default), 8 duplicate rows deleted
+- **Low-Life:** Original Release (8 tracks, fixed broken disc/position data) + Deluxe Edition (16 tracks, default), 8 duplicate rows deleted
+- **Power, Corruption & Lies:** Original Release (8 tracks) + Definitive Edition (10 tracks) + Deluxe Edition (16 tracks, default), no deletions needed
+- All three albums now have `consider_editions=true` with most complete edition as default
+- UserTrack records (ratings, listened) unaffected — keyed by track_id, not album_track
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
+- **Apr 8:** Restore missing UserAlbum/UserTrack join records via data migration
 - **Apr 7:** Sequence and definition columns on all lookup entities (5 backend + 26 frontend files), `remoteSort: false` fix for Ext JS stores
 - **Apr 6:** Simplified per-user lookup ownership (pure per-user model, no system records), no-var code style enforcement
 - **Apr 5:** E2E test coverage expansion (~80 new tests), backend RSpec coverage gaps (420 tests passing), tracklist column visibility, show endpoint for full user track data
