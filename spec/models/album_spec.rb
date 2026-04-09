@@ -25,6 +25,66 @@ RSpec.describe Album, type: :model do
     end
   end
 
+  describe '#title_unique_per_artist' do
+    it 'rejects duplicate title for the same artist' do
+      artist = create(:artist, name: 'New Order')
+      existing = create(:album, title: 'Movement')
+      existing.artists << artist
+
+      duplicate = build(:album, title: 'Movement')
+      duplicate.artists << artist
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:title]).to include("already exists for artist New Order")
+    end
+
+    it 'allows the same title for different artists' do
+      artist1 = create(:artist, name: 'New Order')
+      artist2 = create(:artist, name: 'Other Band')
+      existing = create(:album, title: 'Movement')
+      existing.artists << artist1
+
+      other = build(:album, title: 'Movement')
+      other.artists << artist2
+      expect(other).to be_valid
+    end
+
+    it 'allows updates to an existing album without self-conflict' do
+      artist = create(:artist, name: 'New Order')
+      album = create(:album, title: 'Movement')
+      album.artists << artist
+
+      album.year = 1981
+      expect(album).to be_valid
+    end
+
+    it 'performs case-insensitive matching' do
+      artist = create(:artist, name: 'New Order')
+      existing = create(:album, title: 'Movement')
+      existing.artists << artist
+
+      duplicate = build(:album, title: 'movement')
+      duplicate.artists << artist
+      expect(duplicate).not_to be_valid
+    end
+
+    it 'rejects duplicate title among VA albums' do
+      create(:album, title: 'Now 50', various_artists: true)
+
+      duplicate = build(:album, title: 'Now 50', various_artists: true)
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:title]).to include("already exists as a Various Artists album")
+    end
+
+    it 'allows a VA album and a non-VA album to share the same title' do
+      create(:album, title: 'Compilation', various_artists: true)
+
+      artist = create(:artist, name: 'Some Artist')
+      non_va = build(:album, title: 'Compilation')
+      non_va.artists << artist
+      expect(non_va).to be_valid
+    end
+  end
+
   describe '#artist_name' do
     it 'returns array of artist names' do
       album = create(:album)

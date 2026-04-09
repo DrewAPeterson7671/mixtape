@@ -161,6 +161,15 @@ RSpec.describe AlbumsController, type: :controller do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
+    it 'returns 422 when creating a duplicate title for the same artist' do
+      artist = create(:artist, name: 'New Order')
+      existing = create(:album, title: 'Movement')
+      existing.artists << artist
+
+      post :create, params: { album: { title: 'Movement', artist_ids: [artist.id] } }, as: :json
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
     it 'creates inline tracks when album_tracks have title but no track_id' do
       expect {
         post :create, params: {
