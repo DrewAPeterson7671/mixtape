@@ -362,7 +362,7 @@ Reusable component at `app/view/common/DurationField.js`:
 
 The Album Detail form includes an inline tracklist grid for viewing and editing album tracks:
 - **CellEditing plugin** — enables inline editing of track fields (title, duration, ISRC, per-track artists for VA)
-- **Entry mode toggle** — "Enter Track Names" checkbox switches the grid into entry mode. New rows are added with `is_new: true` flag and are not saved until the album form is submitted
+- **Entry mode toggle** — "Enter Track Names" checkbox switches the grid into entry mode. New rows are added with `is_new: true` flag and are not saved until the album form is submitted. When toggled ON with an empty tracklist, 8 blank rows are pre-populated via a `_bulkAdding` flag that suppresses auto-edit focus during the loop
 - **Typeahead combobox** — Track title column uses a combobox with `displayField: 'title_with_artist'` and local store sorter for alphabetical ordering. Artist filtering applied in `onBeforeEdit` for non-VA albums (same filter logic as Add Track modal)
 - **Add Track modal** — `openAddTrackModal` in `AlbumController.js` creates a modal with a track combobox using `displayField: 'title_with_artist'`, local alphabetical sorter, and artist filtering for non-VA albums (reads VA checkbox and `artist_ids` from album form, applies `filterBy` on combo store in `afterrender` listener). VA albums show all tracks unfiltered.
 - **`title_with_artist` computed field** — `persist: false` field on Track model (`app/model/Track.js`) that formats as `"Title – Artist1, Artist2"`. Used as `displayField` on all track-selection comboboxes to disambiguate same-title tracks by different artists.

@@ -7,25 +7,20 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 8, 2026) — Restore Missing UserAlbum and UserTrack Join Records
+## Recent Changes (Apr 8, 2026) — Album Title Uniqueness Per Artist
 
-The `make_lookup_user_id_not_null` migration (Apr 6) deleted UserAlbum rows when their `default_edition_id` pointed to a system edition that couldn't be reassigned, making those albums invisible in the UI. UserTracks may also have been missing.
+Deleted duplicate "Movement" album (Album #1, empty — no tracks/genres/tags) that duplicated Album #4 (the real one with 8 tracks). Added `title_unique_per_artist` custom validation to `Album` model to prevent recurrence.
 
-- **Migration** (`20260408015602_restore_missing_user_albums_and_tracks.rb`): data-only migration that `INSERT ... SELECT` cross-joins users × albums and users × tracks, with `NOT EXISTS` + `ON CONFLICT DO NOTHING` for idempotent gap-filling
-- **Defaults**: `rating` NULL, `listened` false, `consider_editions` false, `default_edition_id` NULL
-- **Result**: all 36 UserAlbum records (3 users × 12 albums) and 330 UserTrack records (3 users × 110 tracks) confirmed present, zero gaps
-- **Tests**: 525 RSpec tests pass, no regressions
-
-## Recent Changes (Apr 7, 2026) — Sequence and Definition Columns on Lookup Entities
-
-Added `sequence` (integer, nullable) column to all 5 lookup entities (editions, media, phases, priorities, release_types) for user-controlled display ordering. Added `definition` (text, nullable) column to phases and priorities for documenting personal meaning.
-
-**Branches:** Backend `mixtape-develop-20260407_add_sequence_definition_to_lookups`, Frontend `mixtape-dev-20260407_add_sequence_definition_to_lookups`
+- **Backend branch:** `mixtape-develop-20260408_fix_edition_data`
+- **Data cleanup:** Removed 3 UserAlbum records, 1 albums_artists join, and Album #1 via `rails runner`
+- **Validation:** Case-insensitive title uniqueness scoped per artist (non-VA) or across all VA albums (VA). VA and non-VA albums can share a title.
+- **Specs:** 6 model specs + 1 controller spec added (532 total, 0 failures)
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
+- **Apr 8:** Restore missing UserAlbum/UserTrack join records via data migration
 - **Apr 7:** Sequence and definition columns on all lookup entities (5 backend + 26 frontend files), `remoteSort: false` fix for Ext JS stores
 - **Apr 6:** Simplified per-user lookup ownership (pure per-user model, no system records), no-var code style enforcement
 - **Apr 5:** E2E test coverage expansion (~80 new tests), backend RSpec coverage gaps (420 tests passing), tracklist column visibility, show endpoint for full user track data
