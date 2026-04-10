@@ -53,6 +53,7 @@
 - [x] TracksController `track_json` helper with ID arrays (artist_ids, album_ids) and preference data
 - [x] TracksController handles album association via AlbumTrack in create/update
 - [x] TracksController handles `album_ids` array sync via `handle_album_ids_association` (adds/removes AlbumTrack records as unsorted entries)
+- [x] TracksController `sort_tracks` method with 6 sort options (`artist`, `album_artist`, `title`, `album`, `rating`, `recent`) via `params[:sort]`
 
 ### Ext.js Frontend
 - [x] Artist CRUD: ArtistView (border layout), ArtistDetail (form panel), ArtistController (ViewController)

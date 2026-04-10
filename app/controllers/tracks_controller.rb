@@ -42,11 +42,11 @@ class TracksController < ApplicationController
   def index
     @tracks = Track.joins(:user_tracks).where(user_tracks: { user_id: current_user.id })
     @tracks = apply_ext_filters(@tracks).distinct
-      .includes(:artists, :albums, :medium)
-      .sort_by { |track| [track.artists.map { |a| a.name.sub(/^(The|A|An)\s+/i, "") }.min.to_s.downcase, track.albums.map(&:title).min.to_s.downcase, track.title.to_s.downcase] }
+      .includes(:artists, :album_tracks, { albums: :artists }, :medium)
     @user_prefs = current_user.user_tracks
       .includes(:genres, :tags)
       .index_by(&:track_id)
+    @tracks = sort_tracks(@tracks)
 
     render json: { data: @tracks.map { |track|
       pref = @user_prefs[track.id]
@@ -113,6 +113,47 @@ class TracksController < ApplicationController
   end
 
   private
+
+  def sort_tracks(tracks)
+    strip = ->(name) { name.sub(/^(The|A|An)\s+/i, "").downcase }
+
+    case params[:sort]
+    when "album_artist"
+      tracks.sort_by do |t|
+        album = t.albums.min_by { |a| a.title.to_s.downcase }
+        album_artist = album&.artists&.map { |a| strip.call(a.name) }&.min.to_s
+        [album_artist, album&.title.to_s.downcase,
+         t.album_tracks.find { |at| at.album_id == album&.id }&.disc_number.to_i,
+         t.album_tracks.find { |at| at.album_id == album&.id }&.position.to_i,
+         t.title.to_s.downcase]
+      end
+    when "title"
+      tracks.sort_by { |t| strip.call(t.title.to_s) }
+    when "album"
+      tracks.sort_by do |t|
+        album = t.albums.min_by { |a| a.title.to_s.downcase }
+        [album&.title.to_s.downcase,
+         t.album_tracks.find { |at| at.album_id == album&.id }&.disc_number.to_i,
+         t.album_tracks.find { |at| at.album_id == album&.id }&.position.to_i,
+         t.title.to_s.downcase]
+      end
+    when "rating"
+      tracks.sort_by do |t|
+        pref = @user_prefs[t.id]
+        [-(pref&.rating || 0),
+         t.artists.map { |a| strip.call(a.name) }.min.to_s,
+         t.title.to_s.downcase]
+      end
+    when "recent"
+      tracks.sort_by { |t| -t.created_at.to_i }
+    else # "artist" (default)
+      tracks.sort_by do |t|
+        [t.artists.map { |a| strip.call(a.name) }.min.to_s,
+         t.albums.map(&:title).min.to_s.downcase,
+         t.title.to_s.downcase]
+      end
+    end
+  end
 
   def set_track
     @track = Track.find(params[:id])
