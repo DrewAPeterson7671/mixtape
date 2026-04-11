@@ -7,6 +7,15 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
+## Recent Changes (Apr 11, 2026) — Rename Artist `wikipedia` to `wikipedia_discography`
+
+Renamed the `wikipedia` column on the `artists` table to `wikipedia_discography` to better describe its purpose (links to Wikipedia discography pages, not general artist pages).
+
+- **Migration:** `20260411070310_rename_artist_wikipedia_to_wikipedia_discography.rb` — `rename_column`
+- **Backend:** Updated `artist_params`, `artist_json` in controller; ERB views; jbuilder; factory
+- **Frontend:** Updated model field, grid column, detail form field, and controller save payload (4 files)
+- **Tests:** 534 specs pass
+
 ## Recent Changes (Apr 10, 2026) — Add `notes` and `wikipedia` to Albums
 
 Added two optional text columns (`notes`, `wikipedia`) to the shared `albums` catalog table for free-form notes and Wikipedia URLs.
@@ -18,10 +27,6 @@ Added two optional text columns (`notes`, `wikipedia`) to the shared `albums` ca
 ## Recent Changes (Apr 10, 2026) — Propagate Artist Genres to Albums/Tracks
 
 Created rake task `data:copy_artist_genres_to_albums_and_tracks` to recover album/track genre associations lost during the `make_lookup_user_id_not_null` migration.
-
-## Recent Changes (Apr 9, 2026) — Editable Track Artists + Track Grid Sort Selector
-
-Made the Artist column editable for all non-VA albums in entry mode (previously VA-only), and added a sort selector dropdown to the Track grid.
 
 ## Summary of Earlier Work
 
