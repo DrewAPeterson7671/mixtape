@@ -16,6 +16,51 @@
   </p>
 
   <p>
+    <strong>Notes:</strong>
+    <%= artist.notes %>
+  </p>
+
+  <p>
+    <strong>Wikipedia:</strong>
+    <%= artist.wikipedia %>
+  </p>
+
+  <p>
+    <strong>Official Page:</strong>
+    <%= artist.official_page %>
+  </p>
+
+  <p>
+    <strong>Bandcamp:</strong>
+    <%= artist.bandcamp %>
+  </p>
+
+  <p>
+    <strong>Last.fm:</strong>
+    <%= artist.last_fm %>
+  </p>
+
+  <p>
+    <strong>Google Genre Link:</strong>
+    <%= artist.google_genre_link %>
+  </p>
+
+  <p>
+    <strong>AllMusic:</strong>
+    <%= artist.all_music %>
+  </p>
+
+  <p>
+    <strong>AllMusic Discography:</strong>
+    <%= artist.all_music_discography %>
+  </p>
+
+  <p>
+    <strong>Related Artists:</strong>
+    <%= artist.related_artists.map(&:name).join(', ') %>
+  </p>
+
+  <p>
     <strong>Genre:</strong>
     <%= user_pref&.genres&.map(&:name)&.join(', ') %>
   </p>

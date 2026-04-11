@@ -108,7 +108,12 @@ class ArtistsController < ApplicationController
   end
 
   def artist_params
-    params.require(:artist).permit(:name, :wikipedia_discography, :discogs)
+    params.require(:artist).permit(
+      :name, :wikipedia_discography, :discogs,
+      :notes, :wikipedia, :official_page, :bandcamp, :last_fm,
+      :google_genre_link, :all_music, :all_music_discography,
+      related_artist_ids: []
+    )
   end
 
   def preference_params
@@ -140,7 +145,12 @@ class ArtistsController < ApplicationController
   end
 
   def artist_json(artist, pref)
-    artist.as_json(only: [ :id, :name, :wikipedia_discography, :discogs, :created_at, :updated_at ]).merge(
+    artist.as_json(only: [ :id, :name, :wikipedia_discography, :discogs,
+      :notes, :wikipedia, :official_page, :bandcamp, :last_fm,
+      :google_genre_link, :all_music, :all_music_discography,
+      :created_at, :updated_at ]).merge(
+      related_artist_ids: artist.related_artist_ids,
+      related_artist_name: artist.related_artists.map(&:name),
       complete: pref&.complete || false,
       rating: pref&.rating,
       priority_id: pref&.priority_id,

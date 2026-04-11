@@ -7,26 +7,18 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
+## Recent Changes (Apr 11, 2026) — Add Artist Attributes and Related Artists
+
+Added 8 new text columns to the `artists` catalog table (`notes`, `wikipedia`, `official_page`, `bandcamp`, `last_fm`, `google_genre_link`, `all_music`, `all_music_discography`) and a self-referential `related_artists` HABTM relationship via a new `related_artists` join table.
+
+- **Migration:** `20260411072328_add_attributes_and_related_artists_to_artists.rb` — 8 text columns + join table with dual unique indexes and foreign keys
+- **Backend:** Updated model (HABTM), controller (`artist_params` + `artist_json`), ERB views, jbuilder, factory
+- **Frontend:** Updated Artist model (10 new fields), ArtistDetail (9 form fields + tagfield for related artists, `labelWidth: 130`), ArtistController (save payload + setValue), ArtistGrid (9 hidden columns)
+- **Specs:** New model association test, 4 new controller specs (create with attrs, update with attrs, set/clear related_artist_ids, show returns related fields)
+
 ## Recent Changes (Apr 11, 2026) — Rename Artist `wikipedia` to `wikipedia_discography`
 
 Renamed the `wikipedia` column on the `artists` table to `wikipedia_discography` to better describe its purpose (links to Wikipedia discography pages, not general artist pages).
-
-- **Migration:** `20260411070310_rename_artist_wikipedia_to_wikipedia_discography.rb` — `rename_column`
-- **Backend:** Updated `artist_params`, `artist_json` in controller; ERB views; jbuilder; factory
-- **Frontend:** Updated model field, grid column, detail form field, and controller save payload (4 files)
-- **Tests:** 534 specs pass
-
-## Recent Changes (Apr 10, 2026) — Add `notes` and `wikipedia` to Albums
-
-Added two optional text columns (`notes`, `wikipedia`) to the shared `albums` catalog table for free-form notes and Wikipedia URLs.
-
-- **Migration:** `20260411065021_add_notes_and_wikipedia_to_albums.rb` — two nullable `text` columns
-- **Controller:** `albums_controller.rb` — added to `album_params` permit list and `album_json` serialization
-- **Tests:** 2 new specs (create + update) in `albums_controller_spec.rb`; 37 controller specs pass
-
-## Recent Changes (Apr 10, 2026) — Propagate Artist Genres to Albums/Tracks
-
-Created rake task `data:copy_artist_genres_to_albums_and_tracks` to recover album/track genre associations lost during the `make_lookup_user_id_not_null` migration.
 
 ## Summary of Earlier Work
 

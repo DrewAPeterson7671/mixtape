@@ -15,9 +15,9 @@ Lookup tables (Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType) are sh
 ## Catalog Models
 
 ### Artist
-- **Fields:** `name`, `wikipedia`, `discogs`
+- **Fields:** `name`, `wikipedia_discography`, `discogs`, `notes`, `wikipedia`, `official_page`, `bandcamp`, `last_fm`, `google_genre_link`, `all_music`, `all_music_discography`
 - **Validations:** `name` uniqueness
-- **Relationships:** HABTM `albums`, HABTM `tracks` (via `artists_tracks`), HABTM `playlists`, has_many `user_artists` (dependent: destroy)
+- **Relationships:** HABTM `albums`, HABTM `tracks` (via `artists_tracks`), HABTM `playlists`, HABTM `related_artists` (self-referential, via `related_artists` join table), has_many `user_artists` (dependent: destroy)
 
 ### Album
 - **Fields:** `title`, `year`, `release_type_id`, `medium_id`, `various_artists` (boolean, default false)
@@ -120,6 +120,7 @@ These are ID-less join tables with dual unique indexes:
 | `artists_playlists` | Artist <-> Playlist |
 | `playlists_tracks` | Playlist <-> Track |
 | `playlists_tags` | Playlist <-> Tag |
+| `related_artists` | Artist <-> Artist (self-referential, unidirectional) |
 
 Note: `album_tracks` is NOT a HABTM table — it's a full model (`AlbumTrack`) with its own `id`, `position`, `disc_number`, and timestamps, managed via `has_many :through`.
 

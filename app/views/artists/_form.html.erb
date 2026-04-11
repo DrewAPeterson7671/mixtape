@@ -27,6 +27,46 @@
   </div>
 
   <div>
+    <%= form.label :notes, style: "display: block" %>
+    <%= form.text_area :notes %>
+  </div>
+
+  <div>
+    <%= form.label :wikipedia, style: "display: block" %>
+    <%= form.text_field :wikipedia %>
+  </div>
+
+  <div>
+    <%= form.label :official_page, style: "display: block" %>
+    <%= form.text_field :official_page %>
+  </div>
+
+  <div>
+    <%= form.label :bandcamp, style: "display: block" %>
+    <%= form.text_field :bandcamp %>
+  </div>
+
+  <div>
+    <%= form.label :last_fm, style: "display: block" %>
+    <%= form.text_field :last_fm %>
+  </div>
+
+  <div>
+    <%= form.label :google_genre_link, style: "display: block" %>
+    <%= form.text_field :google_genre_link %>
+  </div>
+
+  <div>
+    <%= form.label :all_music, style: "display: block" %>
+    <%= form.text_field :all_music %>
+  </div>
+
+  <div>
+    <%= form.label :all_music_discography, style: "display: block" %>
+    <%= form.text_field :all_music_discography %>
+  </div>
+
+  <div>
     <%= label_tag 'artist[priority_id]', 'Priority', style: "display: block" %>
     <%= number_field_tag 'artist[priority_id]', @user_pref&.priority_id %>
   </div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_11_070310) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_11_072328) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -53,6 +53,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_11_070310) do
     t.string "discogs"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "notes"
+    t.text "wikipedia"
+    t.text "official_page"
+    t.text "bandcamp"
+    t.text "last_fm"
+    t.text "google_genre_link"
+    t.text "all_music"
+    t.text "all_music_discography"
   end
 
   create_table "artists_playlists", id: false, force: :cascade do |t|
@@ -146,6 +154,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_11_070310) do
     t.text "definition"
     t.index ["name", "user_id"], name: "index_priorities_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_priorities_on_user_id"
+  end
+
+  create_table "related_artists", id: false, force: :cascade do |t|
+    t.bigint "artist_id", null: false
+    t.bigint "related_artist_id", null: false
+    t.index ["artist_id", "related_artist_id"], name: "index_related_artists_on_artist_id_and_related_artist_id", unique: true
+    t.index ["related_artist_id", "artist_id"], name: "index_related_artists_on_related_artist_id_and_artist_id", unique: true
   end
 
   create_table "release_types", force: :cascade do |t|
@@ -321,6 +336,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_11_070310) do
   add_foreign_key "playlists_tracks", "playlists"
   add_foreign_key "playlists_tracks", "tracks"
   add_foreign_key "priorities", "users"
+  add_foreign_key "related_artists", "artists"
+  add_foreign_key "related_artists", "artists", column: "related_artist_id"
   add_foreign_key "release_types", "users"
   add_foreign_key "tags", "users"
   add_foreign_key "user_album_genres", "albums"
