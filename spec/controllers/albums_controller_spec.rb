@@ -156,6 +156,17 @@ RSpec.describe AlbumsController, type: :controller do
       expect(at['position']).to eq(1)
     end
 
+    it 'saves and returns notes and wikipedia fields' do
+      post :create, params: {
+        album: { title: 'Annotated Album', notes: 'Great debut album', wikipedia: 'https://en.wikipedia.org/wiki/Annotated_Album' }
+      }, as: :json
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      expect(json['notes']).to eq('Great debut album')
+      expect(json['wikipedia']).to eq('https://en.wikipedia.org/wiki/Annotated_Album')
+    end
+
     it 'returns 422 with invalid params' do
       post :create, params: { album: { title: '' } }, as: :json
       expect(response).to have_http_status(:unprocessable_entity)
@@ -455,6 +466,21 @@ RSpec.describe AlbumsController, type: :controller do
       expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)['data']
       expect(json['default_edition_id']).to be_nil
+    end
+
+    it 'updates and returns notes and wikipedia fields' do
+      album = create(:album, title: 'Plain Album')
+      create(:user_album, user: user, album: album)
+
+      patch :update, params: {
+        id: album.id,
+        album: { notes: 'Added later', wikipedia: 'https://en.wikipedia.org/wiki/Plain_Album' }
+      }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json['notes']).to eq('Added later')
+      expect(json['wikipedia']).to eq('https://en.wikipedia.org/wiki/Plain_Album')
     end
 
     it 'leaves tracks unchanged when album_tracks key is not present' do

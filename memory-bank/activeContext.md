@@ -7,18 +7,21 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
+## Recent Changes (Apr 10, 2026) — Add `notes` and `wikipedia` to Albums
+
+Added two optional text columns (`notes`, `wikipedia`) to the shared `albums` catalog table for free-form notes and Wikipedia URLs.
+
+- **Migration:** `20260411065021_add_notes_and_wikipedia_to_albums.rb` — two nullable `text` columns
+- **Controller:** `albums_controller.rb` — added to `album_params` permit list and `album_json` serialization
+- **Tests:** 2 new specs (create + update) in `albums_controller_spec.rb`; 37 controller specs pass
+
+## Recent Changes (Apr 10, 2026) — Propagate Artist Genres to Albums/Tracks
+
+Created rake task `data:copy_artist_genres_to_albums_and_tracks` to recover album/track genre associations lost during the `make_lookup_user_id_not_null` migration.
+
 ## Recent Changes (Apr 9, 2026) — Editable Track Artists + Track Grid Sort Selector
 
 Made the Artist column editable for all non-VA albums in entry mode (previously VA-only), and added a sort selector dropdown to the Track grid.
-
-- **Backend branch:** `mixtape-develop-20260409_editable_track_artists_sort_selector`
-- **Frontend branch:** `mixtape-dev-20260409_editable_track_artists_sort_selector`
-- **TracksController:** New `sort_tracks` private method accepting `params[:sort]` with 6 options: `artist` (default), `album_artist`, `title`, `album`, `rating`, `recent`. Updated eager loading to include `{ albums: :artists }` and `:album_tracks` for N+1-safe sorting.
-- **AlbumDetail.js:** Artist column changed from `combobox` (single-select on `artist_name`) to `tagfield` (multi-select on `artist_ids`), matching the genre column pattern.
-- **AlbumController.js:** Removed VA-only restriction on artist editing — now editable for all `is_new` rows in entry mode. Pre-populates `artist_ids`/`artist_name` from album artist for non-VA albums. Updated `onCellEdit` and `onBeforeEdit` for `artist_ids` field. Save handler sends `artist_ids` for all new inline tracks (not just VA).
-- **TrackGrid.js:** Sort combobox added to toolbar (6 sort options).
-- **TrackController.js:** `onSortChange` handler sends `sort` param to backend and reloads store.
-- **Tests:** 18 existing tracks controller specs pass (0 failures).
 
 ## Summary of Earlier Work
 
