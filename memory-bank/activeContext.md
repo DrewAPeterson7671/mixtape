@@ -34,14 +34,29 @@ Added Epoch as a new per-user lookup entity for tagging albums and tracks with t
 - **TrackDetail.js:** Epoch combobox (after Albums, before Medium)
 - **TrackController.js:** `epoch_id` in save payload; `epoch_id` setValue on load
 
-## Earlier (Apr 12, 2026) — CreatableTagField & E2E Tests
+## Recent Changes (Apr 12, 2026) — Epoch E2E Tests
 
-Added `CreatableTag` component and Playwright E2E tests for inline entity creation. See git history for details.
+Added Playwright E2E tests for the Epoch entity across Settings CRUD, Album/Track detail fields, and inline track propagation.
+
+### New Test Files (Frontend)
+- **`e2e/epochs.spec.js`** (8 tests) — Settings CRUD for Epochs
+  - Non-serial "Epochs" block: seeds epoch via API, checks all 6 column headers (Name, #, Definition, Years, Replay, Weight), data rows, row-click detail form
+  - Serial "Epoch CRUD" block: create with all 7 fields, verify persistence after reload, update name, delete
+- **`e2e/epoch-fields.spec.js`** (10 tests) — Album/Track epoch combobox + inline propagation
+  - "Album epoch preference": create via API, set epoch on album detail, verify persistence
+  - "Track epoch preference": create via API, set epoch on track detail, verify persistence
+  - "Inline track: epoch propagation from album": album with epoch → new inline track inherits epoch, second track overrides epoch, save, verify both via API
+
+### Key Pattern Notes
+- Epoch is a fresh entity with no seed data — the non-serial "Epochs" block seeds via `page.request.post` in `beforeEach` (unlike phases.spec.js which assumes existing data)
+- Inline propagation tests reuse tracklist helpers (`enableEntryMode`, `addInlineTrackRow`, `getTrackRecordField`, `setTrackRecordField`) duplicated from `inline-track-genre-medium.spec.js`
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
+- **Apr 12:** Epoch lookup entity (full stack: backend model/controller/specs + frontend model/store/views/controllers + E2E tests)
+- **Apr 12:** CreatableTagField inline entity creation + E2E tests
 - **Apr 8:** Album title uniqueness validation per artist; restore missing UserAlbum/UserTrack join records
 - **Apr 7:** Sequence and definition columns on all lookup entities (5 backend + 26 frontend files), `remoteSort: false` fix for Ext JS stores
 - **Apr 6:** Simplified per-user lookup ownership (pure per-user model, no system records), no-var code style enforcement
