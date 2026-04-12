@@ -49,15 +49,16 @@ These join a `User` to a catalog record and hold per-user metadata.
 - **Helper methods:** `genre_name`, `priority_name`, `phase_name`
 
 ### UserAlbum
-- **Fields:** `user_id`, `album_id`, `rating`, `listened` (boolean, default false), `consider_editions` (boolean, default false), `default_edition_id` (nullable FK to `editions`)
+- **Fields:** `user_id`, `album_id`, `rating`, `listened` (boolean, default false), `consider_editions` (boolean, default false), `default_edition_id` (nullable FK to `editions`), `epoch_id` (nullable FK to `epochs`)
 - **Validations:** `album_id` uniqueness scoped to `user_id`; `rating` integer 1-5 (nullable)
-- **Relationships:** belongs_to `user`, `album`; belongs_to `default_edition` (class_name: 'Edition', optional: true); has_many `user_album_genres`/`user_album_tags` (scoped)
+- **Relationships:** belongs_to `user`, `album`; belongs_to `default_edition` (class_name: 'Edition', optional: true); belongs_to `epoch` (optional); has_many `user_album_genres`/`user_album_tags` (scoped)
+- **Helper methods:** `genre_name`, `epoch_name`
 
 ### UserTrack
-- **Fields:** `user_id`, `track_id`, `rating`, `listened` (boolean, default false)
+- **Fields:** `user_id`, `track_id`, `rating`, `listened` (boolean, default false), `epoch_id` (nullable FK to `epochs`)
 - **Validations:** `track_id` uniqueness scoped to `user_id`; `rating` integer 1-5 (nullable)
-- **Relationships:** belongs_to `user`, `track`; has_many `user_track_genres`/`user_track_tags` (scoped)
-- **Helper methods:** `genre_name` (returns array of genre names)
+- **Relationships:** belongs_to `user`, `track`; belongs_to `epoch` (optional); has_many `user_track_genres`/`user_track_tags` (scoped)
+- **Helper methods:** `genre_name` (returns array of genre names), `epoch_name`
 
 ## Scoped Sub-Join Pattern
 
@@ -85,17 +86,18 @@ Each sub-join model (e.g., `UserArtistGenre`) follows the same pattern:
 
 ## Lookup Tables
 
-Simple `name`-only models with no custom logic:
+Per-user lookup models with `UserOwnable` concern (`belongs_to :user`, `name` uniqueness scoped to `user_id`):
 
-| Model | Used By |
-|-------|---------|
-| Genre | UserArtistGenre, UserAlbumGenre, UserTrackGenre, Playlist |
-| Tag | UserArtistTag, UserAlbumTag, UserTrackTag, Playlist (HABTM) |
-| Priority | UserArtist |
-| Phase | UserArtist |
-| Medium | Album, Track |
-| Edition | AlbumTrack, UserAlbum (default_edition) |
-| ReleaseType | Album |
+| Model | Fields | Used By |
+|-------|--------|---------|
+| Genre | name | UserArtistGenre, UserAlbumGenre, UserTrackGenre, Playlist |
+| Tag | name | UserArtistTag, UserAlbumTag, UserTrackTag, Playlist (HABTM) |
+| Priority | name, sequence, definition | UserArtist |
+| Phase | name, sequence, definition | UserArtist |
+| Epoch | name, sequence, definition, year_start, year_end, replay, weight | UserAlbum, UserTrack |
+| Medium | name, sequence | Album, Track |
+| Edition | name, sequence | AlbumTrack, UserAlbum (default_edition) |
+| ReleaseType | name, sequence | Album |
 
 ## Playlist
 
@@ -107,7 +109,7 @@ Simple `name`-only models with no custom logic:
 ## User
 
 - **Fields:** `email`, `name`, `cognito_sub` (unique, not null)
-- **Relationships:** has_many `user_artists`, `user_albums`, `user_tracks`, `playlists` (all dependent: destroy)
+- **Relationships:** has_many `user_artists`, `user_albums`, `user_tracks`, `playlists`, `epochs` (all dependent: destroy); has_many for all lookup tables (genres, tags, editions, media, phases, priorities, release_types)
 
 ## HABTM Join Tables
 
@@ -158,6 +160,7 @@ Note: `album_tracks` is NOT a HABTM table — it's a full model (`AlbumTrack`) w
   Album◄──►Track: via AlbumTrack join model (position, disc_number)
   Artist◄──►Track: via artists_tracks HABTM
   Lookup tables: Priority, Phase ──► UserArtist
+                 Epoch ──► UserAlbum, UserTrack
                  Medium ──► Album, Track
                  Edition ──► AlbumTrack
                  ReleaseType ──► Album

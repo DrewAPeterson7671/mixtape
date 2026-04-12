@@ -10,7 +10,8 @@
 - [x] Sub-join models for per-user genres: UserArtistGenre, UserAlbumGenre, UserTrackGenre
 - [x] Sub-join models for per-user tags: UserArtistTag, UserAlbumTag, UserTrackTag
 - [x] Scoped `has_many` lambda pattern on all preference models
-- [x] Lookup tables: Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType (per-user ownership via `UserOwnable` concern, `user_id NOT NULL`)
+- [x] Lookup tables: Genre, Tag, Priority, Phase, Epoch, Medium, Edition, ReleaseType (per-user ownership via `UserOwnable` concern, `user_id NOT NULL`)
+- [x] Epoch lookup with year_start, year_end, replay, weight fields for smart playlist support; assigned to UserAlbum and UserTrack; propagated from album to inline tracks
 - [x] Playlist model with HABTM to artists, tracks, tags
 - [x] User model with `cognito_sub` unique identifier
 - [x] All HABTM join tables with dual unique indexes (albums_artists, artists_tracks, artists_playlists, playlists_tracks, playlists_tags)
@@ -31,7 +32,7 @@
 - [x] Full CRUD for Albums (JSON API)
 - [x] Full CRUD for Tracks (JSON API)
 - [x] Full CRUD for Playlists (user-scoped, JSON API)
-- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Media, Editions, ReleaseTypes) with per-user ownership (scoped through `current_user` associations)
+- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Epochs, Media, Editions, ReleaseTypes) with per-user ownership (scoped through `current_user` associations)
 - [x] CSRF skip on all JSON-serving controllers
 - [x] CORS configured for frontend at localhost:1841 with `credentials: true`
 
@@ -64,9 +65,9 @@
 
 ### Testing
 - [x] RSpec configured with FactoryBot and Shoulda Matchers
-- [x] Model specs for all 21 models (including uniqueness validations on all lookup models, `UserOwnable` shared examples for 7 lookup models)
-- [x] Controller specs for all 14 controllers (including sessions, test_auth, application_controller, `PerUserLookup` shared examples for 7 lookup controllers)
-- [x] Factories for all 21 models (user factory suppresses seed callback by default, `:with_default_lookups` trait for explicit testing)
+- [x] Model specs for all 22 models (including uniqueness validations on all lookup models, `UserOwnable` shared examples for 8 lookup models)
+- [x] Controller specs for all 15 controllers (including sessions, test_auth, application_controller, `PerUserLookup` shared examples for 8 lookup controllers)
+- [x] Factories for all 22 models (user factory suppresses seed callback by default, `:with_default_lookups` trait for explicit testing)
 - [x] Auth helper (`sign_in`) for controller specs
 - [x] Transactional fixtures enabled
 - [x] Sorting verification specs for artists, albums, tracks, genres index actions

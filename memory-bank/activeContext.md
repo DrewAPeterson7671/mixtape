@@ -7,27 +7,36 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 12, 2026) — CreatableTagField E2E Tests
+## Recent Changes (Apr 12, 2026) — Epoch Lookup Entity
 
-Added Playwright E2E tests for the `CreatableTagField` inline entity creation feature.
+Added Epoch as a new per-user lookup entity for tagging albums and tracks with the time period when the user first discovered that music. Supports future smart playlist features (replay frequency, weighted selection).
 
-- **New spec:** `e2e/creatable-tagfield.spec.js` — 5 tests in a `test.describe.serial` block covering:
-  - Create a new genre via the "+" trigger (verifies real numeric ID, not phantom)
-  - Duplicate detection selects existing record instead of creating a new one
-  - Create a new tag via the "+" trigger
-  - Save and verify persistence (navigate away and back, re-select, assert values)
-  - Create a new artist via Related Artists "+" trigger
-- **Testing approach:** `page.evaluate()` calls `field.onCreateClick()` to trigger the prompt dialog; `.x-message-box` selectors for `Ext.Msg.prompt` interaction; `waitForFunction` to wait for AJAX completion and value population
+### Backend
+- **Migration:** `CreateEpochs` — `name` (string, NOT NULL), `sequence` (int), `definition` (text), `year_start` (int), `year_end` (int), `replay` (int), `weight` (int), `user_id` (bigint, NOT NULL FK); unique index on `[name, user_id]`
+- **Migration:** `AddEpochIdToUserAlbumsAndUserTracks` — nullable FK `epoch_id` on both tables
+- **Inflection:** Added `inflect.irregular "epoch", "epochs"` (Rails pluralizes as "epoches" by default)
+- **Model:** `Epoch` with `UserOwnable` concern (same as Phase)
+- **Controller:** `EpochsController` — full CRUD, permits all 7 columns, `sequence ASC NULLS LAST, name ASC` ordering
+- **UserAlbum/UserTrack:** Added `belongs_to :epoch, optional: true` and `epoch_name` helper
+- **AlbumsController:** `epoch_id` in `preference_params`; `epoch_id`/`epoch_name` in `album_json` response and each track entry; epoch propagation from album to inline tracks via `copy_album_epoch_to_track`; `:epoch` in `.includes`
+- **TracksController:** `epoch_id` in `preference_params`; `epoch_id`/`epoch_name` in `track_json`; `:epoch` in `.includes`
+- **TestCleanupController:** Added `epochs: Epoch` to lookup cleanup hash
+- **Routes:** Added `resources :epochs`
+- **Specs:** 31 tests (model + controller) all passing; full suite 571 tests, 0 failures
 
-## Earlier (Apr 12, 2026) — Inline Entity Creation via CreatableTagField
+### Frontend
+- **Model/Store:** `Epoch.js` model (all 7 columns + timestamps), `Epochs.js` store with sequence/name sorter
+- **Settings views:** `EpochGrid.js` (columns: #, Name, Definition, Years renderer, Replay, Weight), `EpochDetail.js` (form with all 7 fields), `EpochView.js` (border layout), `EpochController.js` (CRUD)
+- **Main.js:** Added Epochs to Settings nav tree and switch case
+- **Album.js/Track.js models:** Added `epoch_id` (int, allowNull) and `epoch_name` fields
+- **AlbumDetail.js:** Epoch combobox on form (after Medium), `epoch_id`/`epoch_name` in tracklist grid store fields, Epoch column with combobox editor
+- **AlbumController.js:** `epoch_id` in save payload and inline track entries; `epoch_id` setValue on load; epoch pre-population in `addInlineTrackRow`; `epoch_id` editable in entry mode; `epoch_name` sync on cell edit
+- **TrackDetail.js:** Epoch combobox (after Albums, before Medium)
+- **TrackController.js:** `epoch_id` in save payload; `epoch_id` setValue on load
 
-Added a reusable `CreatableTag` component (`widget.creatabletagfield`) extending `Ext.form.field.Tag` with a "+" trigger button for inline creation of artists, genres, and tags without leaving the current form.
+## Earlier (Apr 12, 2026) — CreatableTagField & E2E Tests
 
-- **New component:** `app/view/common/CreatableTag.js` — configurable via `createUrl`, `createRoot`, `createTitle`, `createPrompt`; includes duplicate check (case-insensitive), POST to backend, auto-add to store + selection, error display
-- **ArtistDetail.js:** Converted 3 tagfields (genres, tags, related artists) to `creatabletagfield`
-- **AlbumDetail.js:** Converted 5 tagfields (form: artists, genres, tags; grid editors: artist, genre) to `creatabletagfield`
-- **TrackDetail.js:** Converted 3 tagfields (artists, genres, tags) to `creatabletagfield`; `album_ids` left as plain tagfield (albums need more than a name)
-- No backend changes — existing create endpoints already accept `{ name: "..." }` payloads
+Added `CreatableTag` component and Playwright E2E tests for inline entity creation. See git history for details.
 
 ## Summary of Earlier Work
 
