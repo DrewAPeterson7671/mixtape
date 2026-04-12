@@ -7,18 +7,15 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 11, 2026) — Add Artist Attributes and Related Artists
+## Recent Changes (Apr 12, 2026) — Inline Entity Creation via CreatableTagField
 
-Added 8 new text columns to the `artists` catalog table (`notes`, `wikipedia`, `official_page`, `bandcamp`, `last_fm`, `google_genre_link`, `all_music`, `all_music_discography`) and a self-referential `related_artists` HABTM relationship via a new `related_artists` join table.
+Added a reusable `CreatableTag` component (`widget.creatabletagfield`) extending `Ext.form.field.Tag` with a "+" trigger button for inline creation of artists, genres, and tags without leaving the current form.
 
-- **Migration:** `20260411072328_add_attributes_and_related_artists_to_artists.rb` — 8 text columns + join table with dual unique indexes and foreign keys
-- **Backend:** Updated model (HABTM), controller (`artist_params` + `artist_json`), ERB views, jbuilder, factory
-- **Frontend:** Updated Artist model (10 new fields), ArtistDetail (9 form fields + tagfield for related artists, `labelWidth: 130`), ArtistController (save payload + setValue), ArtistGrid (9 hidden columns)
-- **Specs:** New model association test, 4 new controller specs (create with attrs, update with attrs, set/clear related_artist_ids, show returns related fields)
-
-## Recent Changes (Apr 11, 2026) — Rename Artist `wikipedia` to `wikipedia_discography`
-
-Renamed the `wikipedia` column on the `artists` table to `wikipedia_discography` to better describe its purpose (links to Wikipedia discography pages, not general artist pages).
+- **New component:** `app/view/common/CreatableTag.js` — configurable via `createUrl`, `createRoot`, `createTitle`, `createPrompt`; includes duplicate check (case-insensitive), POST to backend, auto-add to store + selection, error display
+- **ArtistDetail.js:** Converted 3 tagfields (genres, tags, related artists) to `creatabletagfield`
+- **AlbumDetail.js:** Converted 5 tagfields (form: artists, genres, tags; grid editors: artist, genre) to `creatabletagfield`
+- **TrackDetail.js:** Converted 3 tagfields (artists, genres, tags) to `creatabletagfield`; `album_ids` left as plain tagfield (albums need more than a name)
+- No backend changes — existing create endpoints already accept `{ name: "..." }` payloads
 
 ## Summary of Earlier Work
 
