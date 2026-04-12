@@ -7,7 +7,19 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 12, 2026) — Inline Entity Creation via CreatableTagField
+## Recent Changes (Apr 12, 2026) — CreatableTagField E2E Tests
+
+Added Playwright E2E tests for the `CreatableTagField` inline entity creation feature.
+
+- **New spec:** `e2e/creatable-tagfield.spec.js` — 5 tests in a `test.describe.serial` block covering:
+  - Create a new genre via the "+" trigger (verifies real numeric ID, not phantom)
+  - Duplicate detection selects existing record instead of creating a new one
+  - Create a new tag via the "+" trigger
+  - Save and verify persistence (navigate away and back, re-select, assert values)
+  - Create a new artist via Related Artists "+" trigger
+- **Testing approach:** `page.evaluate()` calls `field.onCreateClick()` to trigger the prompt dialog; `.x-message-box` selectors for `Ext.Msg.prompt` interaction; `waitForFunction` to wait for AJAX completion and value population
+
+## Earlier (Apr 12, 2026) — Inline Entity Creation via CreatableTagField
 
 Added a reusable `CreatableTag` component (`widget.creatabletagfield`) extending `Ext.form.field.Tag` with a "+" trigger button for inline creation of artists, genres, and tags without leaving the current form.
 
