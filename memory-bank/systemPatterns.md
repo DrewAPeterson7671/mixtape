@@ -523,6 +523,40 @@ await page.evaluate(() => {
 ```
 Then verify picker is visible and store is filtered to matching items.
 
+### CreatableTagField E2E Pattern
+
+Tests for the `creatabletagfield` component use `page.evaluate()` to trigger the create prompt (the "+" trigger icon isn't easily targetable via DOM selectors), then interact with the `Ext.Msg.prompt` dialog using standard `.x-message-box` selectors:
+
+```javascript
+// Trigger the create dialog programmatically
+await page.evaluate((name) => {
+  const fields = Ext.ComponentQuery.query('creatabletagfield[name="' + name + '"]');
+  const field = fields[fields.length - 1];
+  if (field) field.onCreateClick();
+}, fieldName);
+
+// Fill the prompt and confirm
+const promptInput = page.locator('.x-message-box input[type="text"]');
+await expect(promptInput).toBeVisible({ timeout: 5000 });
+await promptInput.fill(value);
+await page.locator('.x-message-box .x-btn-inner:has-text("OK")').click();
+
+// Wait for AJAX to complete and value to appear
+await page.waitForFunction((name) => {
+  const fields = Ext.ComponentQuery.query('creatabletagfield[name="' + name + '"]');
+  const field = fields[fields.length - 1];
+  if (!field) return false;
+  const val = field.getValue();
+  return val && val.length > 0;
+}, fieldName, { timeout: 10000 });
+```
+
+Key details:
+- Wait for the tagfield's store to load (`store.loadCount > 0`) before triggering `onCreateClick()`
+- Verify created IDs are real numeric IDs (not phantom like `"Model-1"`)
+- Duplicate detection test: enter the same name again, assert field value count stays the same
+- Same `.x-message-box` selectors used in edition-manager-modal tests
+
 ### Claude Code Test Sub-Agent Architecture
 
 Two specialized agents in separate repos, each with 3 slash commands (write/run/debug). Backend agent knows RSpec/FactoryBot/Shoulda. Frontend agent knows Playwright/Ext.js/MCP tools. Each agent references its repo's test patterns as templates.

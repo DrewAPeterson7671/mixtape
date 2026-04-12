@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_12_180528) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -36,6 +36,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "various_artists", default: false, null: false
+    t.text "notes"
+    t.text "wikipedia"
   end
 
   create_table "albums_artists", id: false, force: :cascade do |t|
@@ -47,10 +49,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
 
   create_table "artists", force: :cascade do |t|
     t.string "name"
-    t.string "wikipedia"
+    t.string "wikipedia_discography"
     t.string "discogs"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "notes"
+    t.text "wikipedia"
+    t.text "official_page"
+    t.text "bandcamp"
+    t.text "last_fm"
+    t.text "google_genre_link"
+    t.text "all_music"
+    t.text "all_music_discography"
   end
 
   create_table "artists_playlists", id: false, force: :cascade do |t|
@@ -75,6 +85,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
     t.integer "sequence"
     t.index ["name", "user_id"], name: "index_editions_on_name_and_user_id", unique: true
     t.index ["user_id"], name: "index_editions_on_user_id"
+  end
+
+  create_table "epochs", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "sequence"
+    t.text "definition"
+    t.integer "year_start"
+    t.integer "year_end"
+    t.integer "replay"
+    t.integer "weight"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name", "user_id"], name: "index_epochs_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_epochs_on_user_id"
   end
 
   create_table "genres", force: :cascade do |t|
@@ -146,6 +171,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
     t.index ["user_id"], name: "index_priorities_on_user_id"
   end
 
+  create_table "related_artists", id: false, force: :cascade do |t|
+    t.bigint "artist_id", null: false
+    t.bigint "related_artist_id", null: false
+    t.index ["artist_id", "related_artist_id"], name: "index_related_artists_on_artist_id_and_related_artist_id", unique: true
+    t.index ["related_artist_id", "artist_id"], name: "index_related_artists_on_related_artist_id_and_artist_id", unique: true
+  end
+
   create_table "release_types", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -209,8 +241,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
     t.datetime "updated_at", null: false
     t.boolean "consider_editions", default: false, null: false
     t.bigint "default_edition_id"
+    t.bigint "epoch_id"
     t.index ["album_id"], name: "index_user_albums_on_album_id"
     t.index ["default_edition_id"], name: "index_user_albums_on_default_edition_id"
+    t.index ["epoch_id"], name: "index_user_albums_on_epoch_id"
     t.index ["user_id", "album_id"], name: "index_user_albums_on_user_id_and_album_id", unique: true
     t.index ["user_id"], name: "index_user_albums_on_user_id"
   end
@@ -286,6 +320,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
     t.boolean "listened", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "epoch_id"
+    t.index ["epoch_id"], name: "index_user_tracks_on_epoch_id"
     t.index ["track_id"], name: "index_user_tracks_on_track_id"
     t.index ["user_id", "track_id"], name: "index_user_tracks_on_user_id_and_track_id", unique: true
     t.index ["user_id"], name: "index_user_tracks_on_user_id"
@@ -310,6 +346,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
   add_foreign_key "artists_tracks", "artists"
   add_foreign_key "artists_tracks", "tracks"
   add_foreign_key "editions", "users"
+  add_foreign_key "epochs", "users"
   add_foreign_key "genres", "users"
   add_foreign_key "media", "users"
   add_foreign_key "phases", "users"
@@ -319,6 +356,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
   add_foreign_key "playlists_tracks", "playlists"
   add_foreign_key "playlists_tracks", "tracks"
   add_foreign_key "priorities", "users"
+  add_foreign_key "related_artists", "artists"
+  add_foreign_key "related_artists", "artists", column: "related_artist_id"
   add_foreign_key "release_types", "users"
   add_foreign_key "tags", "users"
   add_foreign_key "user_album_genres", "albums"
@@ -329,6 +368,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
   add_foreign_key "user_album_tags", "users"
   add_foreign_key "user_albums", "albums"
   add_foreign_key "user_albums", "editions", column: "default_edition_id"
+  add_foreign_key "user_albums", "epochs"
   add_foreign_key "user_albums", "users"
   add_foreign_key "user_artist_genres", "artists"
   add_foreign_key "user_artist_genres", "genres"
@@ -346,6 +386,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_08_015602) do
   add_foreign_key "user_track_tags", "tags"
   add_foreign_key "user_track_tags", "tracks"
   add_foreign_key "user_track_tags", "users"
+  add_foreign_key "user_tracks", "epochs"
   add_foreign_key "user_tracks", "tracks"
   add_foreign_key "user_tracks", "users"
 end

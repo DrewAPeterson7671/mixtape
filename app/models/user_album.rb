@@ -2,6 +2,7 @@ class UserAlbum < ApplicationRecord
   belongs_to :user
   belongs_to :album
   belongs_to :default_edition, class_name: 'Edition', optional: true
+  belongs_to :epoch, optional: true
 
   has_many :user_album_genres, ->(ua) { where(user_id: ua.user_id) },
            foreign_key: :album_id, primary_key: :album_id, inverse_of: false, dependent: :destroy
@@ -18,5 +19,9 @@ class UserAlbum < ApplicationRecord
 
   def genre_name
     genres.map(&:name)
+  end
+
+  def epoch_name
+    epoch&.name
   end
 end

@@ -72,6 +72,16 @@ RSpec.describe ArtistsController, type: :controller do
       json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('Radiohead')
     end
+
+    it 'returns related_artist_ids and related_artist_name in response' do
+      artist = create(:artist, name: 'Radiohead')
+      related = create(:artist, name: 'Thom Yorke')
+      artist.related_artists << related
+      get :show, params: { id: artist.id }, format: :json
+      json = JSON.parse(response.body)['data']
+      expect(json['related_artist_ids']).to eq([related.id])
+      expect(json['related_artist_name']).to eq(['Thom Yorke'])
+    end
   end
 
   describe 'POST #create' do
@@ -83,6 +93,26 @@ RSpec.describe ArtistsController, type: :controller do
       json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('New Artist')
       expect(json['rating']).to eq(3)
+    end
+
+    it 'creates an Artist with all new text attributes' do
+      attrs = {
+        name: 'Test Artist',
+        notes: 'Some notes',
+        wikipedia: 'https://en.wikipedia.org/wiki/Test',
+        official_page: 'https://testartist.com',
+        bandcamp: 'https://testartist.bandcamp.com',
+        last_fm: 'https://last.fm/music/Test',
+        google_genre_link: 'https://google.com/genre/test',
+        all_music: 'https://allmusic.com/artist/test',
+        all_music_discography: 'https://allmusic.com/artist/test/discography'
+      }
+      post :create, params: { artist: attrs }, format: :json
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)['data']
+      attrs.each do |key, value|
+        expect(json[key.to_s]).to eq(value)
+      end
     end
 
     it 'reuses an existing artist when name matches' do
@@ -105,6 +135,50 @@ RSpec.describe ArtistsController, type: :controller do
       json = JSON.parse(response.body)['data']
       expect(json['name']).to eq('New Name')
       expect(json['rating']).to eq(5)
+    end
+
+    it 'updates artist with new text attributes' do
+      artist = create(:artist)
+      create(:user_artist, user: user, artist: artist)
+      patch :update, params: { id: artist.id, artist: {
+        notes: 'Updated notes',
+        wikipedia: 'https://en.wikipedia.org/wiki/Updated',
+        bandcamp: 'https://updated.bandcamp.com'
+      } }, format: :json
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json['notes']).to eq('Updated notes')
+      expect(json['wikipedia']).to eq('https://en.wikipedia.org/wiki/Updated')
+      expect(json['bandcamp']).to eq('https://updated.bandcamp.com')
+    end
+
+    it 'sets related_artist_ids via update' do
+      artist = create(:artist)
+      related1 = create(:artist)
+      related2 = create(:artist)
+      create(:user_artist, user: user, artist: artist)
+      patch :update, params: { id: artist.id, artist: {
+        related_artist_ids: [related1.id, related2.id]
+      } }, format: :json
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json['related_artist_ids']).to match_array([related1.id, related2.id])
+      expect(json['related_artist_name']).to match_array([related1.name, related2.name])
+    end
+
+    it 'clears related_artist_ids with empty array' do
+      artist = create(:artist, name: 'Main Artist')
+      related = create(:artist)
+      artist.related_artists << related
+      create(:user_artist, user: user, artist: artist)
+      patch :update, params: { id: artist.id, artist: {
+        name: 'Main Artist',
+        related_artist_ids: []
+      } }, as: :json
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)['data']
+      expect(json['related_artist_ids']).to eq([])
+      expect(json['related_artist_name']).to eq([])
     end
   end
 

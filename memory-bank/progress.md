@@ -10,7 +10,8 @@
 - [x] Sub-join models for per-user genres: UserArtistGenre, UserAlbumGenre, UserTrackGenre
 - [x] Sub-join models for per-user tags: UserArtistTag, UserAlbumTag, UserTrackTag
 - [x] Scoped `has_many` lambda pattern on all preference models
-- [x] Lookup tables: Genre, Tag, Priority, Phase, Medium, Edition, ReleaseType (per-user ownership via `UserOwnable` concern, `user_id NOT NULL`)
+- [x] Lookup tables: Genre, Tag, Priority, Phase, Epoch, Medium, Edition, ReleaseType (per-user ownership via `UserOwnable` concern, `user_id NOT NULL`)
+- [x] Epoch lookup with year_start, year_end, replay, weight fields for smart playlist support; assigned to UserAlbum and UserTrack; propagated from album to inline tracks
 - [x] Playlist model with HABTM to artists, tracks, tags
 - [x] User model with `cognito_sub` unique identifier
 - [x] All HABTM join tables with dual unique indexes (albums_artists, artists_tracks, artists_playlists, playlists_tracks, playlists_tags)
@@ -31,7 +32,7 @@
 - [x] Full CRUD for Albums (JSON API)
 - [x] Full CRUD for Tracks (JSON API)
 - [x] Full CRUD for Playlists (user-scoped, JSON API)
-- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Media, Editions, ReleaseTypes) with per-user ownership (scoped through `current_user` associations)
+- [x] Full CRUD for all lookup tables (Genres, Tags, Priorities, Phases, Epochs, Media, Editions, ReleaseTypes) with per-user ownership (scoped through `current_user` associations)
 - [x] CSRF skip on all JSON-serving controllers
 - [x] CORS configured for frontend at localhost:1841 with `credentials: true`
 
@@ -64,9 +65,9 @@
 
 ### Testing
 - [x] RSpec configured with FactoryBot and Shoulda Matchers
-- [x] Model specs for all 21 models (including uniqueness validations on all lookup models, `UserOwnable` shared examples for 7 lookup models)
-- [x] Controller specs for all 14 controllers (including sessions, test_auth, application_controller, `PerUserLookup` shared examples for 7 lookup controllers)
-- [x] Factories for all 21 models (user factory suppresses seed callback by default, `:with_default_lookups` trait for explicit testing)
+- [x] Model specs for all 22 models (including uniqueness validations on all lookup models, `UserOwnable` shared examples for 8 lookup models)
+- [x] Controller specs for all 15 controllers (including sessions, test_auth, application_controller, `PerUserLookup` shared examples for 8 lookup controllers)
+- [x] Factories for all 22 models (user factory suppresses seed callback by default, `:with_default_lookups` trait for explicit testing)
 - [x] Auth helper (`sign_in`) for controller specs
 - [x] Transactional fixtures enabled
 - [x] Sorting verification specs for artists, albums, tracks, genres index actions
@@ -82,7 +83,7 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo, 247 tests across 33 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, tagfield interactions, cell-edit-gating, cancel-button, va-album-toggle, edition-management, filtering, and lookup-sequence-definition
+- [x] E2E testing infrastructure (Playwright in frontend repo, 270 tests across 36 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions, epochs), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, tagfield interactions, cell-edit-gating, cancel-button, va-album-toggle, edition-management, filtering, lookup-sequence-definition, creatable-tagfield, epoch-fields
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] E2E cleanup endpoint (`DELETE /test/cleanup`) — user-scoped catalog cleanup via e2e@test.com join records + orphan detection, prefix matching only for lookups, transaction-wrapped, playlist cleanup included
