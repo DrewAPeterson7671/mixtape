@@ -9,6 +9,7 @@ RSpec.describe Artist, type: :model do
     it { is_expected.to have_and_belong_to_many(:albums) }
     it { is_expected.to have_and_belong_to_many(:tracks) }
     it { is_expected.to have_and_belong_to_many(:playlists) }
+    it { is_expected.to have_and_belong_to_many(:related_artists) }
     it { is_expected.to have_many(:user_artists).dependent(:destroy) }
     it { is_expected.to have_many(:users).through(:user_artists) }
   end

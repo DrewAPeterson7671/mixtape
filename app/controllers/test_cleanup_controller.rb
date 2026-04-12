@@ -91,7 +91,7 @@ class TestCleanupController < ApplicationController
       stray_artists.destroy_all
 
       # Lookup records — prefix matching (no user association exists)
-      { tags: Tag, genres: Genre, editions: Edition, media: Medium,
+      { tags: Tag, genres: Genre, editions: Edition, epochs: Epoch, media: Medium,
         phases: Phase, priorities: Priority, release_types: ReleaseType }.each do |key, model|
         records = model.where("name LIKE ? OR name LIKE ?", *prefixes)
         records = records.where("created_at >= ?", started_after) if started_after

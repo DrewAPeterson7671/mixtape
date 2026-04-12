@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   resources :release_types
+  resources :epochs
   resources :editions
   resources :media
   resources :genres

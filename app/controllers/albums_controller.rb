@@ -40,7 +40,7 @@ class AlbumsController < ApplicationController
       .includes(:artists, :medium, :release_type, album_tracks: { track: :artists, edition: {} })
       .sort_by { |album| [(album.various_artists? ? "various artists" : album.artists.map { |a| a.name.sub(/^(The|A|An)\s+/i, "") }.min.to_s.downcase), album.title.to_s.downcase] }
     @user_prefs = current_user.user_albums
-      .includes(:genres, :tags)
+      .includes(:genres, :tags, :epoch)
       .index_by(&:album_id)
 
     render json: { data: @albums.map { |album|
@@ -51,7 +51,7 @@ class AlbumsController < ApplicationController
   # GET /albums/1
   def show
     @user_pref = current_user_album(@album)
-    @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
+    @user_track_prefs = current_user.user_tracks.includes(:genres, :tags, :epoch).where(track_id: @album.track_ids).index_by(&:track_id)
 
     render json: { data: album_json(@album, @user_pref, @user_track_prefs) }
   end
@@ -70,7 +70,7 @@ class AlbumsController < ApplicationController
 
         handle_album_tracks
 
-        @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
+        @user_track_prefs = current_user.user_tracks.includes(:genres, :tags, :epoch).where(track_id: @album.track_ids).index_by(&:track_id)
         render json: { data: album_json(@album, @user_pref, @user_track_prefs) }, status: :created, location: @album
       else
         render json: @album.errors, status: :unprocessable_entity
@@ -92,7 +92,7 @@ class AlbumsController < ApplicationController
 
         handle_album_tracks
 
-        @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
+        @user_track_prefs = current_user.user_tracks.includes(:genres, :tags, :epoch).where(track_id: @album.track_ids).index_by(&:track_id)
         render json: { data: album_json(@album, @user_pref, @user_track_prefs) }, status: :ok, location: @album
       else
         render json: @album.errors, status: :unprocessable_entity
@@ -157,7 +157,7 @@ class AlbumsController < ApplicationController
 
     @album.reload
     @user_pref = current_user_album(@album)
-    @user_track_prefs = current_user.user_tracks.includes(:genres, :tags).where(track_id: @album.track_ids).index_by(&:track_id)
+    @user_track_prefs = current_user.user_tracks.includes(:genres, :tags, :epoch).where(track_id: @album.track_ids).index_by(&:track_id)
 
     render json: { data: album_json(@album, @user_pref, @user_track_prefs) }
   end
@@ -177,11 +177,11 @@ class AlbumsController < ApplicationController
   end
 
   def album_params
-    params.require(:album).permit(:title, :year, :various_artists, :release_type_id, :medium_id, artist_ids: [])
+    params.require(:album).permit(:title, :year, :various_artists, :release_type_id, :medium_id, :notes, :wikipedia, artist_ids: [])
   end
 
   def preference_params
-    params.require(:album).permit(:rating, :listened, :consider_editions, :default_edition_id)
+    params.require(:album).permit(:rating, :listened, :consider_editions, :default_edition_id, :epoch_id)
   end
 
   def handle_album_tracks
@@ -257,8 +257,11 @@ class AlbumsController < ApplicationController
     user_track = current_user.user_tracks.create!(
       track: track,
       listened: at_params[:listened].present? ? at_params[:listened] : false,
-      rating: at_params[:rating].present? ? at_params[:rating].to_i : nil
+      rating: at_params[:rating].present? ? at_params[:rating].to_i : nil,
+      epoch_id: at_params[:epoch_id].present? ? at_params[:epoch_id].to_i : nil
     )
+
+    copy_album_epoch_to_track(user_track) unless at_params[:epoch_id].present?
 
     if at_params[:genre_ids].present?
       Array(at_params[:genre_ids]).map(&:to_i).each do |gid|
@@ -269,6 +272,13 @@ class AlbumsController < ApplicationController
     end
 
     track
+  end
+
+  def copy_album_epoch_to_track(user_track)
+    user_album = current_user.user_albums.find_by(album: @album)
+    return unless user_album&.epoch_id
+
+    user_track.update!(epoch_id: user_album.epoch_id)
   end
 
   def copy_album_genres_to_track(user_track)
@@ -320,7 +330,7 @@ class AlbumsController < ApplicationController
 
   def album_json(album, pref, user_track_prefs = {})
     album.as_json(
-      only: [ :id, :title, :year, :various_artists, :created_at, :updated_at ],
+      only: [ :id, :title, :year, :various_artists, :notes, :wikipedia, :created_at, :updated_at ],
       methods: [ :medium_name, :release_type_name ]
     ).merge(
       artist_name: album.various_artists? ? [ "Various Artists" ] : album.artist_name,
@@ -331,6 +341,8 @@ class AlbumsController < ApplicationController
       release_type_id: album.release_type_id,
       medium_id: album.medium_id,
       artist_ids: album.artist_ids,
+      epoch_id: pref&.epoch_id,
+      epoch_name: pref&.epoch_name,
       genre_ids: pref&.genres&.map(&:id) || [],
       tag_ids: pref&.tags&.map(&:id) || [],
       genre_name: pref&.genre_name || [],
@@ -353,6 +365,8 @@ class AlbumsController < ApplicationController
           edition_name: at.edition&.name,
           listened: user_track_pref&.listened || false,
           rating: user_track_pref&.rating,
+          epoch_id: user_track_pref&.epoch_id,
+          epoch_name: user_track_pref&.epoch_name,
           genre_ids: user_track_pref&.genres&.map(&:id) || [],
           genre_name: user_track_pref&.genre_name || [],
           tag_ids: user_track_pref&.tags&.map(&:id) || [],

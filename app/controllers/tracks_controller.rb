@@ -44,7 +44,7 @@ class TracksController < ApplicationController
     @tracks = apply_ext_filters(@tracks).distinct
       .includes(:artists, :album_tracks, { albums: :artists }, :medium)
     @user_prefs = current_user.user_tracks
-      .includes(:genres, :tags)
+      .includes(:genres, :tags, :epoch)
       .index_by(&:track_id)
     @tracks = sort_tracks(@tracks)
 
@@ -164,7 +164,7 @@ class TracksController < ApplicationController
   end
 
   def preference_params
-    params.require(:track).permit(:rating, :listened)
+    params.require(:track).permit(:rating, :listened, :epoch_id)
   end
 
   def handle_album_association
@@ -202,6 +202,8 @@ class TracksController < ApplicationController
       artist_ids: track.artist_ids,
       album_ids: track.album_ids,
       medium_id: track.medium_id,
+      epoch_id: pref&.epoch_id,
+      epoch_name: pref&.epoch_name,
       genre_ids: pref&.genres&.map(&:id) || [],
       tag_ids: pref&.tags&.map(&:id) || [],
       genre_name: pref&.genre_name || [],

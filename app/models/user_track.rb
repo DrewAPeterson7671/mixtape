@@ -1,6 +1,7 @@
 class UserTrack < ApplicationRecord
   belongs_to :user
   belongs_to :track
+  belongs_to :epoch, optional: true
 
   has_many :user_track_genres, ->(ut) { where(user_id: ut.user_id) },
            foreign_key: :track_id, primary_key: :track_id, inverse_of: false, dependent: :destroy
@@ -17,5 +18,9 @@ class UserTrack < ApplicationRecord
 
   def genre_name
     genres.map(&:name)
+  end
+
+  def epoch_name
+    epoch&.name
   end
 end
