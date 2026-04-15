@@ -473,6 +473,8 @@ test.beforeEach(async ({ page }) => {
 
 Key conventions: wait for `Ext.isReady` via shared helper, navigate via tree nodes using `navigateToView()`, wait for grid via `getByRole('grid')`, use Ext.js CSS selectors (`.x-grid-row`, `.x-column-header-text`, `.x-form-item`, `.x-btn-inner`). Shared helpers in `e2e/helpers/extjs.js`.
 
+**ComponentQuery gotcha:** `grid.down('textfield')` matches combobox too (since combobox extends textfield). Use `grid.down('textfield[emptyText]')` to target the search field specifically, since search fields have `emptyText` and sort comboboxes use `fieldLabel` instead.
+
 ### Lookup Entity E2E Pattern
 
 All lookup/settings entities (Genres, Media, Phases, Priorities, Release Types, Editions) follow an identical spec structure:

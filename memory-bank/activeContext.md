@@ -7,54 +7,40 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 12, 2026) — Epoch Lookup Entity
+## Recent Changes (Apr 14, 2026) — Epoch Grid Columns + Filter
 
-Added Epoch as a new per-user lookup entity for tagging albums and tracks with the time period when the user first discovered that music. Supports future smart playlist features (replay frequency, weighted selection).
+Added Epoch column with list filter to both album and track grids, with full backend filter support and E2E test coverage.
 
 ### Backend
-- **Migration:** `CreateEpochs` — `name` (string, NOT NULL), `sequence` (int), `definition` (text), `year_start` (int), `year_end` (int), `replay` (int), `weight` (int), `user_id` (bigint, NOT NULL FK); unique index on `[name, user_id]`
-- **Migration:** `AddEpochIdToUserAlbumsAndUserTracks` — nullable FK `epoch_id` on both tables
-- **Inflection:** Added `inflect.irregular "epoch", "epochs"` (Rails pluralizes as "epoches" by default)
-- **Model:** `Epoch` with `UserOwnable` concern (same as Phase)
-- **Controller:** `EpochsController` — full CRUD, permits all 7 columns, `sequence ASC NULLS LAST, name ASC` ordering
-- **UserAlbum/UserTrack:** Added `belongs_to :epoch, optional: true` and `epoch_name` helper
-- **AlbumsController:** `epoch_id` in `preference_params`; `epoch_id`/`epoch_name` in `album_json` response and each track entry; epoch propagation from album to inline tracks via `copy_album_epoch_to_track`; `:epoch` in `.includes`
-- **TracksController:** `epoch_id` in `preference_params`; `epoch_id`/`epoch_name` in `track_json`; `:epoch` in `.includes`
-- **TestCleanupController:** Added `epochs: Epoch` to lookup cleanup hash
-- **Routes:** Added `resources :epochs`
-- **Specs:** 31 tests (model + controller) all passing; full suite 571 tests, 0 failures
+- **AlbumsController:** Added `epoch_name` to `FILTER_CONFIG` as `:list` filter on `user_albums.epoch_id`
+- **TracksController:** Added `epoch_name` to `FILTER_CONFIG` as `:list` filter on `user_tracks.epoch_id`
+- **Filter specs:** Added `epoch_name` list filter tests to both `albums_controller_filters_spec.rb` and `tracks_controller_filters_spec.rb`; 573 total tests, 0 failures
 
 ### Frontend
-- **Model/Store:** `Epoch.js` model (all 7 columns + timestamps), `Epochs.js` store with sequence/name sorter
-- **Settings views:** `EpochGrid.js` (columns: #, Name, Definition, Years renderer, Replay, Weight), `EpochDetail.js` (form with all 7 fields), `EpochView.js` (border layout), `EpochController.js` (CRUD)
-- **Main.js:** Added Epochs to Settings nav tree and switch case
-- **Album.js/Track.js models:** Added `epoch_id` (int, allowNull) and `epoch_name` fields
-- **AlbumDetail.js:** Epoch combobox on form (after Medium), `epoch_id`/`epoch_name` in tracklist grid store fields, Epoch column with combobox editor
-- **AlbumController.js:** `epoch_id` in save payload and inline track entries; `epoch_id` setValue on load; epoch pre-population in `addInlineTrackRow`; `epoch_id` editable in entry mode; `epoch_name` sync on cell edit
-- **TrackDetail.js:** Epoch combobox (after Albums, before Medium)
-- **TrackController.js:** `epoch_id` in save payload; `epoch_id` setValue on load
+- **AlbumGrid.js:** Added Epoch column (`epoch_name`, flex: 1) with list filter backed by epochs store
+- **TrackGrid.js:** Added Epoch column (`epoch_name`, flex: 1) with list filter backed by epochs store
+- **filtering.spec.js:** Added 4 new E2E tests (epoch column header + epoch list filter for both grids); fixed pre-existing bug in `setGridSearch`/`clearGridFilters` helpers where `grid.down('textfield')` matched the sort combobox on TrackGrid — narrowed to `textfield[emptyText]`
 
-## Recent Changes (Apr 12, 2026) — Epoch E2E Tests
+## Recent Changes (Apr 14, 2026) — Album Wikipedia/Notes, Edition Manager Fix, CreatableTag Fix
 
-Added Playwright E2E tests for the Epoch entity across Settings CRUD, Album/Track detail fields, and inline track propagation.
+### Album Detail: Wikipedia & Notes Fields (Frontend Only)
+- **AlbumDetail.js:** Added `wikipedia` textfield and `notes` textareafield after Tags field
+- **AlbumController.js:** Added `wikipedia` and `notes` to the save payload
+- No backend changes needed — fields already existed on Album model
 
-### New Test Files (Frontend)
-- **`e2e/epochs.spec.js`** (8 tests) — Settings CRUD for Epochs
-  - Non-serial "Epochs" block: seeds epoch via API, checks all 6 column headers (Name, #, Definition, Years, Replay, Weight), data rows, row-click detail form
-  - Serial "Epoch CRUD" block: create with all 7 fields, verify persistence after reload, update name, delete
-- **`e2e/epoch-fields.spec.js`** (10 tests) — Album/Track epoch combobox + inline propagation
-  - "Album epoch preference": create via API, set epoch on album detail, verify persistence
-  - "Track epoch preference": create via API, set epoch on track detail, verify persistence
-  - "Inline track: epoch propagation from album": album with epoch → new inline track inherits epoch, second track overrides epoch, save, verify both via API
+### Edition Manager Dropdown Fix (Frontend Only)
+- **EditionManagerController.js:** Rewrote `populateEditionSelector` to fetch ALL user editions from `GET /editions` API instead of only extracting editions from existing album tracks
 
-### Key Pattern Notes
-- Epoch is a fresh entity with no seed data — the non-serial "Epochs" block seeds via `page.request.post` in `beforeEach` (unlike phases.spec.js which assumes existing data)
-- Inline propagation tests reuse tracklist helpers (`enableEntryMode`, `addInlineTrackRow`, `getTrackRecordField`, `setTrackRecordField`) duplicated from `inline-track-genre-medium.spec.js`
+### CreatableTag Trigger Fix (Frontend)
+- **CreatableTag.js:** Changed trigger CSS to `x-form-create-trigger` (plus icon), handler to inline function
+- **Application.scss:** Added FA5 plus glyph CSS rule
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
+- **Apr 14:** Epoch grid columns + list filter (backend FILTER_CONFIG + frontend columns + E2E tests)
+- **Apr 14:** Album Wikipedia/Notes form fields, Edition Manager dropdown fix, CreatableTag trigger fix
 - **Apr 12:** Epoch lookup entity (full stack: backend model/controller/specs + frontend model/store/views/controllers + E2E tests)
 - **Apr 12:** CreatableTagField inline entity creation + E2E tests
 - **Apr 8:** Album title uniqueness validation per artist; restore missing UserAlbum/UserTrack join records
