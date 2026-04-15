@@ -60,6 +60,7 @@
 - [x] Artist CRUD: ArtistView (border layout), ArtistDetail (form panel), ArtistController (ViewController)
 - [x] Star rating widget: reusable `StarRating` custom form field (`app/view/common/StarRating.js`)
 - [x] Inline grid star rating with direct AJAX save (no full form submit needed)
+- [x] Multi-select (Ctrl/Shift click) on all three catalog grids with multi-edit side panel (checkbox opt-in per field, Replace/Add to for array fields, N parallel PUTs)
 - [x] `withCredentials: true` on all 11 stores and all 11 model proxies
 - [x] All stores/models point to `http://localhost:3000` API
 

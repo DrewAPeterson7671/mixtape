@@ -7,23 +7,33 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 14, 2026) — Clear Filters Toolbar Button
+## Recent Changes (Apr 14, 2026) — Multi-Select and Multi-Edit
 
-Added a "Clear Filters" button to the Album, Track, and Artist grid toolbars. Clicking it clears all column filters, search text, and proxy params in one action, then reloads the full dataset.
+Added Ctrl/Shift multi-select and bulk-edit panels to Artist, Album, and Track grids. When 2+ records are selected, a multi-edit panel auto-shows in the side panel (card layout switch from detail panel).
 
-### Frontend
-- **AlbumGrid.js, TrackGrid.js, ArtistGrid.js:** Added `Clear Filters` button (`fa fa-eraser` icon) to toolbar after Delete button, before the `'->'` spacer
-- **AlbumController.js, TrackController.js, ArtistController.js:** Added `onClearFiltersClick` handler — deletes `search` extra param, calls `store.clearFilter(true)` to suppress auto-load, clears search textfield with events suspended, then calls `store.load()` once
-- Pattern mirrors the proven `clearGridFilters` helper from `e2e/filtering.spec.js`
+### New Files (4)
+- **`app/view/common/MultiEditPanel.js`** — Base class extending `Ext.form.Panel`. Provides `multiEditFields` config, `buildFieldItems()` (checkbox + field + optional mode combo per row), `loadRecords()` (pre-fills shared values, "(mixed values)" placeholder for differing), `getEnabledPayload()` (only opted-in fields)
+- **`app/view/artists/ArtistMultiEdit.js`** — 6 fields: rating, complete, priority_id, phase_id, genre_ids, tag_ids
+- **`app/view/albums/AlbumMultiEdit.js`** — 8 fields: release_type_id, year, medium_id, epoch_id, rating, listened, genre_ids, tag_ids (simplified, no tracklist)
+- **`app/view/tracks/TrackMultiEdit.js`** — 6 fields: epoch_id, medium_id, rating, listened, genre_ids, tag_ids
 
-## Recent Changes (Apr 14, 2026) — Epoch Grid Columns + Filter
+### Modified Files (10)
+- **3 Grid files:** Added `selModel: { mode: 'MULTI' }` and `bbar` status bar (total/selected counts)
+- **3 Detail files:** Removed `title` config (now provided by wrapper panel)
+- **3 View files:** Replaced direct detail panel with card-layout wrapper (`{entity}SidePanel`) containing both detail and multi-edit panels; added `selectionchange` listener
+- **3 Controller files:** Added `init` (store load → updateStatusBar), `onSelectionChange`, `showMultiEdit`, `hideMultiEdit`, `onMultiEditSaveClick` (N parallel PUTs with "Add to" array merge), `onMultiEditCancelClick`, `updateStatusBar`; modified `onGridCellClick` (modifier key guard + sidePanel references), `onAddClick`, `onCancelClick`, `onSaveClick`, `doDelete` to use sidePanel wrapper
 
-Added Epoch column with list filter to both album and track grids, with full backend filter support and E2E test coverage. Also added `epoch_name` to backend `FILTER_CONFIG` for both albums and tracks controllers.
+### Key Patterns
+- Array fields (genre_ids, tag_ids) have "Replace" / "Add to" dropdown per field
+- Checkbox opt-in per field — unchecked fields are disabled and won't be saved
+- `.multi-edit-field-disabled` CSS class (opacity 0.4, pointer-events none) in `Application.scss`
+- No backend changes — existing PUT endpoints accept partial updates
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
+- **Apr 14:** Multi-select and multi-edit panels for Artist, Album, Track grids (4 new files, 10 modified)
 - **Apr 14:** Clear Filters toolbar button on all three grids (album, track, artist)
 - **Apr 14:** Epoch grid columns + list filter (backend FILTER_CONFIG + frontend columns + E2E tests)
 - **Apr 14:** Album Wikipedia/Notes form fields, Edition Manager dropdown fix, CreatableTag trigger fix
