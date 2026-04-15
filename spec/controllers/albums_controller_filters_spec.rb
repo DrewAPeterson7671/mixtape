@@ -148,6 +148,21 @@ RSpec.describe AlbumsController, type: :controller do
       end
     end
 
+    context 'with epoch_name list filter' do
+      it 'filters by epoch names' do
+        epoch1 = create(:epoch, name: 'High School', user: user)
+        epoch2 = create(:epoch, name: 'College', user: user)
+        ab1 = create(:album, title: 'Early Days')
+        ab2 = create(:album, title: 'Later Days')
+        create(:user_album, user: user, album: ab1, epoch: epoch1)
+        create(:user_album, user: user, album: ab2, epoch: epoch2)
+
+        get :index, params: { filter: [{ property: 'epoch_name', value: ['High School'] }].to_json }, format: :json
+        titles = JSON.parse(response.body)['data'].map { |a| a['title'] }
+        expect(titles).to eq(['Early Days'])
+      end
+    end
+
     # ── HABTM list filter (genres) ─────────────────────────────────────
 
     context 'with genre_name habtm list filter' do

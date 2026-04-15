@@ -390,7 +390,7 @@ The Album Detail form includes an inline tracklist grid for viewing and editing 
 
 ### Existing File Modifications (per entity)
 
-- **Grid**: Add `tbar` with Add/Delete buttons. Add star `renderer` on rating column (width: 110)
+- **Grid**: Add `tbar` with Add/Delete/Clear Filters buttons. Add star `renderer` on rating column (width: 110)
 - **Model**: Add ID fields (`priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`) for form population
 - **Main.js**: Swap grid xtype for view xtype in navigation
 
@@ -402,6 +402,52 @@ When adding a new album, selecting artists auto-populates the genre tagfield wit
 - **Existing albums** (`phantom === false`): returns early, no auto-population
 - Artist records in the Artists store include `genre_ids` (populated by the backend's `artist_json` helper), so no extra API calls needed
 - User can freely modify genres after auto-population
+
+### Multi-Select and Multi-Edit Pattern
+
+All three catalog grids (Artist, Album, Track) support Ctrl/Shift multi-select with a bulk-edit panel:
+
+**Architecture:**
+- Each View wraps the detail panel and multi-edit panel inside a `{entity}SidePanel` with `layout: 'card'`
+- `selectionchange` listener on the grid orchestrates switching between detail and multi-edit
+- `selModel: { mode: 'MULTI' }` on each grid enables multi-select
+- Status bar (`bbar`) on each grid shows total/selected counts
+
+**Multi-Edit Base Class (`MultiEditPanel.js`):**
+- Extends `Ext.form.Panel`, subclassed per entity
+- `multiEditFields` config defines fields with optional `isArrayField: true`
+- Each field rendered as: checkbox (opt-in) + form field (disabled until checked) + optional mode combo ("Replace"/"Add to") for array fields
+- `loadRecords(records)`: pre-fills shared values, "(mixed values)" placeholder for differing values
+- `getEnabledPayload()`: returns only opted-in fields with their values
+- `.multi-edit-field-disabled` CSS class (opacity 0.4, pointer-events none)
+
+**Controller Methods:**
+- `onSelectionChange(selModel, selected)`: routes to `showMultiEdit` (2+), collapse (0), or no-op (1)
+- `onGridCellClick`: modifier key guard (`e.ctrlKey || e.metaKey || e.shiftKey`) returns early to let selectionchange handle it
+- `onMultiEditSaveClick`: fires N parallel PUT requests; for "Add to" mode, merges existing + new values via `Ext.Array.unique`
+- `updateStatusBar`: called on store load and selection change
+
+**E2E testing gotcha — disambiguating Cancel buttons in a card layout:**
+Because the detail panel and multi-edit panel each own a Save/Cancel button pair, text locators (`clickButton`, `getByRole('button', { name: 'Cancel' })`) are ambiguous. `clickButton`'s `.last()` picks the hidden multi-edit Cancel, `.first()` picks the detail Cancel.
+- **Detail Cancel:** `e2e/cancel-button.spec.js` uses a local `clickDetailCancel` helper: `page.locator('.x-btn-inner:has-text("Cancel")').first().click()`
+- **Multi-edit Cancel:** `e2e/multi-edit.spec.js` uses a `clickMultiEditCancel(page, multiEditRef)` helper that resolves the button via ExtJS ComponentQuery and clicks its DOM id:
+  ```js
+  const cancelId = await page.evaluate((ref) => {
+    const panel = Ext.ComponentQuery.query('[reference=' + ref + ']')[0];
+    return panel && panel.down('button[text=Cancel]').getId();
+  }, multiEditRef);
+  await page.locator('#' + cancelId).click();
+  ```
+
+### Clear Filters Toolbar Button
+
+All three catalog grids (Album, Track, Artist) have a "Clear Filters" button (`fa fa-eraser`) in the toolbar. The `onClearFiltersClick` handler in each controller:
+1. Deletes `search` from `proxy.getExtraParams()`
+2. Calls `store.clearFilter(true)` (suppresses auto-load)
+3. Clears the search textfield with events suspended (`suspendEvent('change')` / `resumeEvent('change')`) so `onSearchChange` doesn't fire a redundant load
+4. Calls `store.load()` once
+
+This pattern matches the `clearGridFilters` helper used in E2E tests (`e2e/filtering.spec.js`).
 
 ### Main.js Navigation
 
@@ -472,6 +518,8 @@ test.beforeEach(async ({ page }) => {
 ```
 
 Key conventions: wait for `Ext.isReady` via shared helper, navigate via tree nodes using `navigateToView()`, wait for grid via `getByRole('grid')`, use Ext.js CSS selectors (`.x-grid-row`, `.x-column-header-text`, `.x-form-item`, `.x-btn-inner`). Shared helpers in `e2e/helpers/extjs.js`.
+
+**ComponentQuery gotcha:** `grid.down('textfield')` matches combobox too (since combobox extends textfield). Use `grid.down('textfield[emptyText]')` to target the search field specifically, since search fields have `emptyText` and sort comboboxes use `fieldLabel` instead.
 
 ### Lookup Entity E2E Pattern
 

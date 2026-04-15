@@ -20,6 +20,7 @@ class TracksController < ApplicationController
     rating:      { kind: :number,  column: "user_tracks.rating" },
     medium_name: { kind: :list, model: Medium, column: "tracks.medium_id" },
     listened:    { kind: :boolean, column: "user_tracks.listened" },
+    epoch_name:  { kind: :list, model: Epoch, column: "user_tracks.epoch_id" },
     genre_name: {
       kind: :habtm_list,
       join_table: "user_track_genres", join_fk: "track_id", base_key: "tracks.id",
