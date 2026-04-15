@@ -17,6 +17,7 @@ class AlbumsController < ApplicationController
     medium_name:       { kind: :list, model: Medium,      column: "albums.medium_id" },
     listened:          { kind: :boolean, column: "user_albums.listened" },
     year:              { kind: :number,  column: "albums.year" },
+    epoch_name:        { kind: :list, model: Epoch, column: "user_albums.epoch_id" },
     genre_name: {
       kind: :habtm_list,
       join_table: "user_album_genres", join_fk: "album_id", base_key: "albums.id",

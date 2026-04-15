@@ -60,6 +60,7 @@
 - [x] Artist CRUD: ArtistView (border layout), ArtistDetail (form panel), ArtistController (ViewController)
 - [x] Star rating widget: reusable `StarRating` custom form field (`app/view/common/StarRating.js`)
 - [x] Inline grid star rating with direct AJAX save (no full form submit needed)
+- [x] Multi-select (Ctrl/Shift click) on all three catalog grids with multi-edit side panel (checkbox opt-in per field, Replace/Add to for array fields, N parallel PUTs)
 - [x] `withCredentials: true` on all 11 stores and all 11 model proxies
 - [x] All stores/models point to `http://localhost:3000` API
 
@@ -83,7 +84,7 @@
 - [x] Brakeman security scanning
 - [x] RuboCop linting
 - [x] Health check endpoint (`/up`)
-- [x] E2E testing infrastructure (Playwright in frontend repo, 270 tests across 36 spec files) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions, epochs), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, tagfield interactions, cell-edit-gating, cancel-button, va-album-toggle, edition-management, filtering, lookup-sequence-definition, creatable-tagfield, epoch-fields
+- [x] E2E testing infrastructure (Playwright in frontend repo) with auth setup, smoke, navigation, album/artist/track view, CRUD tests, delete/cascade tests, ratings, preferences, associations, tracklist, duration field, edition filter, add-track-ux, inline-track-genre-medium, lookup entity CRUD (genres, media, phases, priorities, release types, editions, epochs), edition manager modal, playlists, tags, genre auto-populate, form validation, grid column sorting, tagfield interactions, cell-edit-gating, cancel-button, va-album-toggle, edition-management, filtering (includes epoch column + filter tests), lookup-sequence-definition, creatable-tagfield, epoch-fields, multi-edit (multi-select title/shared-values/save/Replace/Add-to/cancel/status-bar)
 - [x] Playwright MCP server for Claude Code browser automation (`.mcp.json`)
 - [x] Test auth endpoint (`POST /test/login`) for E2E auth bypass in dev/test environments
 - [x] E2E cleanup endpoint (`DELETE /test/cleanup`) — user-scoped catalog cleanup via e2e@test.com join records + orphan detection, prefix matching only for lookups, transaction-wrapped, playlist cleanup included
@@ -123,7 +124,7 @@
 - [ ] Smart playlists — dynamic playlist generation from combinations of attributes (e.g., least recently played tracks by artists starting with "B" in genre "Reggae" from phase "High School")
 - [ ] CSV import/export for artists, albums, tracks, playlists, etc.
 - [ ] Streaming platform integration — connect to Apple Music and Spotify to import artists/albums/tracks and export playlists
-- [x] Search and filtering — ExtJsFilterable concern with server-side column filters (string, number, boolean, list, habtm_string, habtm_list) and text search on all catalog index endpoints; Ext JS gridfilters plugin + toolbar search on all grids
+- [x] Search and filtering — ExtJsFilterable concern with server-side column filters (string, number, boolean, list, habtm_string, habtm_list) and text search on all catalog index endpoints; Ext JS gridfilters plugin + toolbar search on all grids; Clear Filters toolbar button on all three catalog grids
 - [ ] Admin role/privileges — admin-level users who can delete catalog records (artists, albums, tracks) and manage lookup tables
 
 ### Frontend CRUD Rollout
