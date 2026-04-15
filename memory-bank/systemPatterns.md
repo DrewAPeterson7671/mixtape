@@ -427,6 +427,18 @@ All three catalog grids (Artist, Album, Track) support Ctrl/Shift multi-select w
 - `onMultiEditSaveClick`: fires N parallel PUT requests; for "Add to" mode, merges existing + new values via `Ext.Array.unique`
 - `updateStatusBar`: called on store load and selection change
 
+**E2E testing gotcha — disambiguating Cancel buttons in a card layout:**
+Because the detail panel and multi-edit panel each own a Save/Cancel button pair, text locators (`clickButton`, `getByRole('button', { name: 'Cancel' })`) are ambiguous. `clickButton`'s `.last()` picks the hidden multi-edit Cancel, `.first()` picks the detail Cancel.
+- **Detail Cancel:** `e2e/cancel-button.spec.js` uses a local `clickDetailCancel` helper: `page.locator('.x-btn-inner:has-text("Cancel")').first().click()`
+- **Multi-edit Cancel:** `e2e/multi-edit.spec.js` uses a `clickMultiEditCancel(page, multiEditRef)` helper that resolves the button via ExtJS ComponentQuery and clicks its DOM id:
+  ```js
+  const cancelId = await page.evaluate((ref) => {
+    const panel = Ext.ComponentQuery.query('[reference=' + ref + ']')[0];
+    return panel && panel.down('button[text=Cancel]').getId();
+  }, multiEditRef);
+  await page.locator('#' + cancelId).click();
+  ```
+
 ### Clear Filters Toolbar Button
 
 All three catalog grids (Album, Track, Artist) have a "Clear Filters" button (`fa fa-eraser`) in the toolbar. The `onClearFiltersClick` handler in each controller:
