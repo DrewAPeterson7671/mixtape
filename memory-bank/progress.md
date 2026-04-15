@@ -123,7 +123,7 @@
 - [ ] Smart playlists — dynamic playlist generation from combinations of attributes (e.g., least recently played tracks by artists starting with "B" in genre "Reggae" from phase "High School")
 - [ ] CSV import/export for artists, albums, tracks, playlists, etc.
 - [ ] Streaming platform integration — connect to Apple Music and Spotify to import artists/albums/tracks and export playlists
-- [x] Search and filtering — ExtJsFilterable concern with server-side column filters (string, number, boolean, list, habtm_string, habtm_list) and text search on all catalog index endpoints; Ext JS gridfilters plugin + toolbar search on all grids
+- [x] Search and filtering — ExtJsFilterable concern with server-side column filters (string, number, boolean, list, habtm_string, habtm_list) and text search on all catalog index endpoints; Ext JS gridfilters plugin + toolbar search on all grids; Clear Filters toolbar button on all three catalog grids
 - [ ] Admin role/privileges — admin-level users who can delete catalog records (artists, albums, tracks) and manage lookup tables
 
 ### Frontend CRUD Rollout

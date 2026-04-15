@@ -390,7 +390,7 @@ The Album Detail form includes an inline tracklist grid for viewing and editing 
 
 ### Existing File Modifications (per entity)
 
-- **Grid**: Add `tbar` with Add/Delete buttons. Add star `renderer` on rating column (width: 110)
+- **Grid**: Add `tbar` with Add/Delete/Clear Filters buttons. Add star `renderer` on rating column (width: 110)
 - **Model**: Add ID fields (`priority_id`, `phase_id`, `genre_ids`, `tag_ids`, `tag_name`) for form population
 - **Main.js**: Swap grid xtype for view xtype in navigation
 
@@ -402,6 +402,16 @@ When adding a new album, selecting artists auto-populates the genre tagfield wit
 - **Existing albums** (`phantom === false`): returns early, no auto-population
 - Artist records in the Artists store include `genre_ids` (populated by the backend's `artist_json` helper), so no extra API calls needed
 - User can freely modify genres after auto-population
+
+### Clear Filters Toolbar Button
+
+All three catalog grids (Album, Track, Artist) have a "Clear Filters" button (`fa fa-eraser`) in the toolbar. The `onClearFiltersClick` handler in each controller:
+1. Deletes `search` from `proxy.getExtraParams()`
+2. Calls `store.clearFilter(true)` (suppresses auto-load)
+3. Clears the search textfield with events suspended (`suspendEvent('change')` / `resumeEvent('change')`) so `onSearchChange` doesn't fire a redundant load
+4. Calls `store.load()` once
+
+This pattern matches the `clearGridFilters` helper used in E2E tests (`e2e/filtering.spec.js`).
 
 ### Main.js Navigation
 

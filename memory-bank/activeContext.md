@@ -7,38 +7,24 @@
 
 Working branches are created off these for each feature (e.g., `mixtape-develop-20260403_default_listing_order`).
 
-## Recent Changes (Apr 14, 2026) — Epoch Grid Columns + Filter
+## Recent Changes (Apr 14, 2026) — Clear Filters Toolbar Button
 
-Added Epoch column with list filter to both album and track grids, with full backend filter support and E2E test coverage.
-
-### Backend
-- **AlbumsController:** Added `epoch_name` to `FILTER_CONFIG` as `:list` filter on `user_albums.epoch_id`
-- **TracksController:** Added `epoch_name` to `FILTER_CONFIG` as `:list` filter on `user_tracks.epoch_id`
-- **Filter specs:** Added `epoch_name` list filter tests to both `albums_controller_filters_spec.rb` and `tracks_controller_filters_spec.rb`; 573 total tests, 0 failures
+Added a "Clear Filters" button to the Album, Track, and Artist grid toolbars. Clicking it clears all column filters, search text, and proxy params in one action, then reloads the full dataset.
 
 ### Frontend
-- **AlbumGrid.js:** Added Epoch column (`epoch_name`, flex: 1) with list filter backed by epochs store
-- **TrackGrid.js:** Added Epoch column (`epoch_name`, flex: 1) with list filter backed by epochs store
-- **filtering.spec.js:** Added 4 new E2E tests (epoch column header + epoch list filter for both grids); fixed pre-existing bug in `setGridSearch`/`clearGridFilters` helpers where `grid.down('textfield')` matched the sort combobox on TrackGrid — narrowed to `textfield[emptyText]`
+- **AlbumGrid.js, TrackGrid.js, ArtistGrid.js:** Added `Clear Filters` button (`fa fa-eraser` icon) to toolbar after Delete button, before the `'->'` spacer
+- **AlbumController.js, TrackController.js, ArtistController.js:** Added `onClearFiltersClick` handler — deletes `search` extra param, calls `store.clearFilter(true)` to suppress auto-load, clears search textfield with events suspended, then calls `store.load()` once
+- Pattern mirrors the proven `clearGridFilters` helper from `e2e/filtering.spec.js`
 
-## Recent Changes (Apr 14, 2026) — Album Wikipedia/Notes, Edition Manager Fix, CreatableTag Fix
+## Recent Changes (Apr 14, 2026) — Epoch Grid Columns + Filter
 
-### Album Detail: Wikipedia & Notes Fields (Frontend Only)
-- **AlbumDetail.js:** Added `wikipedia` textfield and `notes` textareafield after Tags field
-- **AlbumController.js:** Added `wikipedia` and `notes` to the save payload
-- No backend changes needed — fields already existed on Album model
-
-### Edition Manager Dropdown Fix (Frontend Only)
-- **EditionManagerController.js:** Rewrote `populateEditionSelector` to fetch ALL user editions from `GET /editions` API instead of only extracting editions from existing album tracks
-
-### CreatableTag Trigger Fix (Frontend)
-- **CreatableTag.js:** Changed trigger CSS to `x-form-create-trigger` (plus icon), handler to inline function
-- **Application.scss:** Added FA5 plus glyph CSS rule
+Added Epoch column with list filter to both album and track grids, with full backend filter support and E2E test coverage. Also added `epoch_name` to backend `FILTER_CONFIG` for both albums and tracks controllers.
 
 ## Summary of Earlier Work
 
 For full details on earlier changes, see git history. Key milestones:
 
+- **Apr 14:** Clear Filters toolbar button on all three grids (album, track, artist)
 - **Apr 14:** Epoch grid columns + list filter (backend FILTER_CONFIG + frontend columns + E2E tests)
 - **Apr 14:** Album Wikipedia/Notes form fields, Edition Manager dropdown fix, CreatableTag trigger fix
 - **Apr 12:** Epoch lookup entity (full stack: backend model/controller/specs + frontend model/store/views/controllers + E2E tests)
