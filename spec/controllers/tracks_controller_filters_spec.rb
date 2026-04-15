@@ -122,6 +122,21 @@ RSpec.describe TracksController, type: :controller do
       end
     end
 
+    context 'with epoch_name list filter' do
+      it 'filters by epoch names' do
+        epoch1 = create(:epoch, name: 'High School', user: user)
+        epoch2 = create(:epoch, name: 'College', user: user)
+        t1 = create(:track, title: 'Early Song')
+        t2 = create(:track, title: 'Later Song')
+        create(:user_track, user: user, track: t1, epoch: epoch1)
+        create(:user_track, user: user, track: t2, epoch: epoch2)
+
+        get :index, params: { filter: [{ property: 'epoch_name', value: ['High School'] }].to_json }, format: :json
+        titles = JSON.parse(response.body)['data'].map { |t| t['title'] }
+        expect(titles).to eq(['Early Song'])
+      end
+    end
+
     # ── HABTM list filter (genres) ─────────────────────────────────────
 
     context 'with genre_name habtm list filter' do
